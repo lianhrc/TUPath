@@ -1,7 +1,25 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 import './Home.css'
 
 function Home() {
+    const navigate = useNavigate();
+
+    const handleLoginRedirect = () => {
+        console.log('Redirecting to login page');
+        navigate('/login');
+    };
+
+    const handleSignupRedirect = () => {
+        console.log('Redirecting to signup page');
+        navigate('/register');
+    };
+
+    const handleLoginRolesRedirect = () => {
+        console.log('Redirecting to loginroles page');
+        navigate('/loginroles');
+    };
+
   return (
     <div>
     
@@ -11,8 +29,8 @@ function Home() {
                
             </div>
             <div className='righthead'>
-                <button className='loginbtn'>Login</button>
-                <button className='signupbtn'>Sign up</button>
+                <button onClick={handleLoginRedirect} className='loginbtn'>Login</button>
+                <button onClick={handleSignupRedirect} className='signupbtn'>Sign up</button>
             </div>
         </header>
         <main>
@@ -21,7 +39,7 @@ function Home() {
                     <div className='leftmaincontenttop'>TUP STUDENTS</div>
                     <div className='leftmaincontentmid'></div>
                     <div className='leftmaincontentbottom'>
-                        <button>
+                        <button onClick={handleLoginRolesRedirect}>
                             Get Started
                         </button>
                     </div>

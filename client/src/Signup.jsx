@@ -29,8 +29,8 @@ function Signup() {
     };
 
     const handleLoginRedirect = () => {
-        console.log('Redirecting to login roles page');
-        navigate('/loginroles');
+        console.log('Redirecting to login page');
+        navigate('/login');
     };
 
     return (
