@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -6,21 +7,29 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (event) => {
         event.preventDefault();
-
         try {
-            const response = await axios.post('/api/login', { email, password });
+            const response = await axios.post('http://localhost:3001/login', { email, password });
+            console.log('Response from server:', response.data); // Updated logging line
+    
             if (response.data.success) {
                 setMessage('Login successful!');
+                navigate('/homepage'); // Navigate to the homepage on success
             } else {
-                setMessage('Login failed. Please try again.');
+                setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
         } catch (error) {
-            console.error('Error during login:', error);
+            console.error('Error during login:', error); // Log detailed error
             setMessage('An error occurred. Please try again.');
         }
+    };
+    
+
+    const handleSignupRedirect = () => {
+        navigate('/register');
     };
 
     return (
@@ -54,6 +63,8 @@ function Login() {
                 <button type="submit" className="btn btn-primary btn-block">Login</button>
             </form>
             {message && <p className="mt-3">{message}</p>}
+            <p className="mt-3">Don't have an account?</p>
+            <button onClick={handleSignupRedirect} className="btn btn-secondary btn-block">Register</button>
         </div>
     );
 }

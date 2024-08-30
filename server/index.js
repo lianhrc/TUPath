@@ -9,6 +9,24 @@ app.use(cors());
 
 mongoose.connect("mongodb://127.0.0.1:27017/tupath_users");
 
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  Tupath_usersModel.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        return res.status(400).json({ success: false, message: "User not found" });
+      }
+      if (user.password !== password) {
+        return res.status(400).json({ success: false, message: "Password is incorrect" });
+      }
+      return res.status(200).json({ success: true, message: "Login successful", user: user });
+    })
+    .catch(err => {
+      console.error("Error during login:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    });
+});
+
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
