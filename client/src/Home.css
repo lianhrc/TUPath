@@ -1,0 +1,117 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+    line-height: 2;
+}
+
+header {
+    width:100%;
+    color: white;
+    display: flex;
+    padding: 10px;
+}
+
+.lefthead{
+    width: 50%;
+    background-color: lightblue;
+}
+.righthead{
+    width: 18%;
+    display: flex;
+    justify-content:space-evenly;
+    padding: 5px;
+}
+
+.signupbtn{
+    border: none;
+    background-color: rgb(139, 4, 4);
+    color: rgb(255, 255, 255);
+    height: 2rem;
+    width: 40%;
+    border-radius: 1.5rem;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.loginbtn{
+    border: none;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+}
+
+.centerhead{
+    flex: 1;
+    background-color: lightcoral;
+}
+
+main{
+    width:100%;
+    background-color: rgb(147, 4, 4);
+    padding: 20px;
+    display: flex;
+    height: 80vh;
+}
+
+.leftmain{
+    width: 50%;
+    background-color: lightcoral;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+.rightmain{
+    width: 50%;
+    background-color: lightblue;
+}
+
+
+.leftmaincontent{
+    width: 50%;
+    height: 80%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    flex-direction: column;
+}
+
+.leftmaincontenttop{
+    width: 100%;
+    flex: 1;
+    padding: 5px;
+    color: white;
+    background-color: rebeccapurple;
+}
+.leftmaincontentmid{
+    width: 100%;
+    height: 30%;
+    background-color: lightgreen;
+}
+.leftmaincontentbottom{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 25%;
+}
+
+.leftmaincontentbottom button{
+    border: none;
+    background-color: rgb(139, 4, 4);
+    color: rgb(255, 255, 255);
+    height: 2.5rem;
+    width: 70%;
+    border-radius: 1.5rem;
+    font-weight: bold;
+    font-size: 14px;
+}

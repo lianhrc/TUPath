@@ -4,11 +4,13 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Signup from './Signup';
 import Login from './Login';
 import LoginRoles from './LoginRoles'; // Import the new LoginRoles component
+import Home from './Home';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path='/' element={<Home />} />
         <Route path='/register' element={<Signup />} />
         <Route path='/login' element={<Login />} />
         <Route path='/loginroles' element={<LoginRoles />} /> {/* Add route for LoginRoles */}
