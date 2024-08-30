@@ -23,9 +23,14 @@ function Login() {
             }
         } catch (error) {
             console.error('Error during login:', error); // Log detailed error
-            setMessage('An error occurred. Please try again.');
+            if (error.response && error.response.data && error.response.data.message) {
+                setMessage(error.response.data.message); // Display backend error message
+            } else {
+                setMessage('An error occurred. Please try again.'); // Generic error message
+            }
         }
     };
+    
     
 
     const handleSignupRedirect = () => {
