@@ -48,7 +48,7 @@ function Home() {
                     </div>
                     <div className='leftmaincontentbottom'>
                         <button onClick={handleLoginRolesRedirect}>
-                            Get Started
+                            Let's Get Started
                         </button>
                     </div>
                 </div>
