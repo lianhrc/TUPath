@@ -1,0 +1,66 @@
+.card-body{
+    display: flex;
+
+}
+.topcard{
+    display: flex;
+    justify-content: space-between;
+}
+/* Hide the default radio button */
+.custom-radio {
+    display: none;
+}
+
+/* Create a custom radio button */
+.custom-label {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    border: 2px solid lightgray;
+    cursor: pointer;
+}
+
+/* Style the radio button when it's checked */
+.custom-radio:checked + .custom-label {
+    background-color: #9D0E0F;
+    background-color: #9D0E0F;
+
+}
+
+/* Create the inner dot for the custom radio button */
+.custom-label::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+/* Show the inner dot when checked */
+.custom-radio:checked + .custom-label::after {
+    display: block;
+}
+
+.join-button{
+    flex: 1;
+    margin-left: auto;
+    padding: 10px 20px;
+    background-color: #9D0E0F;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.linklogin{
+    color: #9D0E0F;
+}

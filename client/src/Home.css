@@ -20,7 +20,6 @@ header {
 
 .lefthead{
     width: 50%;
-    background-color: lightblue;
 }
 .righthead{
     width: 18%;
@@ -49,12 +48,52 @@ header {
 
 .centerhead{
     flex: 1;
-    background-color: lightcoral;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.centerhead input{
+    border: none;
+    background-color: rgb(227, 226, 226);
+
+    border-radius: 5rem;
+    width: 70%;
+}
+
+.centerhead {
+    display: flex;
+    align-items: center;
+    border: none;
+    border-radius: 5rem;
+    background-color: rgb(227, 226, 226);
+    padding: 5px 10px;
+    width: 300px; outline: none;
+    padding: 5px 10px;
+    flex-grow: 1;
+  }
+
+  
+  .dropdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .dropdown-text {
+    margin-right: 5px;
+    color: #000; /* Adjust color as needed */
+  }
+  
+  .dropdown-icon {
+    font-size: 12px; /* Adjust size as needed */
+    color: #000; /* Adjust color as needed */
+  }
+
 
 main{
     width:100%;
-    background-color: rgb(147, 4, 4);
     padding: 20px;
     display: flex;
     height: 80vh;
@@ -62,7 +101,6 @@ main{
 
 .leftmain{
     width: 50%;
-    background-color: lightcoral;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -70,14 +108,12 @@ main{
 }
 .rightmain{
     width: 50%;
-    background-color: lightblue;
 }
 
 
 .leftmaincontent{
-    width: 50%;
+    width: 70%;
     height: 80%;
-    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -90,12 +126,26 @@ main{
     flex: 1;
     padding: 5px;
     color: white;
-    background-color: rebeccapurple;
 }
+
+.leftmaincontenttop h1 {
+    color: black;
+    font-size: 3rem;
+    font-weight: bolder;
+    line-height: 3.5rem;
+}
+
 .leftmaincontentmid{
     width: 100%;
     height: 30%;
-    background-color: lightgreen;
+    display: flex;
+    align-items: center;    
+
+}
+
+.leftmaincontentmid h6{
+    line-height: 25px;
+    width: 80%;
 }
 .leftmaincontentbottom{
     width: 100%;
@@ -110,7 +160,7 @@ main{
     background-color: rgb(139, 4, 4);
     color: rgb(255, 255, 255);
     height: 2.5rem;
-    width: 70%;
+    width: 100%;
     border-radius: 1.5rem;
     font-weight: bold;
     font-size: 14px;
