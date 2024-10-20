@@ -24,7 +24,7 @@ function Signup() {
                 setMessage('Signup failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error during signup:', error);
+            console.error('Error during signup:', error.response ? error.response.data : error.message);
             setMessage('An error occurred. Please try again.');
         }
     };
