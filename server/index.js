@@ -28,12 +28,14 @@ app.post("/login", (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   // Basic validation
-  if (!name || !email || !password) {
+  if (!firstName || !lastName || !email || !password) {
     return res.status(400).json({ success: false, message: "All fields are required." });
   }
+
+  const name = `${firstName} ${lastName}`;  // Combine first and last name
 
   try {
     // Check if the user already exists
@@ -51,6 +53,7 @@ app.post('/register', async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error." });
   }
 });
+
 
 app.listen(3001, () => {
   console.log("Server is running on port 3001");
