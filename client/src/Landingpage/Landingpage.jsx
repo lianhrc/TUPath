@@ -1,12 +1,12 @@
 import React from 'react';
-import './Landingpage.css';
-import logo from './assets/logoicon.png';
-import portimg from './assets/portimg.png'; // Adjust the path as necessary
-import rightarrow from './assets/right-arrow.png';
-import profileicon from './assets/profile.png';
-import fileicon from './assets/file.png';
-import boticon from './assets/bot.png';
-import reviewericon from './assets/reviewericon.png';
+import '../Landingpage/Landingpage.css';
+import logo from '../assets/logoicon.png';
+import portimg from '../assets/portimg.png'; // Adjust the path as necessary
+import rightarrow from '../assets/right-arrow.png';
+import profileicon from '../assets/profile.png';
+import fileicon from '../assets/file.png';
+import boticon from '../assets/bot.png';
+import reviewericon from '../assets/reviewericon.png';
 
 
 const LandingPage = () => {
