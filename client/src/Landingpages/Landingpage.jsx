@@ -104,7 +104,7 @@ const LandingPage = () => {
                 <h1>Join TUPATH Today</h1>
                 <p>Whether you're a student looking to stand out or an employer seeking top talent, TUPATH is your gateway to success.</p>
                   <div class="buttons">
-                    <a href="#" class="btn-signup">Sign Up Now</a>
+                    <a href="/LoginRoles" className="btn-signup">Sign Up Now</a>
                     <a href="#" class="btn-learnmore">Learn More →</a>
                   </div>
               </div>

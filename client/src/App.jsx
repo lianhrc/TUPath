@@ -9,6 +9,7 @@ import Studentlandpage from './Landingpages/studentlandpage';
 import Employerlandpage from './Landingpages/employerlandpage';
 import Homepage from './Homepage/Homepage';
 
+import StudentHomepage from './Homepage/StudentHomepage';
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
         <Route path='/register' element={<Signup />} />
         <Route path='/login' element={<Login />} />
         <Route path='/loginroles' element={<LoginRoles />} /> {/* Add route for LoginRoles */}
-        <Route path='/homepage' element={<Homepage />} />
+        <Route path='/studenthomepage' element={<StudentHomepage />} />
       </Routes>
     </BrowserRouter>
   );

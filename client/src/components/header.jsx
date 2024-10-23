@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import logo from '../assets/logoicon.png'; // Adjust the path as necessary
 import '../components/header.css'; // Import CSS if needed
 
+
+
 const Header = () => {
   return (
     <header className="navbar">
@@ -15,8 +17,8 @@ const Header = () => {
           <a href="/Studentlandpage">For Students</a>
           <a href="/Employerlandpage">For Employers</a>
         </nav>
-        <button className="login-btn">Login</button>
-        <button className="signup-btn">Sign Up</button>
+        <a href="/login" className="login-btn">Login</a>
+        <a href="/LoginRoles" className="signup-btn">Sign Up</a>
       </div>
     </header>
   );
