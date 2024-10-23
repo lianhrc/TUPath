@@ -19,7 +19,7 @@ function StudentSignup() {
             const response = await axios.post('http://localhost:3001/register', { firstName, lastName, email, password });
             if (response.data.success) {
                 setMessage('Signup successful!');
-                navigate('/loginroles');
+                navigate('/login');
             } else {
                 setMessage('Signup failed. Please try again.');
             }
