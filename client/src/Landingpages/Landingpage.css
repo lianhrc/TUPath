@@ -68,6 +68,7 @@ body {
   background-color: #9D0E0F;
   border-radius: 8px;
   color: white;
+  text-decoration: none;
 }
 
 .hero-buttons .explore-btn {

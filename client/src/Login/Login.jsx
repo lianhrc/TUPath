@@ -17,7 +17,7 @@ function Login() {
     
             if (response.data.success) {
                 setMessage('Login successful!');
-                navigate('/homepage'); // Navigate to the homepage on success
+                navigate('/studenthomepage'); // Navigate to the homepage on success
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }

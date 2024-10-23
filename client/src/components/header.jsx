@@ -2,6 +2,7 @@ import React from 'react'
 import logo from '../assets/logoicon.png'; // Adjust the path as necessary
 import '../components/header.css'; // Import CSS if needed
 
+
 const header = () => {
   return (
     <header className="navbar">
@@ -11,8 +12,8 @@ const header = () => {
           <a href="/">For Students</a>
           <a href="/">For Employers</a>
         </nav>
-        <button className="login-btn">Login</button>
-        <button className="signup-btn">Sign Up</button>
+        <a href="/login" className="login-btn">Login</a>
+        <a href="/LoginRoles" className="signup-btn">Sign Up</a>
       </div>
     </header>
   )
