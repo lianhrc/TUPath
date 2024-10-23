@@ -1,46 +1,34 @@
 import React from 'react';
 import '../Landingpage/Landingpage.css';
-import logo from '../assets/logoicon.png';
 import portimg from '../assets/portimg.png'; // Adjust the path as necessary
 import rightarrow from '../assets/right-arrow.png';
 import profileicon from '../assets/profile.png';
 import fileicon from '../assets/file.png';
 import boticon from '../assets/bot.png';
 import reviewericon from '../assets/reviewericon.png';
+import Header from '../components/header';
+import Footer from '../components/footer';
 
 
 const LandingPage = () => {
   return (
     <div className="landing-page">
-      <header className="navbar">
-       <img src={logo} alt="Tupath Logo" className="logo" />
-       
-        <div className="auth-buttons">
-            <nav className="nav-links">
-                <a href="/">For Students</a>
-                <a href="/">For Employers</a>
-            </nav>
-          <button className="login-btn">Login</button>
-          <button className="signup-btn">Sign Up</button>
-        </div>
-      </header>
+    <Header />
 
       <section className="hero-section">
         <div className="hero-content">
-        <p className='p1'>Empowering Students, Engaging Employers</p>
-        <h1>Showcase Your Academic Journey</h1>
-        <p className='p'>Discover TUPATH, the ultimate platform to manage and present your academic achievements, connecting you with opportunities and future employers.</p>
-          <div className="hero-buttons">
-            <button className="get-started-btn">Get Started</button>
-            <button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button>
-          </div>
+          <p className='p1'>Empowering Students, Engaging Employers</p>
+          <h1>Showcase Your Academic Journey</h1>
+          <p className='p'>Discover TUPATH, the ultimate platform to manage and present your academic achievements, connecting you with opportunities and future employers.</p>
+            <div className="hero-buttons">
+              <button className="get-started-btn">Get Started</button>
+              <button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button>
+            </div>
         </div>
         <div className="hero-image">
-        <img src={portimg} alt="Academic Showcase" /> {/* Use your imported image here */}
+          <img src={portimg} alt="Academic Showcase" /> {/* Use your imported image here */}
         </div>
       </section>
-
-     
 
        <section className="unleash-section">
           <div className="unleash-top">
@@ -123,7 +111,6 @@ const LandingPage = () => {
             <div class="tupath-content-right">
             </div>
            </div>
-        
       </section>
 
 
@@ -167,19 +154,7 @@ const LandingPage = () => {
       </section>
 
 
-      <footer class="site-footer">
-        <div class="footer-links">
-          <a href="#">About TUPATH</a>
-          <a href="#">Student Support</a>
-          <a href="#">Employer Solutions</a>
-          <a href="#">Contact Us</a>
-        </div>
-        <hr />
-        <div class="footer-copyright">
-          <p>© TUPATH 2024, Empowering Academic Excellence</p>
-        </div>
-      </footer>
-    
+      <Footer />
 
     </div>
   );

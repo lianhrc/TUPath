@@ -1,0 +1,89 @@
+
+/* Navbar styling */
+.navbar {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px;
+    color: black;
+  }
+  
+  .logo {
+    width: 10%; /* Adjust the percentage as needed */
+    height: auto; /* Maintain aspect ratio */
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 15px;
+    position: relative;
+  }
+  
+  .nav-links a {
+    margin: 0 15px;
+    color: black;
+    text-decoration: none;
+    position: relative;
+  }
+  
+  .nav-links a::after {
+    content: ''; /* Required for the pseudo-element */
+    display: block;
+    height: 2px; /* Height of the underline */
+    background-color: #9D0E0F; /* Underline color */
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -5px; /* Adjust this to position the underline */
+    transform: scaleX(0); /* Start scaled down */
+    transition: transform 0.3s ease; /* Animation for the scaling */
+  }
+  
+  .nav-links a:hover::after {
+    transform: scaleX(1); /* Scale to full width on hover */
+  }
+  
+  .auth-buttons {
+    display: flex;
+  }
+  
+  .auth-buttons .login-btn,
+  .auth-buttons .signup-btn {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .login-btn {
+    background-color: transparent;
+    font-weight: bold;
+    color: black;
+    position: relative; /* For the pseudo-element positioning */
+  }
+  
+  .auth-buttons .login-btn::after {
+    content: ''; /* Required for the pseudo-element */
+    display: block;
+    height: 2px; /* Height of the underline */
+    background-color: #9D0E0F; /* Underline color */
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -5px; /* Adjust this to position the underline */
+    transform: scaleX(0); /* Start scaled down */
+    transition: transform 0.3s ease; /* Animation for the scaling */
+  }
+  
+  .auth-buttons .login-btn:hover::after {
+    transform: scaleX(1); /* Scale to full width on hover */
+  }
+  
+  .signup-btn {
+    background-color: #9D0E0F;
+    color: white;
+    border-radius: 5px;
+  }
