@@ -1,41 +1,124 @@
-.card-body{
-    display: flex;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif;
+    
+  }
+  
+  body {
+    font-size: 12px; /* Set base font size */
+    line-height: 1.6; /* Improve readability with line-height */
+    background-color: white;
+    
+  }
+    
+/* Main Content Container */
+.LoginRoles {
+    text-align: center;
 
 }
-.topcard{
+
+
+.loginroles-container{
+    height: 78vh;
+}
+/* Title */
+.title {
+    margin-bottom: 30px;
+    margin-top: 50px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Card Choice */
+.boxchoice {
+    display: flex;
+    justify-content:center;
+    gap: 20px;
+    padding: 30px 0;
+    margin-bottom: 30px
+}
+
+/* Card */
+.card {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.selected {
+    border: 2px solid #9D0E0F;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Top Card */
+.topcard {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+    margin-bottom: 10px;
 }
+
+/* Top Card Image */
+.topcard img {
+    width: 40px;
+    height: auto;
+}
+
+/* Card Body */
+.card-body {
+    text-align: center;
+}
+
+.card-body h5 {
+    font-size: 12px;
+}
+
 /* Hide the default radio button */
 .custom-radio {
     display: none;
 }
 
-/* Create a custom radio button */
-.custom-label {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-block;
-    position: relative;
-    border: 2px solid lightgray;
-    cursor: pointer;
+
+/* Checked Radio Button */
+.custom-radio:checked {
+    background-color: #9D0E0F;
+    border-color: #9D0E0F;
 }
 
-/* Style the radio button when it's checked */
-.custom-radio:checked + .custom-label {
-    background-color: #9D0E0F;
-    background-color: #9D0E0F;
-
-}
-
-/* Create the inner dot for the custom radio button */
 .custom-label::after {
     content: '';
     width: 10px;
     height: 10px;
+    background-color: white;
     border-radius: 50%;
-    background: white;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -43,14 +126,13 @@
     display: none;
 }
 
-/* Show the inner dot when checked */
 .custom-radio:checked + .custom-label::after {
     display: block;
 }
 
-.join-button{
-    flex: 1;
-    margin-left: auto;
+/* Join Button */
+.join-button {
+    display: inline-block;
     padding: 10px 20px;
     background-color: #9D0E0F;
     color: white;
@@ -61,6 +143,11 @@
     transition: background-color 0.3s ease;
 }
 
-.linklogin{
+.join-button:hover {
+    background-color: #7b0b0d;
+}
+
+/* Link Color */
+.linklogin {
     color: #9D0E0F;
 }
