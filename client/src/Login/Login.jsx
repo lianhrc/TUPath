@@ -46,8 +46,6 @@ function Login() {
                 <div className="Login-container">
                     <h2>Make the most of your career</h2>
 
-                 
-
                     <button className="google-login">Continue with Google</button>
                     <div className="separator">or</div>
                         <div className='chooserolecontainer'>
@@ -59,26 +57,26 @@ function Login() {
                                         checked={userType === 'student'}
                                         onChange={() => setUserType('student')}
                                     />
-
                                 </div>
                                 <div className='chosenrole'>
-                                    <img src={employer} alt="Academic Showcase" />
+                                    <img src={employer} alt="Employer Showcase" />
                                     <input
                                         type="radio"
                                         value="employer"
                                         checked={userType === 'employer'}
                                         onChange={() => setUserType('employer')}
                                     />
-
                                 </div>
                             </div>
                     <form onSubmit={handleLogin}>
                         <div className="form-group">
-                            <label htmlFor="email">TUP Student ID Number</label>
+                            <label htmlFor="email">
+                                {userType === 'student' ? 'TUP Student ID Number' : 'Email'}
+                            </label>
                             <input
                                 type="text"
                                 id="email"
-                                placeholder="TUPM-**-****"
+                                placeholder={userType === 'student' ? 'TUPM-**-****' : 'Enter your email'}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required

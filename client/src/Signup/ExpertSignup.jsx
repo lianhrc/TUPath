@@ -4,7 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css'
 
-function StudentSignup() {
+function ExpertSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -16,7 +16,7 @@ function StudentSignup() {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:3001/studentsignup', { firstName, lastName, email, password });
+            const response = await axios.post('http://localhost:3001/expertsignup', { firstName, lastName, email, password });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
@@ -35,7 +35,7 @@ function StudentSignup() {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '600px' }}>
-            <h2 className="text-center mb-4">Student Sign Up</h2>
+            <h2 className="text-center mb-4">Expert Sign Up</h2>
             <div className="d-flex justify-content-center mb-3">
             <button className="gbtn" style={{ width: '40%' }}>
                 <span className="google-icon" /> Continue with Google
@@ -69,7 +69,7 @@ function StudentSignup() {
                     <input
                         type="email"
                         className="form-control"
-                        placeholder="Student Email Address"
+                        placeholder="Email Address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -106,4 +106,4 @@ function StudentSignup() {
     );
 }
 
-export default StudentSignup;
+export default ExpertSignup;

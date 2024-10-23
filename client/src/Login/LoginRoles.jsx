@@ -61,7 +61,7 @@ function LoginRoles() {
                     Sign up as {role === 'student' ? 'Student' : 'Expert'}
                 </a>
                
-            </div>
+                </div>
         </div>
     );
 }

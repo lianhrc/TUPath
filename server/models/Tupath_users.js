@@ -1,11 +1,45 @@
-const mongoose = require('mongoose')
+// models/Tupath_users.js
+const mongoose = require("mongoose");
 
-const Tupath_usersSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String
-})
+// Schema for TUPATH students
+const TupathUserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,  
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+});
 
+// Schema for TUPATH experts
+const ExpertUserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,  
+  },
+  password: {
+    type: String,
+    required: true,
+  }
+});
 
-const Tupath_usersModel = mongoose.model("tupath_user", Tupath_usersSchema)
-module.exports = Tupath_usersModel
+// Models
+const Tupath_usersModel = mongoose.model("Tupath_users", TupathUserSchema);
+const Expert_usersModel = mongoose.model("Expert_users", ExpertUserSchema);
+
+module.exports = {
+  Tupath_usersModel,
+  Expert_usersModel,
+};
