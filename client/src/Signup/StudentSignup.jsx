@@ -4,7 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css'
 
-function Signup() {
+function StudentSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -106,4 +106,4 @@ function Signup() {
     );
 }
 
-export default Signup;
+export default StudentSignup;

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './LoginRoles.css';
 
 function LoginRoles() {
     const [role, setRole] = useState('student');
+
+    // Define URLs for each role
+    const studentUrl = 'https://yourdomain.com/student';
+    const expertUrl = 'https://yourdomain.com/expert';
 
     return (
         <div className="container mt-1 d-flex justify-content-center align-items-center" style={{ minHeight: '100vh'}}>
@@ -46,9 +49,17 @@ function LoginRoles() {
                         </div>
                     </div>
                 </div>
-                <Link to={`/${role}`} className="join-button">Join as {role === 'student' ? 'Student' : 'Expert'}</Link>
+                
+                {/* Dynamically set the URL based on the selected role */}
+                <a 
+                    href={role === 'student' ? '/StudentSignup' : 'expertUrl'} 
+                    className="join-button"
+                >
+                    Join as {role === 'student' ? 'Student' : 'Expert'}
+                </a>
+
                 <p className="mt-3">
-                    Already have an account? <Link className='linklogin' to="/login">Log in</Link>
+                    Already have an account? <a className='linklogin' href="/login">Log in</a>
                 </p>
             </div>
         </div>
