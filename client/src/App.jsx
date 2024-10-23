@@ -7,8 +7,6 @@ import LoginRoles from './Login/LoginRoles';
 import Landingpage from './Landingpages/Landingpage';
 import Studentlandpage from './Landingpages/studentlandpage';
 import Employerlandpage from './Landingpages/employerlandpage';
-import Homepage from './Homepage/Homepage';
-
 import StudentHomepage from './Homepage/StudentHomepage';
 
 function App() {
