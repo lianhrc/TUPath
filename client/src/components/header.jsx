@@ -1,21 +1,25 @@
-import React from 'react'
+// src/components/Header.js
+import React from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../assets/logoicon.png'; // Adjust the path as necessary
 import '../components/header.css'; // Import CSS if needed
 
-const header = () => {
+const Header = () => {
   return (
     <header className="navbar">
-      <img src={logo} alt="Tupath Logo" className="logo" />
+      <a className='lefticon' href="/">
+        <img src={logo} alt="Tupath Logo" className="logo" />
+      </a>
       <div className="auth-buttons">
         <nav className="nav-links">
-          <a href="/">For Students</a>
-          <a href="/">For Employers</a>
+          <a href="/Studentlandpage">For Students</a>
+          <a href="/Employerlandpage">For Employers</a>
         </nav>
         <button className="login-btn">Login</button>
         <button className="signup-btn">Sign Up</button>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default header
+export default Header;

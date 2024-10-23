@@ -5,13 +5,18 @@ import Signup from './Signup/Signup';
 import Login from './Login/Login';
 import LoginRoles from './Login/LoginRoles';
 import Landingpage from './Landingpages/Landingpage';
+import Studentlandpage from './Landingpages/studentlandpage';
+import Employerlandpage from './Landingpages/employerlandpage';
 import Homepage from './Homepage/Homepage';
+
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Landingpage />} />
+        <Route path='/studentlandpage' element={<Studentlandpage />} />
+        <Route path='/employerlandpage' element={<Employerlandpage />} />
         <Route path='/register' element={<Signup />} />
         <Route path='/login' element={<Login />} />
         <Route path='/loginroles' element={<LoginRoles />} /> {/* Add route for LoginRoles */}
