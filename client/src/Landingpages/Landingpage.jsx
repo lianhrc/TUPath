@@ -1,5 +1,5 @@
 import React from 'react';
-import '../Landingpage/Landingpage.css';
+import './Landingpage.css';
 import portimg from '../assets/portimg.png'; // Adjust the path as necessary
 import rightarrow from '../assets/right-arrow.png';
 import profileicon from '../assets/profile.png';

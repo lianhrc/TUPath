@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Signup from './Signup/Signup';
 import Login from './Login/Login';
 import LoginRoles from './Login/LoginRoles';
-import Landingpage from './Landingpage/Landingpage';
+import Landingpage from './Landingpages/Landingpage';
 import Homepage from './Homepage/Homepage';
 
 function App() {
