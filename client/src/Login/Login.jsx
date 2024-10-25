@@ -66,8 +66,8 @@ function Login() {
                                     checked={role === 'student'}
                                     onChange={() => setRole('student')} // Set role as student
                                 />
+                                </label>
                                 Student
-                            </label>
                         </div>
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
                             <img src={employer} alt="Employer Showcase" />
@@ -78,8 +78,8 @@ function Login() {
                                     checked={role === 'expert'}
                                     onChange={() => setRole('expert')} // Set role as expert
                                 />
+                                </label>
                                 Employer
-                            </label>
                         </div>
                     </div>
 

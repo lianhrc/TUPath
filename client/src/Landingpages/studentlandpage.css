@@ -21,8 +21,7 @@
 
   .welcome-section{
     padding: 20px;
-    border-radius: 5px;
-    height: 15rem;
+    height: 13rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -53,8 +52,9 @@
   display: flex;
   justify-content: center;
   gap: 30px;
-  padding: 20px;
+  padding-top: 20px;  
   flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+
 }
 
 .subsec {
@@ -69,7 +69,6 @@
   display: flex;
   flex-direction: row;
   width: 100%; /* Make it full width */
-  margin-bottom: 20px; /* Adds space between rows */
 }
 
 .image-container {
@@ -190,115 +189,161 @@
 }
 
 
-
 .academic-pathway-container2 {
   display: flex;
   justify-content: center;
-  gap: 30px;
-  padding: 20px;
-  flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 1300px; /* Center container with max width */
+  margin: 0 auto;
 }
 
-
-.image-container2 {
-  width: 50%; /* Width of the image container */
-  height: 300px;
-  border-radius: 10px;
+.subsubsec2 {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: lightcoral;
+  flex-direction: row;
+  width: 80%;
+  gap: 20px; /* Adds space between text and image containers */
+  margin-bottom: 20px;
 }
 
 .text-container2 {
-  width: 75%; /* Adjusted width for the text container */
-  height: 300px;
+  width: 45%; /* Adjust width to balance with image */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.image-container2 {
+  width: 45%; /* Adjusted width for better balance */
+  height: 300px; /* Set ideal height */
+  border-radius: 10px;
+  background-image: url('../assets/portimg.png');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: lightcoral;
 }
 
-
-.subsubsec2 {
-  gap: 10px;
-  display: flex;
-  flex-direction: row;
-  width: 80%; /* Make it full width */
-  margin-bottom: 20px; /* Adds space between rows */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .subsubsec2 {
+    flex-direction: column; /* Stack on smaller screens */
+    align-items: center;
+  }
+  
+  .text-container2, .image-container2 {
+    width: 100%; /* Full width on smaller screens */
+    text-align: center;
+  }
 }
-
-
 
 
 .steps-section-container {
-  padding: 40px;
-  background-color: #f9f9f9;
-  text-align: center;
+  padding: 0 50px;
+  text-align: center; 
 }
 
 .steps-container {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 40px;
+  gap: 20px;
+  align-items: stretch; /* Ensures even height among steps */
+  justify-content: space-around;
+  flex-wrap: wrap;
 }
 
 .step {
-  flex: 1;
-  margin: 0 20px;
+  flex: 1 1 30%; /* Adjusts width for better distribution */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content within each step */
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 8px;
 }
 
 .step-number {
-  font-size: 24px;
+  font-size: 16px;
   font-weight: bold;
-  color: #d32f2f; /* Dark red for step numbers */
-  background-color: #f9f9f9;
-  width: 50px;
-  height: 50px;
-  line-height: 50px;
+  color: white;
+  background-color: #9D0E0F;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
   border-radius: 50%;
-  margin: 0 auto 20px;
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #d32f2f;
 }
 
 h3 {
-  font-size: 22px;
+  font-size: 16px;
+  font-weight: bold;
   margin-bottom: 10px;
 }
 
 p {
-  font-size: 16px;
+  font-size: 12px;
   color: #666;
+  margin-bottom: 10px;
 }
 
 .call-to-action {
   margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 100px;
+  margin-bottom: 60px;
+  text-align: center;
+}
+.call-to-action-sub{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
 }
 
 .call-to-action h2 {
-  font-size: 32px;
-  font-weight: bold;
+  font-size: 28px;
+  word-spacing: 5px;
+  font-weight: light;
   margin-bottom: 10px;
 }
 
 .call-to-action p {
-  font-size: 18px;
+  font-size: 12px;
   margin-bottom: 20px;
 }
 
 .cta-button {
-  background-color: #d32f2f;
+  background-color: #9D0E0F;
   color: #fff;
   border: none;
   padding: 12px 24px;
-  font-size: 18px;
+  font-size: 12px;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .cta-button:hover {
-  background-color: #b71c1c; /* Darker red on hover */
+  background-color: #b71c1c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .steps-container {
+    flex-direction: column;
+  }
+
+  .step {
+    width: 100%;
+    margin: 0 0 20px 0;
+  }
 }

@@ -21,7 +21,7 @@ body {
 .Login-container {
     height: 85vh;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 20px;
     width: 600px;
 }
 
@@ -86,7 +86,7 @@ label {
     color: #555; /* Darker color for labels */
 }
 
-input[type="text"],
+input[type="email"],
 input[type="password"] {
     width: 100%; /* Full width input */
     padding: 10px;
@@ -122,7 +122,8 @@ input[type="password"]:focus {
 }
 
 .signup-prompt {
-    margin-top: 15px; /* Space above the prompt */
+    font-size: 12px;
+    margin-top: 20px; /* Space above the prompt */
 }
 
 .signup-link {
