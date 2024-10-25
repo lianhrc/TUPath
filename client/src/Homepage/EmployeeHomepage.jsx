@@ -1,6 +1,6 @@
 import React from 'react'
 
-function StudentHomepage() {
+function EmployeeHomepage() {
   return (
     <div>
       <h1>this is home page</h1>
@@ -8,4 +8,4 @@ function StudentHomepage() {
   )
 }
 
-export default StudentHomepage;
+export default EmployeeHomepage;

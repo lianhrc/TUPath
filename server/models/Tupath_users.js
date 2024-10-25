@@ -16,12 +16,16 @@ const TupathUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isNewUser: {
+    type: Boolean,
+    default: true, // Set to true for new users
+  },
 });
 
 // Schema for TUPATH experts
 const ExpertUserSchema = new mongoose.Schema({
   name: {
-    type: String,
+    type: String, 
     required: true,
   },
   email: {
@@ -32,7 +36,11 @@ const ExpertUserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-  }
+  },
+  isNewUser: {
+    type: Boolean,
+    default: true, // Set to true for new users
+  },
 });
 
 // Models

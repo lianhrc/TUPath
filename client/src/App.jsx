@@ -9,6 +9,9 @@ import Landingpage from './Landingpages/Landingpage';
 import Studentlandpage from './Landingpages/studentlandpage';
 import Employerlandpage from './Landingpages/employerlandpage';
 import StudentHomepage from './Homepage/StudentHomepage';
+import EmployeeHomepage from './Homepage/EmployeeHomepage';
+import StudentProfileCreation from './Profilepage/StudentProfileCreation';
+import EmployeeProfileCreation from './Profilepage/EmployeeProfileCreation';
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/loginroles' element={<LoginRoles />} /> {/* Add route for LoginRoles */}
         <Route path='/studenthomepage' element={<StudentHomepage />} />
+        <Route path='/employeehomepage' element={<EmployeeHomepage />} />
+        <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
+        <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
       </Routes>
     </BrowserRouter>
   );
