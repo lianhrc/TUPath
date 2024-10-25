@@ -4,8 +4,6 @@ import Header from '../components/header';
 import Footer from '../components/footer'
 import profile from '../assets/reviewericon.png';
 
-
-
 function studentlandpage() {
   return (
     <div className='studentlandpage'>
