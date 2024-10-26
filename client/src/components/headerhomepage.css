@@ -1,0 +1,92 @@
+/* Navbar styling */
+.homepagenavbar {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px; /* Adjusted padding */
+    color: black;
+    border-bottom: 1px solid #ccc; /* Added bottom border */
+    position: fixed; /* Fix position to the top of the page */
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width */
+    background-color: white; /* Background color to make it visible */
+    z-index: 1000; /* Ensure it is on top of other content */
+  }
+  
+  /* Left icon */
+  .homepagenavbar .lefticon {
+    text-decoration: none;
+    display: flex;
+  }
+  
+  /* Logo */
+  .homepagelogo {
+    width: 150px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+  }
+  
+  /* Search container */
+  .search-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .search-input {
+    height: 30px;
+    width: 50%; /* Adjust the width as needed */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 35px;
+  }
+  
+  /* Navigation links */
+  .homepagenav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 10px; /* Adjust the gap to make links closer */
+  }
+  
+  .nav-icon {
+    width: 20px; /* Adjust icon size as needed */
+    height: 20px; /* Adjust icon size as needed */
+  }
+  
+  /* Icon buttons */
+  .icon-buttons {
+    display: flex;
+    flex-shrink: 1; /* Allow the div to shrink */
+    width: auto; /* Automatically adjust the width */
+  }
+  
+  .homepagenav-links {
+    gap: 15px;
+  }
+  
+  .homepagenav-links a {
+    margin: 0 10px; /* Adjust the margin to make links closer */
+    color: black;
+    text-decoration: none;
+    position: relative;
+  }
+  
+  .homepagenav-links a::after {
+    content: ''; /* Required for the pseudo-element */
+    display: block;
+    height: 2px; /* Height of the underline */
+    background-color: #9D0E0F; /* Underline color */
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -5px; /* Adjust this to position the underline */
+    transform: scaleX(0); /* Start scaled down */
+    transition: transform 0.3s ease; /* Animation for the scaling */
+  }
+  
+  .homepagenav-links a:hover::after {
+    transform: scaleX(1); /* Scale to full width on hover */
+  }
+  
