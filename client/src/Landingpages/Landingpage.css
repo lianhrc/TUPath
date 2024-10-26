@@ -72,7 +72,7 @@ body {
 }
 
 .hero-buttons .explore-btn {
-  background-color: white;
+  background: none;
   color: #9D0E0F;
 }
 
@@ -98,10 +98,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  
 }
 
 .hero-image img {
-  max-width: 100%; /* Make image responsive */
   height: auto; /* Maintain aspect ratio */
   max-height: 500px; /* Set a maximum height for the image */
   border-radius: 10px; /* Optional: add rounded corners */
@@ -111,7 +111,6 @@ body {
 .unleash-section {
   width: auto;
   margin-top: 65px;
-
   background-color: #fff;
   display: flex;
   flex-direction: column;

@@ -12,6 +12,7 @@ import StudentHomepage from './Homepage/StudentHomepage';
 import EmployeeHomepage from './Homepage/EmployeeHomepage';
 import StudentProfileCreation from './Profilepage/StudentProfileCreation';
 import EmployeeProfileCreation from './Profilepage/EmployeeProfileCreation';
+import StudentProfile from './Profilepage/Profilepage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path='/employeehomepage' element={<EmployeeHomepage />} />
         <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
         <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
+        <Route path='/StudentProfile' element={<StudentProfile />} />
       </Routes>
     </BrowserRouter>
   );
