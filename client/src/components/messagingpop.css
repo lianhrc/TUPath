@@ -31,6 +31,8 @@
     align-items: center; /* Center content horizontally */
     justify-content: flex-start; /* Align items to start vertically */
     z-index: 10;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     background-color: rgba(244, 242, 238, 0.9); /* Semi-transparent background color */
     width: 300px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
