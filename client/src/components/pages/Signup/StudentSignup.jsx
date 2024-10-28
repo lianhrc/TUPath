@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../services/axiosInstance.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css'
 
@@ -16,7 +16,7 @@ function StudentSignup() {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:3001/studentsignup', { firstName, lastName, email, password });
+            const response = await axiosInstance.post('http://localhost:3001/studentsignup', { firstName, lastName, email, password });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
