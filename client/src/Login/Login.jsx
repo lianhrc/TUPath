@@ -26,7 +26,8 @@ function Login() {
                 setMessage('Login successful!');
 
                 // Redirect user based on whether they are new or returning
-                navigate(response.data.redirectPath);
+                navigate(response.data.redirectPath, { replace: true });
+
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
