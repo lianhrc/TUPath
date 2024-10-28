@@ -43,7 +43,7 @@ function HeaderHomepage() {
       <div className="icon-buttons">
         <nav className="homepagenav-links">
           <a href="/StudentHomepage"><img src={homeicon} alt="Home" className="nav-icon" /></a>
-          <a href="/StudentProfile"><img src={messageicon} alt="Messages" className="nav-icon" /></a>
+          <a href="/Inboxpage"><img src={messageicon} alt="Messages" className="nav-icon" /></a>
 
           <div className="dropdown" onClick={toggleNotifDropdown}>
             <img src={notificon} alt="Notifications" className="nav-icon" />
