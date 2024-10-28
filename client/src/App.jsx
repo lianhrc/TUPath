@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import StudentSignup from './Signup/StudentSignup';
-import ExpertSignup from './Signup/ExpertSignup';
-import Login from './Login/Login';
-import LoginRoles from './Login/LoginRoles';
-import Landingpage from './Landingpages/Landingpage';
-import Studentlandpage from './Landingpages/studentlandpage';
-import Employerlandpage from './Landingpages/employerlandpage';
-import StudentHomepage from './Homepage/StudentHomepage';
-import EmployeeHomepage from './Homepage/EmployeeHomepage';
-import StudentProfileCreation from './Profilepage/StudentProfileCreation';
-import EmployeeProfileCreation from './Profilepage/EmployeeProfileCreation';
-import StudentProfile from './Profilepage/Profilepage';
+import StudentSignup from './components/pages/Signup/StudentSignup';
+import ExpertSignup from './components/pages/Signup/ExpertSignup';
+import Login from './components/pages/Login/Login';
+import LoginRoles from './components/pages/Login/LoginRoles';
+import Landingpage from './components/pages/Landingpages/Landingpage';
+import Studentlandpage from './components/pages/Landingpages/studentlandpage';
+import Employerlandpage from './components/pages/Landingpages/employerlandpage';
+import StudentHomepage from './components/pages/Homepage/StudentHomepage';
+import EmployeeHomepage from './components/pages/Homepage/EmployeeHomepage';
+import StudentProfileCreation from './components/pages/Profilepage/StudentProfileCreation';
+import EmployeeProfileCreation from './components/pages/Profilepage/EmployeeProfileCreation';
+import StudentProfile from './components/pages/Profilepage/Profilepage';
 
 function App() {
   return (

@@ -1,0 +1,216 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif;
+    
+  }
+  
+  body {
+    font-size: 12px; /* Set base font size */
+    line-height: 1.6; /* Improve readability with line-height */
+    background-color: white;
+    
+  }
+
+  .employerlandpage{
+    text-align: center;
+    color: #333;
+    height: 200vh;
+  }
+
+  
+  .employer-welcome-section{
+    padding: 20px;
+    height: 30rem;
+    padding: 1% 8%;
+    color: white;
+    background-color: #9D0E0F;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .emplyer-welcome-subsection{
+    max-width: 600px;
+    display: flex;
+    text-align:left;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  
+  .employer-welcome-section h1{
+      font-weight: 600;
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+
+  .employer-welcome-section p{
+    font-size: 12px;  
+    font-weight: 300;
+    color: white;
+    width: 430px;
+  }
+
+/* Section styling */
+.discover-section {
+  margin-top: 10px;
+  padding: 40px 20px;
+}
+
+/* Container for alignment */
+.discover-container {
+  display: flex;
+  gap: 60px;
+  justify-content: center;
+  flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+  max-width: 1200px;
+  margin: 0 auto; /* Center container in the section */
+}
+
+/* Individual box styling */
+.discover-sub-container {
+  flex: 1; /* Each box takes about 30% of the row width */
+  max-width: 700px;
+  min-width: 200px;
+  display: flex;
+  gap:10px;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  background-color: #9D0E0F;
+  border: 0.5px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Circular numbered box */
+.discover-box {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #9D0E0F;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.discover-box img{
+  width: 30px;
+}
+.subbox{
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+/* Headings and paragraph styles */
+.discover-sub-container h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.discover-sub-container p {
+  font-size: 12px;
+  color: white;
+  width: 250px;
+  margin-bottom: 10px;
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+  .discover-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .discover-sub-container {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+/* Section styling */
+.talent-section {
+  padding: 80px 20px 0 20px;
+  background-color: #fff;
+}
+
+.talent-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Left side title */
+.talent-content h2 {
+  font-size: 28px;
+  text-align: end;
+  line-height: 40px;
+  flex: 1;
+}
+
+/* Card container */
+.talent-cards {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  width: 800px;
+}
+
+/* Individual talent cards */
+.talent-card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  text-align: left;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+}
+
+.talent-card h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.talent-card p {
+  font-size: 14px;
+  color: #666;
+}
+
+.talent-card .icon {
+  font-size: 24px;
+  color: #9D0E0F;
+  margin-bottom: 10px;
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 768px) {
+  .talent-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .talent-cards {
+    justify-content: center;
+  }
+
+  .talent-card {
+    width: 100%;
+    max-width: 300px;
+  }
+}

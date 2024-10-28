@@ -1,0 +1,126 @@
+/* Login.css */
+
+
+.Login {
+    display: flex;
+    flex-direction: column;
+}
+
+.logincontent{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.Login-container {
+    height: 85vh;
+    text-align: center;
+    margin-top: 20px;
+    width: 600px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333; /* Title color */
+    font-weight: bold;
+}
+
+.google-login {
+    width: 50%;
+    padding: 10px;
+    background-color: #8DC1F2; /* Google Blue */
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.google-login:hover {
+    background-color: #357ae8; /* Darker blue on hover */
+}
+
+.separator {
+    margin: 15px 0;
+    color: #aaa; /* Light gray for the separator */
+}
+
+
+.chooserolecontainer{
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ margin-bottom: 30px ;
+ padding: 0 120px;
+
+}
+
+.chosenrole{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+.chooserolecontainer img{
+    
+    width: 25%;
+}
+
+.form-group {
+    margin-bottom: 15px; /* Space between form groups */
+}
+
+label {
+    display: flex;
+    margin-bottom: 5px; /* Space below the label */
+    font-size: 12px; /* Smaller font size for labels */
+    color: #555; /* Darker color for labels */
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%; /* Full width input */
+    padding: 10px;
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    font-size:12px; /* Font size for inputs */
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #007bff; /* Blue border on focus */
+    outline: none; /* Remove outline */
+}
+
+.login-button {
+    width: 20%; /* Full width button */
+    padding: 10px;
+    background-color: #9D0E0F; /* Blue background */
+    color: white; /* White text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 12px; /* Font size for button */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.login-button:hover {
+    background-color: #cf3838; /* Darker blue on hover */
+}
+
+.message {
+    margin-top: 10px; /* Space above the message */
+    color: #ff0000; /* Red color for error messages */
+}
+
+.signup-prompt {
+    font-size: 12px;
+    margin-top: 20px; /* Space above the prompt */
+}
+
+.signup-link {
+    color: #007bff; /* Blue color for the signup link */
+    cursor: pointer; /* Pointer cursor for link */
+}
