@@ -21,7 +21,7 @@ function Login() {
             if (response.data.success) {
                 setMessage('Login successful!');
                 localStorage.setItem('token', response.data.token);
-                navigate(response.data.redirectPath, { replace: true });
+                navigate('/studenthomepage', { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
