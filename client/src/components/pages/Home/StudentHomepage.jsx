@@ -1,139 +1,239 @@
-import React from 'react';
-import './StudentHomepage.css'; // Custom CSS for styling
-import Headerhomepage from '../../common/headerhomepage'; // Import CSS if needed
-import profileicon from '../../../assets/profileicon.png'; // Replace with actual icon path
-import profileicon2 from '../../../assets/profile2.png'; // Replace with actual icon path
-import mediaupload from '../../../assets/mediaupload.png'; // Replace with actual icon path
-import postimage from '../../../assets/joinTUP.jpg'; // Replace with actual icon path
-import upvoteicon from '../../../assets/upvote.png'; // Replace with actual icon path
-import commenticon from '../../../assets/comment.png'; // Replace with actual icon path
+import React, { useState } from 'react';
+import './StudentHomepage.css';
+import Headerhomepage from '../../common/headerhomepage';
+import profileicon from '../../../assets/profileicon.png';
+import profileicon2 from '../../../assets/profile2.png';
+import mediaupload from '../../../assets/mediaupload.png';
+import postimage from '../../../assets/joinTUP.jpg';
+import upvoteicon from '../../../assets/upvote.png';
+import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 
-
 const StudentHomepage = () => {
+  const [postsData, setPostsData] = useState([
+    {
+      id: 1,
+      profileImg: profileicon2,
+      name: 'Stupidyante',
+      time: '2hrs ago',
+      content: 'These 5 students are about to land the dream gig at the greatest company ever as software engineers! Gusto mo bang sumali? Comment below if you\'re ready to level up!',
+      postImg: postimage,
+      upvotes: 130,
+      comments: [],
+      showComments: false,
+    },
+    {
+      id: 2,
+      profileImg: profileicon,
+      name: 'Stupidyante',
+      time: '3hrs ago',
+      content: 'In today’s fast-paced tech world, the demand for skilled software engineers has skyrocketed...',
+      postImg: null,
+      upvotes: 20,
+      comments: [],
+      showComments: false,
+    }
+  ]);
+
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostImage, setNewPostImage] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const handleInputChange = (e) => {
+    setNewPostContent(e.target.value);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewPostImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleOpenPopup = () => {
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setNewPostContent('');
+    setNewPostImage(null);
+  };
+
+  const handleAddPost = () => {
+    if (newPostContent.trim()) {
+      const newPost = {
+        id: postsData.length + 1,
+        profileImg: profileicon,
+        name: 'Stupidyante',
+        time: 'Just now',
+        content: newPostContent,
+        postImg: newPostImage,
+        upvotes: 0,
+        comments: [],
+        showComments: false,
+      };
+      setPostsData([newPost, ...postsData]);
+      handleClosePopup(); // Close popup after adding post
+    }
+  };
+
+  const handleUpvote = (postId) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
+      )
+    );
+  };
+
+  const handleCommentSubmit = (postId, comment) => {
+    if (comment.trim()) {
+        setPostsData((prevPosts) =>
+            prevPosts.map((post) =>
+                post.id === postId
+                    ? { ...post, comments: [comment, ...post.comments] } // Prepend new comment
+                    : post
+            )
+        );
+    }
+};
+
+  const renderPost = (post) => (
+    <div className="post" key={post.id}>
+      <div className="toppostcontent">
+        <img src={post.profileImg} alt={post.name} />
+        <div className="frompost">
+          <h5>{post.name}</h5>
+          <p>{post.time}</p>
+        </div>
+      </div>
+      <div className="postcontent">
+        <p>{post.content}</p>
+        {post.postImg && (
+          <div className="postimagecontent">
+            <img src={post.postImg} alt="Post" className="post-image" />
+          </div>
+        )}
+      </div>
+      <div className="downpostcontent">
+        <button onClick={() => handleUpvote(post.id)}>
+          <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
+        </button>
+        <button onClick={() => toggleComments(post.id)}>
+          <img src={commenticon} alt="Comment" /> {post.comments.length}
+        </button>
+      </div>
+      {/* Comments Section */}
+      {post.showComments && (
+        <div className="comments-section">
+          <div className="comment-input">
+            <img src={profileicon} alt="Profile Icon" className="comment-profile" />
+            <input
+              type="text"
+              placeholder="Type your comment..."
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleCommentSubmit(post.id, e.target.value);
+                  e.target.value = ''; // Clear input after submission
+                }
+              }}
+            />
+          </div>
+          <div className="comments-list">
+            {post.comments.map((comment, index) => (
+              <div className="comment" key={index}>
+                <img src={profileicon} alt="Comment Profile" className="comment-profile" />
+                <p>{comment}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const toggleComments = (postId) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, showComments: !post.showComments } : post
+      )
+    );
+  };
+
   return (
     <div className="StudentHomepage-container">
-     <Headerhomepage />
+      <Headerhomepage />
 
-      {/* Main Content Section */}
       <div className="content-container">
-        {/* Sidebar Section */}
         <aside className="sidebar">
           <div className="profile">
-              <img src={profileicon}></img>
-              <h2>Maykel Jisun</h2>
+            <img src={profileicon} alt="Profile Icon" />
+            <h2>Maykel Jisun</h2>
             <p>Student at Technological University of the Philippines</p>
             <p>Metro Manila, Philippines</p>
           </div>
           <div className="complete-section">
             <h4>Complete</h4>
-            <div className='add-btn-container'>
+            <div className="add-btn-container">
               <button className="add-experience">+ Add Experience</button>
               <button className="add-certificate">+ Add Certificate</button>
               <button className="add-skills">+ Add Achievement</button>
-              <button className="add-skills">+ Add skills</button>
+              <button className="add-skills">+ Add Skills</button>
+              <button className="add-skills">+ Add Skills</button>
             </div>
           </div>
         </aside>
 
         <main className="feed">
-          <div className="post-input">
+          <div className="post-input" onClick={handleOpenPopup}>
             <div>
               <img src={profileicon} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
-              <input type="text" placeholder="Start a post" />
-              <button className="media-btn">
+              <input
+                type="text"
+                placeholder="Start a post"
+                readOnly
+              />
+              <button className="media-btn" onClick={handleOpenPopup}>
                 <img src={mediaupload} alt="Media Upload" /> Media
               </button>
             </div>
           </div>
 
-          {/* First Post */}
-          <div className="post">
-            <div className="toppostcontent">
-              <img src={profileicon2} alt="Stupidyante" />
-              <div className="frompost">
-                <h5>Stupidyante</h5>
-                <p>2hrs ago</p>
-              </div>
-            </div>
-            <div className="postcontent">
-              <p>
-                "These 5 students are about to land the dream gig at the greatest company ever as software engineers! Gusto mo bang sumali? Comment below if you're ready to level up!"
-              </p>
-              <div className="postimagecontent">
-                <img src={postimage} alt="Group" className="post-image" />
-              </div>
-            </div>
-            <div className="downpostcontent">
-              <button>
-                <img src={upvoteicon} alt="Upvote" /> 130
-              </button>
-              <button>
-                <img src={commenticon} alt="Comment" /> 5
-              </button>
-            </div>
-          </div>
-
-          {/* Second Post */}
-          <div className="post">
-            <div className="toppostcontent">
-              <img src={profileicon} alt="Stupidyante" />
-              <div className="frompost">
-                <h5>Stupidyante</h5>
-                <p>3hrs ago</p>
-              </div>
-            </div>
-            <div className="postcontent">
-              <p>
-                In today’s fast-paced tech world, the demand for skilled software engineers has skyrocketed. Companies are constantly on the lookout for fresh talent that can bring innovative ideas to the table. As students gear up to enter the workforce, they find themselves at the crossroads of opportunity and uncertainty. With the rise of technologies like artificial intelligence, machine learning, and blockchain, aspiring engineers are tasked with not just keeping up with trends but also staying ahead of the curve. For those ready to embrace the challenge, the tech industry offers a dynamic environment where creativity and technical skills can thrive. Joining a top-tier company as a software engineer is no longer just a dream; it’s becoming a reality for many motivated students. Imagine working alongside brilliant minds, collaborating on cutting-edge projects, and having a direct impact on the digital landscape. The journey may be filled with late-night coding sessions and debugging challenges, but the rewards are well worth it. If you're looking to kickstart your career in tech, now is the perfect time to sharpen your skills, network with like-minded peers, and prepare for the exciting adventures that await in the tech industry. So, are you ready to take the plunge and join this talented group of future software engineers? Comment below and let’s make it happen!
-              </p>
-              <div className="postimagecontent"></div>
-            </div>
-            <div className="downpostcontent">
-              <button>
-                <img src={upvoteicon} alt="Upvote" /> 20
-              </button>
-              <button>
-                <img src={commenticon} alt="Comment" /> 3
-              </button>
-            </div>
-          </div>
-
-          {/* Third Post */}
-          <div className="post">
-            <div className="toppostcontent">
-              <img src={profileicon2} alt="Stupidyante" />
-              <div className="frompost">
-                <h5>Stupidyante</h5>
-                <p>2hrs ago</p>
-              </div>
-            </div>
-            <div className="postcontent">
-              <p>
-                "These 5 students are about to land the dream gig at the greatest company ever as software engineers! Gusto mo bang sumali? Comment below if you're ready to level up!"
-              </p>
-              <div className="postimagecontent">
-                <img src={postimage} alt="Group" className="post-image" />
-              </div>
-            </div>
-            <div className="downpostcontent">
-              <button>
-                <img src={upvoteicon} alt="Upvote" /> 130
-              </button>
-              <button>
-                <img src={commenticon} alt="Comment" /> 5
-              </button>
-            </div>
-          </div>
+          {postsData.map(renderPost)}
         </main>
-
-        
-
-
       </div>
+
       <Messagepop />
+
+      {/* Popup Modal for New Post */}
+      {isPopupOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h6>+ Create a post</h6>
+            <textarea
+              placeholder="What's on your mind?"
+              value={newPostContent}
+              onChange={handleInputChange}
+            ></textarea>
+            <input className='postimageupload' type="file" accept="image/*" onChange={handleImageChange} />
+            {newPostImage && (
+              <div className="image-preview">
+                <img src={newPostImage} alt="Preview" />
+              </div>
+            )}
+            <div className="postbuttons">
+              <button onClick={handleClosePopup}>cancel</button>
+              <button className='postbtn' onClick={handleAddPost}>post</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
