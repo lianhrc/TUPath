@@ -1,22 +1,27 @@
+// axiosInstance.js
+
 import axios from 'axios';
 
-// Create an instance of Axios
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3001', // Base URL of your backend API
+  baseURL: 'http://localhost:3001', // Update to your backend server's URL
+  headers: {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store', // Disables caching for API responses
+    Pragma: 'no-cache',           // HTTP/1.0 compatibility
+  },
 });
 
-// Add a request interceptor to include JWT token
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;

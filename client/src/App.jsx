@@ -14,7 +14,7 @@ import StudentProfileCreation from './components/pages/Profile/StudentProfileCre
 import EmployeeProfileCreation from './components/pages/Profile/EmployeeProfileCreation';
 import StudentProfile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
 
 function App() {
