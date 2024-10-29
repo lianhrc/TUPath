@@ -123,12 +123,14 @@ app.post('/expertsignup', async (req, res) => {
       return res.status(400).json({ success: false, message: "Expert already exists." });
     }
 
-    const newUser = await Expert_usersModel.create({ 
-      name, 
-      email, 
-      password, 
-      isNewUser: true // Indicate this is a first-time login user
+    const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+    const newUser = await Expert_usersModel.create({
+        name,
+        email,
+        password: hashedPassword, // Save the hashed password
+        isNewUser: true
     });
+
 
     // Log new user to verify
     console.log("New expert registered:", newUser);
