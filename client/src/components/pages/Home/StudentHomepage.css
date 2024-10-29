@@ -159,11 +159,13 @@
   align-items: center;
   gap: 5px;
   padding: 5px;
-  color: #007bff;
+  color: #419bfa;
 }
 
 .subpost-input button img {
   width: 20px;
+  opacity: 0.5;
+
 }
 
 /* Post Content */

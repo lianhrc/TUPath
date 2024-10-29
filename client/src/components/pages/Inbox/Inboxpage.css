@@ -68,10 +68,9 @@
     border-right: 0.1px solid rgb(190, 190, 190);
     text-align: center;
     overflow-y: auto; /* Allow vertical scrolling */
-    display: flex;
 }
 
-.inboxlists{
+.inboxlists {
     width: 100%;
 }
 
@@ -102,7 +101,10 @@
 }
 
 .inboxdetailscontainerright {
-    width: 100%;
+    width: 70%; /* Adjusted to give more space for text */
+    overflow: hidden; /* Hide overflow */
+    display: flex;
+    flex-direction: column; /* Ensure items stack vertically */
 }
 
 .topdetailscontainer {
@@ -125,8 +127,8 @@
 
 .bottomdetailscontainer {
     width: 100%;
-    max-height: 40px; /* Set a max height to limit the container */
-    overflow: hidden; /* Hide any overflow text */
+    max-height: 30px; /* Limit height */
+    overflow: hidden; /* Hide overflow text */
     display: -webkit-box; /* Use flexbox for line clamping */
     -webkit-box-orient: vertical; /* Set orientation to vertical */
     -webkit-line-clamp: 2; /* Limit to two lines */
@@ -144,8 +146,6 @@
     -webkit-box-orient: vertical; /* Set orientation to vertical */
     -webkit-line-clamp: 2; /* Limit to two lines */
 }
-
-
 
 .inboxmain-right {
     flex: 1;
@@ -185,7 +185,7 @@
     margin: 20px 0 10px 0;
 }
 
-.namedatecontainer h4{
+.namedatecontainer h4 {
     font-weight: bold;
 }
 
@@ -195,9 +195,62 @@
 }
 
 .message-content {
+    white-space: pre-wrap; /* Preserve formatting */
     font-size: 12px; /* Adjust the font size */
     line-height: 1.5; /* Set line height for better readability */
     color: #333; /* Change text color */
-    max-height: 200px; /* Set a maximum height */
+    max-height: auto; /* Set a maximum height */
+    overflow-wrap: break-word; /* Ensure long words break to the next line */
     text-align: justify; /* Justify text alignment */
+    padding: 10px; /* Add some padding for better spacing */
+}
+
+
+.new-message-section {
+    margin-top: 20px; /* Space above the new message section */
+    padding: 10px;
+}
+
+.new-message-section h6 {
+    font-size: 12px;
+    font-weight: 400;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc; /* Optional border */
+}
+
+.new-message-section input {
+    width: 100%; /* Full width */
+    margin-top: 10px; /* Space above input fields */
+    padding: 10px;
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Border */
+    margin-bottom: 20px;
+}
+
+.new-message-section textarea {
+    height: 100%;
+    width: 100%; /* Full width */
+    margin-top: 10px; /* Space above input fields */
+    padding: 10px;
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Border */
+}
+
+.new-message-section button {
+    margin-top: 10px; /* Space above button */
+    padding: 10px 15px; /* Padding */
+    background-color: #9D0E0F; /* Button color */
+    color: white; /* Button text color */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+}
+
+.new-message-section button:hover {
+    background-color: #a13939; /* Darker color on hover */
+}
+
+.newmessageinboxbtn {
+    display: flex;
+    justify-content: flex-end;
 }

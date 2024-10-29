@@ -1,0 +1,94 @@
+/* newMessageModal.css */
+
+/* Overlay for modal */
+.new-message-modal-overlay {
+    position: fixed;
+    right: 320px;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal content styling */
+.new-message-modal {
+    background: white;
+    padding: 20px;
+    height: 500px;
+   border-top-right-radius: 10px;
+   border-top-left-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 700px; /* Set a width for the modal */
+    position: relative; /* Required for absolute positioning of close button */
+}
+
+/* Close button container */
+.close-button-container {
+    position: absolute; /* Position relative to modal */
+    top: 10px; /* Distance from the top */
+    right: 10px; /* Distance from the right */
+    
+}
+
+
+/* Close button styling */
+.new-message-modal .newbtnclose {
+    border-radius: 50%;
+    background: none;
+    width: 100%;
+    color: black;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center ;
+    font-size: 12px; /* Adjust size as needed */
+    cursor: pointer; /* Pointer cursor on hover */
+
+}
+
+/* Header styling */
+.new-message-modal .new-message-head {
+    font-size: 12px;
+    display: flex;   
+    align-items: center;
+}
+
+.new-message-modal h6 {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* Input field styling */
+.new-message-modal input,
+.new-message-modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0; /* Space between fields */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.new-message-modal textarea{
+    height: 250px;
+}
+
+/* Button styling */
+.new-message-modal button {
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px; /* Space between buttons */
+}
+
+
+.sendbtncontainer{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.newsendbtn{
+    background-color: #9D0E0F;
+}

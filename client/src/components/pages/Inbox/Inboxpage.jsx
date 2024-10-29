@@ -8,18 +8,48 @@ import './Inboxpage.css';
 
 function Inboxpage() {
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [newMessageRecipient, setNewMessageRecipient] = useState('');
+  const [newMessageContent, setNewMessageContent] = useState('');
+  const [showNewMessageSection, setShowNewMessageSection] = useState(false);
 
   // Define messages with profile images
-  const messages = [
-    { id: 1, name: 'Ernesto Kapitagan', date: 'oct 24', text: 'Are you in or out?', profileImage: profileicon },
-    { id: 2, name: 'Pedro Mabola', date: 'oct 25', text: 'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.', profileImage: profileicon2 },
-    { id: 3, name: 'Lauro Pilantik', date: 'oct 26', text: 'When do you free?', profileImage: profileicon },
-    // Add more messages as needed
-  ];
+  const [messages, setMessages] = useState([
+    { id: 1, name: 'Ernesto Kapitagan', date: '10/24/2024', text: 'Are you in or out?', profileImage: profileicon },
+    { id: 2, name: 'Pedro Mabola', date: '10/25/2024', text: 'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.', profileImage: profileicon2 },
+    { id: 3, name: 'Lauro Pilantik', date: '10/26/2024', text: 'When do you free?', profileImage: profileicon },
+  ]);
 
   // Function to handle message selection
   const handleSelectMessage = (message) => {
     setSelectedMessage(message);
+    setShowNewMessageSection(false); // Hide the new message section when selecting a message
+  };
+
+  // Function to handle sending a new message
+  const handleSendNewMessage = () => {
+    if (newMessageRecipient && newMessageContent) {
+      const newMessage = {
+        id: messages.length + 1, // Generate a new ID
+        name: newMessageRecipient,
+        date: new Date().toLocaleDateString(), // Use the current date
+        text: newMessageContent,
+        profileImage: profileicon, // Set a default profile image or change it as needed
+      };
+
+      // Prepend the new message to the messages list to show it at the top
+      setMessages([newMessage, ...messages]); // Add new message at the beginning
+
+      // Clear the input fields
+      setNewMessageRecipient('');
+      setNewMessageContent('');
+      setShowNewMessageSection(false); // Hide the new message section after sending
+    }
+  };
+
+  // Function to toggle the visibility of the new message section
+  const toggleNewMessageSection = () => {
+    setShowNewMessageSection(true); // Always show new message section
+    setSelectedMessage(null); // Clear selected message when writing a new message
   };
 
   return (
@@ -34,7 +64,7 @@ function Inboxpage() {
             <button>
               <img src={dotsicon} alt="More options" />
             </button>
-            <button>
+            <button onClick={toggleNewMessageSection}>
               <img src={addnewwrite} alt="Add new message" />
             </button>
           </div>
@@ -65,15 +95,38 @@ function Inboxpage() {
             </div>
           </div>
           <div className="inboxmain-right">
-            {selectedMessage ? (
+            {/* If writing a new message, show new message section */}
+            {showNewMessageSection ? (
+              <div className="new-message-section">
+                <h6>New Message</h6>
+                <label>To:</label>
+                <input
+                className='recieptinput'
+                  type="text"
+                  value={newMessageRecipient}
+                  onChange={(e) => setNewMessageRecipient(e.target.value)}
+                  placeholder="Recipient's name"
+                />
+                <label>Message:</label>
+                <textarea
+                className='Messageinputbox'
+                  value={newMessageContent}
+                  onChange={(e) => setNewMessageContent(e.target.value)}
+                  placeholder="Type your message here"
+                />
+               <div className="newmessageinboxbtn">
+                 <button onClick={handleSendNewMessage}>Send</button>
+               </div>
+              </div>
+            ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                   <img src={selectedMessage.profileImage} alt={`${selectedMessage.name}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.profileImage} alt={`${selectedMessage.name}'s profile`} className="profile-image" />
                 </div>
-                  <div className="namedatecontainer">
-                    <h4>{selectedMessage.name}</h4>
-                    <p className="message-date">{selectedMessage.date}</p>
-                  </div>
+                <div className="namedatecontainer">
+                  <h4>{selectedMessage.name}</h4>
+                  <p className="message-date">{selectedMessage.date}</p>
+                </div>
                 <p className="message-content">{selectedMessage.text}</p>
               </div>
             ) : (
