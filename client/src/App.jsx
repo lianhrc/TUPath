@@ -22,28 +22,39 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Landingpage />} />  
-        <Route path='/studentlandpage' element={
-          <ProtectedRoute>
-            <Studentlandpage/>
-          </ProtectedRoute>
-        } />
+        
+        {/* Protected Routes */}
+        <Route 
+          path='/studentlandpage' 
+          element={
+            <ProtectedRoute>
+              <Studentlandpage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path='/studenthomepage' 
+          element={
+            <ProtectedRoute>
+              <StudentHomepage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path='/employeehomepage' 
+          element={
+            <ProtectedRoute>
+              <EmployeeHomepage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Public Routes */}
         <Route path='/employerlandpage' element={<Employerlandpage />} />
         <Route path='/studentsignup' element={<StudentSignup />} />
         <Route path='/expertsignup' element={<ExpertSignup />} />
         <Route path='/login' element={<Login />} />
-        <Route path='/loginroles' element={<LoginRoles />} /> {/* Add route for LoginRoles */}
-         {/* Wrap the student homepage in ProtectedRoute */}
-         <Route path='/studenthomepage' element={
-          <ProtectedRoute>
-            <StudentHomepage />
-          </ProtectedRoute>
-        } />
-          {/* Add ProtectedRoute to EmployeeHomepage */}
-          <Route path='/employeehomepage' element={
-          <ProtectedRoute>
-            <EmployeeHomepage />
-          </ProtectedRoute>
-        } />
+        <Route path='/loginroles' element={<LoginRoles />} /> 
         <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
         <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
         <Route path='/StudentProfile' element={<StudentProfile />} />
