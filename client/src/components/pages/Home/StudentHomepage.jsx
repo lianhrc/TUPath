@@ -8,6 +8,8 @@ import postimage from '../../../assets/joinTUP.jpg';
 import upvoteicon from '../../../assets/upvote.png';
 import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
+import PostCommentPopup from '../../popups/PostCommentPopup';
+import AddPostModal from '../../popups/AddPostModal';
 
 const StudentHomepage = () => {
   const [postsData, setPostsData] = useState([
@@ -92,15 +94,15 @@ const StudentHomepage = () => {
 
   const handleCommentSubmit = (postId, comment) => {
     if (comment.trim()) {
-        setPostsData((prevPosts) =>
-            prevPosts.map((post) =>
-                post.id === postId
-                    ? { ...post, comments: [comment, ...post.comments] } // Prepend new comment
-                    : post
-            )
-        );
+      setPostsData((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, comments: [comment, ...post.comments] } // Prepend new comment
+            : post
+        )
+      );
     }
-};
+  };
 
   const renderPost = (post) => (
     <div className="post" key={post.id}>
@@ -129,29 +131,11 @@ const StudentHomepage = () => {
       </div>
       {/* Comments Section */}
       {post.showComments && (
-        <div className="comments-section">
-          <div className="comment-input">
-            <img src={profileicon} alt="Profile Icon" className="comment-profile" />
-            <input
-              type="text"
-              placeholder="Type your comment..."
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleCommentSubmit(post.id, e.target.value);
-                  e.target.value = ''; // Clear input after submission
-                }
-              }}
-            />
-          </div>
-          <div className="comments-list">
-            {post.comments.map((comment, index) => (
-              <div className="comment" key={index}>
-                <img src={profileicon} alt="Comment Profile" className="comment-profile" />
-                <p>{comment}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PostCommentPopup
+          post={post}
+          handleCommentSubmit={handleCommentSubmit}
+          toggleComments={toggleComments}
+        />
       )}
     </div>
   );
@@ -213,26 +197,14 @@ const StudentHomepage = () => {
 
       {/* Popup Modal for New Post */}
       {isPopupOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h6>+ Create a post</h6>
-            <textarea
-              placeholder="What's on your mind?"
-              value={newPostContent}
-              onChange={handleInputChange}
-            ></textarea>
-            <input className='postimageupload' type="file" accept="image/*" onChange={handleImageChange} />
-            {newPostImage && (
-              <div className="image-preview">
-                <img src={newPostImage} alt="Preview" />
-              </div>
-            )}
-            <div className="postbuttons">
-              <button onClick={handleClosePopup}>cancel</button>
-              <button className='postbtn' onClick={handleAddPost}>post</button>
-            </div>
-          </div>
-        </div>
+        <AddPostModal
+          newPostContent={newPostContent}
+          handleInputChange={handleInputChange}
+          newPostImage={newPostImage}
+          handleImageChange={handleImageChange}
+          handleClosePopup={handleClosePopup}
+          handleAddPost={handleAddPost}
+        />
       )}
     </div>
   );

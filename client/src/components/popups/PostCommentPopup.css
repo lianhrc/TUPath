@@ -1,0 +1,53 @@
+/* Comment Section */
+.comments-section {
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    font-size: 12px;
+    height: auto;
+  }
+  
+  /* Comment Input */
+  .comment-input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    gap: 10px;
+  }
+  
+  .comment-input input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Rounded corners for input */
+  }
+  
+  .comment-profile {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  /* Comment */
+  .comment {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-bottom: 5px; /* Space between comments */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+  }
+  
+  .comment p {
+    border-radius: 15px;
+    padding: 5px 10px;
+    margin-left: 8px;
+    width: auto; /* Allow width to adjust based on content */
+    max-width: calc(100% - 40px); /* Adjust max-width considering the profile image */
+    overflow-wrap: break-word; /* Allow breaking long words */
+    word-wrap: break-word; /* Enable word wrapping */
+    overflow: hidden; /* Hide overflow */
+    white-space: normal; /* Allow text to wrap */
+  }
+  
