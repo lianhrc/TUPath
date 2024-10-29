@@ -102,6 +102,7 @@
   width: 300px;
   align-items: center;
   margin-top: 10px;
+  text-decoration: none;
 }
 
 .notification-item:hover{

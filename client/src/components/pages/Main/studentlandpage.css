@@ -80,7 +80,7 @@
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
-  background-image: url(../assets/studentlandpage3.png);
+  background-image: url(../../../assets//studentlandpage3.png);
 }
 .image-container1 {
   width: 30%; /* Width of the image container */
@@ -92,7 +92,7 @@
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
-  background-image: url(../assets/studentlandpage1.png);
+  background-image: url(../../../assets//studentlandpage1.png);
 }
 
 .text-container {

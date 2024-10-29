@@ -1,0 +1,74 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    background: white;
+    padding: 10px;
+    width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .modal-content h6 {
+    font-size: 12px;
+    font-weight: light;
+    color: #9D0E0F;
+    border-bottom: 0.1px solid #d2c7c7;
+    padding-bottom: 10px;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  /* Image Preview */
+  .image-preview {
+    margin-top: 10px;
+  }
+  
+  .image-preview img {
+    max-width: 100%;
+    border-radius: 8px;
+    height: auto;
+  }
+  
+  /* Post Buttons */
+  .postbuttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: end;
+  }
+  
+  .postbuttons button {
+    background: none;
+    border: none;
+  }
+  
+  .postbuttons .postbtn {
+    background-color: #9D0E0F;
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+    width: 50px;
+    font-weight: light;
+  }
+  
