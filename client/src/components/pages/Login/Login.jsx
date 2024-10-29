@@ -26,11 +26,16 @@ function Login() {
         event.preventDefault();
         try {
             const response = await axiosInstance.post('/login', { email, password, role });
-
+    
             if (response.data.success) {
-                setMessage('Login successful!');
-                localStorage.setItem('token', response.data.token);
-                navigate('/studenthomepage', { replace: true });
+                console.log('Token received:', response.data.token); // Debugging line
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                    setMessage('Login successful!');
+                    navigate('/studenthomepage', { replace: true });
+                } else {
+                    setMessage('No token received. Please try again.');
+                }
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
@@ -39,6 +44,7 @@ function Login() {
             setMessage('An error occurred. Please try again.');
         }
     };
+    
 
     const handleSignupRedirect = () => {
         navigate('/loginroles'); // Redirects to a signup page, adjust the route if needed
