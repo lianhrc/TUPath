@@ -5,6 +5,7 @@ import Header from '../../common/header';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import './Login.css';
+import { useEffect } from 'react';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -12,6 +13,14 @@ function Login() {
     const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        if (token) {
+            navigate('/studenthomepage', { replace: true });
+        }
+    }, [token, navigate]);
 
     const handleLogin = async (event) => {
         event.preventDefault();

@@ -142,6 +142,11 @@ app.post('/expertsignup', async (req, res) => {
   }
 });
 
+app.get('/protected', verifyToken, (req, res) => {
+  res.status(200).json({ success: true, message: "This is a protected route." });
+});
+
+
 app.listen(3001, () => {
   console.log("Server is running on port 3001");
 });
