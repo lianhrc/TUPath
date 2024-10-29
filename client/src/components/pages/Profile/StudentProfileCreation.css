@@ -8,6 +8,7 @@
 
 .profile-header h1 {
     color: #900;
+    
 }
 
 .profile-header {
@@ -65,7 +66,7 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 12px;
     width: 100%;
 }
 
@@ -95,3 +96,12 @@
 .profilecreation-btn .submit-button:hover {
     background-color: #700;
 }
+
+.uploaded-image {
+    width: 100px; /* Adjust the width as needed */
+    height: 100px; /* Adjust the height as needed */
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure the image covers the area */
+    border: 2px solid #ccc; /* Optional: add a border */
+  }
+  

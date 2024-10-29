@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
 import dotsicon from '../../../assets/dots.png';
@@ -7,6 +8,7 @@ import profileicon2 from '../../../assets/profileicon.png';
 import './Inboxpage.css';
 
 function Inboxpage() {
+  const { Inboxpage } = useParams(); // Get the notification ID from the URL
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [newMessageRecipient, setNewMessageRecipient] = useState('');
   const [newMessageContent, setNewMessageContent] = useState('');
@@ -15,9 +17,19 @@ function Inboxpage() {
   // Define messages with profile images
   const [messages, setMessages] = useState([
     { id: 1, name: 'Ernesto Kapitagan', date: '10/24/2024', text: 'Are you in or out?', profileImage: profileicon },
-    { id: 2, name: 'Pedro Mabola', date: '10/25/2024', text: 'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.', profileImage: profileicon2 },
+    { id: 2, name: 'Pedro Mabola', date: '10/25/2024', text: 'Contrary to popular belief, Lorem Ipsum is not simply random text...', profileImage: profileicon2 },
     { id: 3, name: 'Lauro Pilantik', date: '10/26/2024', text: 'When do you free?', profileImage: profileicon },
   ]);
+
+  // Select message if ID is provided in URL
+  useEffect(() => {
+    if (Inboxpage) {
+      const messageToSelect = messages.find((message) => message.id === parseInt(id));
+      if (messageToSelect) {
+        setSelectedMessage(messageToSelect);
+      }
+    }
+  }, [Inboxpage, messages]);
 
   // Function to handle message selection
   const handleSelectMessage = (message) => {
@@ -101,7 +113,7 @@ function Inboxpage() {
                 <h6>New Message</h6>
                 <label>To:</label>
                 <input
-                className='recieptinput'
+                  className='recieptinput'
                   type="text"
                   value={newMessageRecipient}
                   onChange={(e) => setNewMessageRecipient(e.target.value)}
@@ -109,14 +121,14 @@ function Inboxpage() {
                 />
                 <label>Message:</label>
                 <textarea
-                className='Messageinputbox'
+                  className='Messageinputbox'
                   value={newMessageContent}
                   onChange={(e) => setNewMessageContent(e.target.value)}
                   placeholder="Type your message here"
                 />
-               <div className="newmessageinboxbtn">
-                 <button onClick={handleSendNewMessage}>Send</button>
-               </div>
+                <div className="newmessageinboxbtn">
+                  <button onClick={handleSendNewMessage}>Send</button>
+                </div>
               </div>
             ) : selectedMessage ? (
               <div className="message-details">

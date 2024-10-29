@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
@@ -9,6 +10,13 @@ import './headerhomepage.css';
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
+
+  // Sample dynamic notifications data
+  const notifications = [
+    { id: 1, name: "Student one", message: "Sample notification text" },
+    { id: 2, name: "Student two", message: "Sample notification text" },
+    { id: 3, name: "Student three", message: "Sample notification text" },
+  ];
 
   const toggleNotifDropdown = () => {
     setNotifOpen(!isNotifOpen);
@@ -50,27 +58,15 @@ function HeaderHomepage() {
             {isNotifOpen && (
               <div className="dropdown-menu notifications-menu">
                 <h3>Notifications</h3>
-                <div className="notification-item">
-                  <img src={profileicon} alt="Profile" className="notification-icon" />
-                  <div>
-                    <p><strong>Student one</strong></p>
-                    <p>Sample notification text</p>
-                  </div>
-                </div>
-                <div className="notification-item">
-                  <img src={profileicon} alt="Profile" className="notification-icon" />
-                  <div>
-                    <p><strong>Student two</strong></p>
-                    <p>Sample notification text</p>
-                  </div>
-                </div>
-                <div className="notification-item">
-                  <img src={profileicon} alt="Profile" className="notification-icon" />
-                  <div>
-                    <p><strong>Student three</strong></p>
-                    <p>Sample notification text</p>
-                  </div>
-                </div>
+                {notifications.map((notif) => (
+                  <Link to="/Inboxpage" key={notif.id} className="notification-item">
+                    <img src={profileicon} alt="Profile" className="notification-icon" />
+                    <div>
+                      <p><strong>{notif.name}</strong></p>
+                      <p>{notif.message}</p>
+                    </div>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
