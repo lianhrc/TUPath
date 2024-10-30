@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client'; // Import Socket.IO client
 import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
 import dotsicon from '../../../assets/dots.png';
@@ -7,61 +8,70 @@ import profileicon from '../../../assets/profile2.png';
 import profileicon2 from '../../../assets/profileicon.png';
 import './Inboxpage.css';
 
+// Initialize socket connection
+const socket = io("http://localhost:3001"); // Adjust port if needed
+
 function Inboxpage() {
-  const { Inboxpage } = useParams(); // Get the notification ID from the URL
+  const { Inboxpage } = useParams();
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [newMessageRecipient, setNewMessageRecipient] = useState('');
   const [newMessageContent, setNewMessageContent] = useState('');
   const [showNewMessageSection, setShowNewMessageSection] = useState(false);
-
-  // Define messages with profile images
   const [messages, setMessages] = useState([
-    { id: 1, name: 'Ernesto Kapitagan', date: '10/24/2024', text: 'Are you in or out?', profileImage: profileicon },
-    { id: 2, name: 'Pedro Mabola', date: '10/25/2024', text: 'Contrary to popular belief, Lorem Ipsum is not simply random text...', profileImage: profileicon2 },
-    { id: 3, name: 'Lauro Pilantik', date: '10/26/2024', text: 'When do you free?', profileImage: profileicon },
+    { id: 1, name: '', date: '', text: '', profileImage: profileicon },
+    { id: 2, name: '', date: '', text: '', profileImage: profileicon2 },
+    { id: 3, name: '', date: '', text: '', profileImage: profileicon },
   ]);
 
-  // Select message if ID is provided in URL
+  // Load initial messages from backend on component mount
   useEffect(() => {
-    if (Inboxpage) {
-      const messageToSelect = messages.find((message) => message.id === parseInt(id));
-      if (messageToSelect) {
-        setSelectedMessage(messageToSelect);
-      }
-    }
-  }, [Inboxpage, messages]);
+    fetch('http://localhost:3001/api/messages')
+      .then(response => response.json())
+      .then(data => setMessages(data))
+      .catch(error => console.error("Error fetching messages:", error));
+  }, []);
 
-  // Function to handle message selection
+  // Set up socket listeners
+  useEffect(() => {
+    // Receive message from backend
+    socket.on('receive_message', (message) => {
+      setMessages((prevMessages) => [message, ...prevMessages]); // Add new message at the top
+    });
+
+    return () => {
+      socket.off('receive_message'); // Clean up the event listener on component unmount
+    };
+  }, []);
+
   const handleSelectMessage = (message) => {
     setSelectedMessage(message);
-    setShowNewMessageSection(false); // Hide the new message section when selecting a message
+    setShowNewMessageSection(false);
   };
 
-  // Function to handle sending a new message
   const handleSendNewMessage = () => {
     if (newMessageRecipient && newMessageContent) {
       const newMessage = {
-        id: messages.length + 1, // Generate a new ID
-        name: newMessageRecipient,
-        date: new Date().toLocaleDateString(), // Use the current date
+        sender: newMessageRecipient,
         text: newMessageContent,
-        profileImage: profileicon, // Set a default profile image or change it as needed
+        timestamp: new Date().toISOString(),
       };
 
-      // Prepend the new message to the messages list to show it at the top
-      setMessages([newMessage, ...messages]); // Add new message at the beginning
+      // Send message to the server via socket
+      socket.emit('send_message', newMessage);
 
-      // Clear the input fields
+      // Optionally add the message immediately in the frontend
+      setMessages((prevMessages) => [newMessage, ...prevMessages]);
+
+      // Clear inputs and hide new message section
       setNewMessageRecipient('');
       setNewMessageContent('');
-      setShowNewMessageSection(false); // Hide the new message section after sending
+      setShowNewMessageSection(false);
     }
   };
 
-  // Function to toggle the visibility of the new message section
   const toggleNewMessageSection = () => {
-    setShowNewMessageSection(true); // Always show new message section
-    setSelectedMessage(null); // Clear selected message when writing a new message
+    setShowNewMessageSection(true);
+    setSelectedMessage(null);
   };
 
   return (
@@ -84,19 +94,19 @@ function Inboxpage() {
         <div className="inboxmain">
           <div className="inboxmain-left">
             <div className="inboxlists">
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <div
-                  key={message.id}
+                  key={index}
                   className="inboxlist-container"
                   onClick={() => handleSelectMessage(message)}
                 >
                   <div className="inboxprofilecontainerleft">
-                    <img src={message.profileImage} alt={`${message.name}'s profile`} />
+                    <img src={message.profileImage || profileicon} alt={`${message.sender}'s profile`} />
                   </div>
                   <div className="inboxdetailscontainerright">
                     <div className="topdetailscontainer">
-                      <h5>{message.name}</h5>
-                      <p>{message.date}</p>
+                      <h5>{message.sender}</h5>
+                      <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                     </div>
                     <div className="bottomdetailscontainer">
                       <p>{message.text}</p>
@@ -107,7 +117,6 @@ function Inboxpage() {
             </div>
           </div>
           <div className="inboxmain-right">
-            {/* If writing a new message, show new message section */}
             {showNewMessageSection ? (
               <div className="new-message-section">
                 <h6>New Message</h6>
@@ -133,11 +142,11 @@ function Inboxpage() {
             ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                  <img src={selectedMessage.profileImage} alt={`${selectedMessage.name}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.sender}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.name}</h4>
-                  <p className="message-date">{selectedMessage.date}</p>
+                  <h4>{selectedMessage.sender}</h4>
+                  <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
                 <p className="message-content">{selectedMessage.text}</p>
               </div>
