@@ -17,8 +17,11 @@ import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 function App() {
   return (
+    <GoogleOAuthProvider clientId="625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com">
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Landingpage />} />  
@@ -62,6 +65,7 @@ function App() {
         <Route path='/Settings' element={<Settings />} />
       </Routes>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
 

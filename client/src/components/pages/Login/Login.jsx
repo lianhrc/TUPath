@@ -6,6 +6,8 @@ import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import './Login.css';
 import { useEffect } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
+
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -21,6 +23,27 @@ function Login() {
             navigate('/studenthomepage', { replace: true });
         }
     }, [token, navigate]);
+
+
+    const handleGoogleLogin = async (response) => {
+        try {
+          const googleToken = response.credential;
+          const res = await axiosInstance.post('/google-login', { token: googleToken });
+          
+          if (res.data.success) {
+            localStorage.setItem('token', res.data.token);
+            navigate('/studenthomepage', { replace: true });
+          } else {
+            setMessage('Google login failed. Please try again.');
+          }
+        } catch (error) {
+          setMessage('An error occurred during Google login. Please try again.');
+        }
+      };
+
+
+
+
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -51,7 +74,7 @@ function Login() {
                 <div className="Login-container">
                     <h2>Make the most of your career</h2>
 
-                    <button className="google-login">Continue with Google</button>
+                    <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
                     <div className="separator">or</div>
 
                     {/* Role selection between student and expert */}
