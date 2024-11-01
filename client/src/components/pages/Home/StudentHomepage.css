@@ -9,8 +9,11 @@
 /* Content Container */
 .content-container {
   display: flex;
+  flex-direction: row; /* Ensure items are in a row */
   background-color: #F4F2EE;
   margin-top: 50px; /* Accounts for the header height */
+  overflow-y: auto; /* Enable scrolling for the content container */
+  height: calc(100vh - 50px); /* Make it fill the remaining height */
 }
 
 /* Sidebar */
@@ -99,7 +102,6 @@
   padding: 50px;
   width: calc(100% - 400px);
   height: calc(100vh - 50px); /* Make the feed fill the height below the header */
-  overflow-y: auto; /* Enable scrolling for the feed */
 }
 
 /* Post Styles */
