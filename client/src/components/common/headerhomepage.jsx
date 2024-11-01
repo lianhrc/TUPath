@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
 import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import './headerhomepage.css';
-import { useNavigate } from 'react-router-dom';
 
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
@@ -14,13 +13,30 @@ function HeaderHomepage() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Remove JWT token from localStorage
-    localStorage.removeItem('token');
+    // Clear localStorage to remove JWT token and any user data
+    localStorage.clear();
 
-    // Redirect to the login page
-    navigate('/login');
-};
+    // Redirect to the login page without allowing back navigation
+    window.location.replace('/login');
+  };
 
+  // Prevent browser caching to avoid accessing previous pages after logout
+  useEffect(() => {
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    // Push the state on load
+    window.history.pushState(null, '', window.location.href);
+
+    // Listen for popstate event
+    window.onpopstate = handlePopState;
+
+    // Cleanup listener on unmount
+    return () => {
+      window.onpopstate = null;
+    };
+  }, []);
 
   // Sample dynamic notifications data
   const notifications = [
@@ -53,16 +69,20 @@ function HeaderHomepage() {
 
   return (
     <header className="homepagenavbar">
-      <a className="lefticon" href="/StudentHomepage">
+      <Link className="lefticon" to="/StudentHomepage">
         <img src={logo} alt="Tupath Logo" className="homepagelogo" />
-      </a>
+      </Link>
       <div className="search-container">
         <input type="text" className="search-input" placeholder="Search..." />
       </div>
       <div className="icon-buttons">
         <nav className="homepagenav-links">
-          <a href="/StudentHomepage"><img src={homeicon} alt="Home" className="nav-icon" /></a>
-          <a href="/Inboxpage"><img src={messageicon} alt="Messages" className="nav-icon" /></a>
+          <Link to="/StudentHomepage">
+            <img src={homeicon} alt="Home" className="nav-icon" />
+          </Link>
+          <Link to="/Inboxpage">
+            <img src={messageicon} alt="Messages" className="nav-icon" />
+          </Link>
 
           <div className="dropdown" onClick={toggleNotifDropdown}>
             <img src={notificon} alt="Notifications" className="nav-icon" />
@@ -86,8 +106,8 @@ function HeaderHomepage() {
             <img src={profileicon} alt="Profile" className="nav-icon" />
             {isProfileOpen && (
               <div className="dropdown-menu profile-menu">
-                <a href="/StudentProfile">Profile</a>
-                <a href="/Settings">Settings</a>
+                <Link to="/StudentProfile">Profile</Link>
+                <Link to="/Settings">Settings</Link>
                 <button onClick={handleLogout}>Logout</button>
               </div>
             )}
