@@ -15,10 +15,7 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection
-mongoose.connect("mongodb://127.0.0.1:27017/tupath_users", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect("mongodb://127.0.0.1:27017/tupath_users")
   .then(() => console.log("MongoDB connected successfully"))
   .catch(err => console.error("MongoDB connection error:", err));
 
@@ -58,7 +55,7 @@ const postSchema = new mongoose.Schema({
   name: String,
   timestamp: {
     type: Date,
-    default: Date.now,  // Set to capture the creation time of the post
+    default: Date.now,
   },
   content: String,
   postImg: String,
@@ -71,13 +68,12 @@ const postSchema = new mongoose.Schema({
     },
   ],
 });
-
 const Post = mongoose.model("Post", postSchema);
 
 // Get all posts
 app.get("/api/posts", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ timestamp: -1 });  // Sort by timestamp (newest first)
+    const posts = await Post.find().sort({ timestamp: -1 });
     res.json(posts);
   } catch (err) {
     console.error("Error fetching posts:", err);
@@ -92,13 +88,12 @@ app.post("/api/posts", async (req, res) => {
     const newPost = new Post({ profileImg, name, content, postImg });
     await newPost.save();
     res.status(201).json({ success: true, post: newPost });
-    io.emit("new_post", newPost);  // Emit the new post with timestamp to the frontend
+    io.emit("new_post", newPost);
   } catch (err) {
     console.error("Error creating post:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
 
 // Socket.IO events for real-time chat
 io.on("connection", (socket) => {
@@ -107,9 +102,9 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data) => {
     try {
       const message = new Message(data);
-      await message.save(); // Save to MongoDB
+      await message.save();
 
-      io.emit("receive_message", data); // Broadcast to all clients
+      io.emit("receive_message", data);
     } catch (err) {
       console.error("Error saving message:", err);
     }
