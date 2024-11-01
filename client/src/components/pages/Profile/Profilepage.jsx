@@ -1,18 +1,27 @@
 import React, { useState } from 'react';
 import HeaderHomepage from '../../common/headerhomepage';
 import MessagePop from '../../popups/messagingpop';
+import EditDescriptionModal from '../../popups/EditDescriptionModal';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
 import projectThumbnail from '../../../assets/joinTUP.jpg';
 import ProjectUploadModal from '../../popups/ProjectUpModal';
+
 function Profilepage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
+  const [description, setDescription] = useState('Hello! I am passionate in doing great project like video editing, designs for brochures, YouTube thumbnails and cartoon portraits. In past 3 years I do several works that depends on the clients on what they want.');
 
   const handleAddProjectClick = () => setShowUploadModal(true);
   const handleCloseModal = () => setShowUploadModal(false);
-
+  const handleCloseEditDescriptionModal = () => setShowEditDescriptionModal(false);
+  
+  const handleEditDescriptionClick = () => setShowEditDescriptionModal(true);
+  const handleSaveDescription = (newDescription) => {
+    setDescription(newDescription);
+  };
   return (
     <div className='Profilepage-container'>
       <HeaderHomepage />
@@ -40,7 +49,7 @@ function Profilepage() {
             <div className="profile-section">
               <div className='profilesectiontop'>
                 <h3>Description</h3>
-                <a href="#">Edit Description</a>
+                <a href="#" onClick={handleEditDescriptionClick}>Edit Description</a>
               </div>
               <p>Hello! I am passionate in doing great project like video editing, designs for brochures, YouTube thumbnails and cartoon portraits. In past 3 years I do several works that depends on the clients on what they want.</p>
             </div>
@@ -87,7 +96,14 @@ function Profilepage() {
 
       {/* Render the ProjectUploadModal */}
       <ProjectUploadModal show={showUploadModal} onClose={handleCloseModal} />
-    </div>
+      <EditDescriptionModal 
+        show={showEditDescriptionModal} 
+        onClose={handleCloseEditDescriptionModal} 
+        currentDescription={description} 
+        onSave={handleSaveDescription} 
+      />
+    
+      </div>
   );
 }
 

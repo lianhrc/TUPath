@@ -3,14 +3,13 @@ import { io } from 'socket.io-client';
 import './StudentHomepage.css';
 import Headerhomepage from '../../common/headerhomepage';
 import profileicon from '../../../assets/profileicon.png';
-import profileicon2 from '../../../assets/profile2.png';
 import mediaupload from '../../../assets/mediaupload.png';
-import postimage from '../../../assets/joinTUP.jpg';
 import upvoteicon from '../../../assets/upvote.png';
 import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
+import GenericModal from '../../popups/GenericModal';
 
 const socket = io("http://localhost:3001"); // Connect to backend Socket.IO
 
@@ -194,6 +193,25 @@ const StudentHomepage = () => {
     </div>
   );
 
+  
+  /*----- GENERIC MODALS -------------*/
+
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
+  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+  const [achievementModalOpen, setAchievementModalOpen] = useState(false);
+  
+  // State to store added items
+  const [skills, setSkills] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [certificates, setCertificates] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+
+  const addSkill = (skill) => setSkills((prev) => [...prev, skill]);
+  const addExperience = (experience) => setExperiences((prev) => [...prev, experience]);
+  const addCertificate = (certificate) => setCertificates((prev) => [...prev, certificate]);
+  const addAchievement = (achievement) => setAchievements((prev) => [...prev, achievement]);
+
   return (
     <div className="StudentHomepage-container">
       <Headerhomepage />
@@ -207,15 +225,14 @@ const StudentHomepage = () => {
             <p>Metro Manila, Philippines</p>
           </div>
           <div className="complete-section">
-            <h4>Complete</h4>
-            <div className="add-btn-container">
-              <button className="add-experience">+ Add Experience</button>
-              <button className="add-certificate">+ Add Certificate</button>
-              <button className="add-skills">+ Add Achievement</button>
-              <button className="add-skills">+ Add Skills</button>
-              <button className="add-skills">+ Add Skills</button>
-            </div>
-          </div>
+        <h4>Complete</h4>
+        <div className="add-btn-container">
+          <button className="add-skills" onClick={() => setSkillsModalOpen(true)}>+ Add Skills</button>
+          <button className="add-experience" onClick={() => setExperienceModalOpen(true)}>+ Add Experience</button>
+          <button className="add-certificate" onClick={() => setCertificateModalOpen(true)}>+ Add Certificate</button>
+          <button className="add-skills" onClick={() => setAchievementModalOpen(true)}>+ Add Achievement</button>
+        </div>
+      </div>
         </aside>
 
         <main className="feed">
@@ -252,6 +269,34 @@ const StudentHomepage = () => {
           handleAddPost={handleAddPost}
         />
       )}
+      
+
+        <GenericModal 
+        show={skillsModalOpen} 
+        onClose={() => setSkillsModalOpen(false)} 
+        title="Skills" 
+        onSave={addSkill} 
+      />
+      <GenericModal 
+        show={experienceModalOpen} 
+        onClose={() => setExperienceModalOpen(false)} 
+        title="Experience" 
+        onSave={addExperience} 
+      />
+      <GenericModal 
+        show={certificateModalOpen} 
+        onClose={() => setCertificateModalOpen(false)} 
+        title="Certificate" 
+        onSave={addCertificate} 
+      />
+      <GenericModal 
+        show={achievementModalOpen} 
+        onClose={() => setAchievementModalOpen(false)} 
+        title="Achievement" 
+        onSave={addAchievement} 
+      />
+
+
     </div>
   );
 };
