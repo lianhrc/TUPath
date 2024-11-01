@@ -6,10 +6,21 @@ import messageicon from '../../assets/email.png';
 import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import './headerhomepage.css';
+import { useNavigate } from 'react-router-dom';
 
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Remove JWT token from localStorage
+    localStorage.removeItem('token');
+
+    // Redirect to the login page
+    navigate('/login');
+};
+
 
   // Sample dynamic notifications data
   const notifications = [
@@ -77,7 +88,7 @@ function HeaderHomepage() {
               <div className="dropdown-menu profile-menu">
                 <a href="/StudentProfile">Profile</a>
                 <a href="/Settings">Settings</a>
-                <a href="/">Log Out</a>
+                <button onClick={handleLogout}>Logout</button>
               </div>
             )}
           </div>

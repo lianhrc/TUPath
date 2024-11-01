@@ -1,50 +1,49 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../services/axiosInstance.js';
 import Header from '../../common/header';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import './Login.css';
+import { useEffect } from 'react';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
-    const [role, setRole] = useState('student'); // Set default role as student
     const navigate = useNavigate();
 
-    // Handle the login submission
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        if (token) {
+            navigate('/studenthomepage', { replace: true });
+        }
+    }, [token, navigate]);
+
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
-            // Send login data to server including the role
-            const response = await axios.post('http://localhost:3001/login', { email, password, role });
-            console.log('Response from server:', response.data);
+            const response = await axiosInstance.post('/login', { email, password, role });
 
-            // If login is successful
             if (response.data.success) {
                 setMessage('Login successful!');
-
-                // Redirect user based on whether they are new or returning
-                navigate(response.data.redirectPath);
+                localStorage.setItem('token', response.data.token);
+                navigate('/studenthomepage', { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
         } catch (error) {
             console.error('Error during login:', error);
-            if (error.response && error.response.data && error.response.data.message) {
-                setMessage(error.response.data.message);
-            } else {
-                setMessage('An error occurred. Please try again.');
-            }
+            setMessage('An error occurred. Please try again.');
         }
     };
 
-    // Redirect to the signup page
     const handleSignupRedirect = () => {
-        navigate('/loginroles');
+        navigate('/loginroles'); // Redirects to a signup page, adjust the route if needed
     };
-
+    
     return (
         <div className="Login">
             <Header />
@@ -119,5 +118,6 @@ function Login() {
         </div>
     );
 }
+
 
 export default Login;

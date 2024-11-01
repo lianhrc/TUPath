@@ -1,34 +1,45 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Login/LoginRoles.css';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import Header from '../../common/header';
 
 function LoginRoles() {
-    const [role, setRole] = useState('student');
+    const [role, setRole] = useState('student'); // Default role
+    const navigate = useNavigate(); // Initialize useNavigate for routing
 
-    const studentUrl = '/StudentSignup';
-    const expertUrl = '/ExpertSignup';
+    const handleRoleSelection = (selectedRole) => {
+        setRole(selectedRole);
+    };
+
+    const handleSignupRedirect = () => {
+        if (role === 'student') {
+            navigate('/StudentSignup'); // Navigate to StudentSignup
+        } else {
+            navigate('/ExpertSignup'); // Navigate to ExpertSignup
+        }
+    };
 
     return (
         <div className="LoginRoles">
-        <Header />
-        <div className="loginroles-container">
+            <Header />
+            <div className="loginroles-container">
                 <h3 className="title">Sign up as a student or employer</h3>
                 <div className="card-choice boxchoice">
                     <div 
                         className={`card ${role === 'student' ? 'selected' : ''}`} 
-                        onClick={() => setRole('student')}
+                        onClick={() => handleRoleSelection('student')}
                     >
                         <div className="topcard">
-                            <img src={student} alt="Academic Showcase" />
+                            <img src={student} alt="Student Icon" />
                             <input 
                                 type="radio" 
                                 name="role" 
                                 id="student" 
                                 className="custom-radio" 
                                 checked={role === 'student'} 
-                                onChange={() => setRole('student')} 
+                                onChange={() => handleRoleSelection('student')} 
                             />
                             <label htmlFor="student" className="custom-label"></label>
                         </div>
@@ -38,17 +49,17 @@ function LoginRoles() {
                     </div>
                     <div 
                         className={`card ${role === 'expert' ? 'selected' : ''}`} 
-                        onClick={() => setRole('expert')}
+                        onClick={() => handleRoleSelection('expert')}
                     >
                         <div className="topcard">
-                            <img src={employer} alt="Academic Showcase" />
+                            <img src={employer} alt="Employer Icon" />
                             <input 
                                 type="radio" 
                                 name="role" 
                                 id="expert" 
                                 className="custom-radio" 
                                 checked={role === 'expert'} 
-                                onChange={() => setRole('expert')} 
+                                onChange={() => handleRoleSelection('expert')} 
                             />
                             <label htmlFor="expert" className="custom-label"></label>
                         </div>
@@ -57,11 +68,10 @@ function LoginRoles() {
                         </div>
                     </div>
                 </div>
-                <a href={role === 'student' ? studentUrl : expertUrl} className="join-button">
+                <button onClick={handleSignupRedirect} className="join-button">
                     Sign up as {role === 'student' ? 'Student' : 'Expert'}
-                </a>
-               
-                </div>
+                </button>
+            </div>
         </div>
     );
 }

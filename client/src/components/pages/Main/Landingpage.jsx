@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import './Landingpage.css';
 import portimg from '../../../assets/portimg.png'; // Adjust the path as necessary
 import rightarrow from '../../../assets/right-arrow.png';
@@ -8,9 +8,22 @@ import boticon from '../../../assets/bot.png';
 import reviewericon from '../../../assets/reviewericon.png';
 import Header from '../../common/header';
 import Footer from '../../common/footer';
+import { useNavigate } from 'react-router-dom';
 
 
 const LandingPage = () => {
+
+
+  const navigate = useNavigate();
+
+  // Redirect to studenthomepage if the user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/studenthomepage', { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <div className="landing-page">
     <Header />
