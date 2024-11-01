@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { useParams } from 'react-router-dom';
-import { io } from 'socket.io-client'; // Import Socket.IO client
+import { io } from 'socket.io-client';
 import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
 import dotsicon from '../../../assets/dots.png';
@@ -8,8 +8,7 @@ import profileicon from '../../../assets/profile2.png';
 import profileicon2 from '../../../assets/profileicon.png';
 import './Inboxpage.css';
 
-// Initialize socket connection
-const socket = io("http://localhost:3001"); // Adjust port if needed
+const socket = io("http://localhost:3001");
 
 function Inboxpage() {
   const { Inboxpage } = useParams();
@@ -23,23 +22,25 @@ function Inboxpage() {
     { id: 3, name: '', date: '', text: '', profileImage: profileicon },
   ]);
 
-  // Load initial messages from backend on component mount
   useEffect(() => {
     fetch('http://localhost:3001/api/messages')
       .then(response => response.json())
-      .then(data => setMessages(data))
+      .then(data => {
+        const sortedMessages = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setMessages(sortedMessages);
+      })
       .catch(error => console.error("Error fetching messages:", error));
   }, []);
 
-  // Set up socket listeners
   useEffect(() => {
-    // Receive message from backend
     socket.on('receive_message', (message) => {
-      setMessages((prevMessages) => [message, ...prevMessages]); // Add new message at the top
+      setMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
     });
 
     return () => {
-      socket.off('receive_message'); // Clean up the event listener on component unmount
+      socket.off('receive_message');
     };
   }, []);
 
@@ -55,19 +56,17 @@ function Inboxpage() {
         text: newMessageContent,
         timestamp: new Date().toISOString(),
       };
-
-      // Send message to the server via socket
+  
+      // Send message to the server via socket without adding it to the messages state
       socket.emit('send_message', newMessage);
-
-      // Optionally add the message immediately in the frontend
-      setMessages((prevMessages) => [newMessage, ...prevMessages]);
-
-      // Clear inputs and hide new message section
+  
+      // Clear inputs and hide the new message section
       setNewMessageRecipient('');
       setNewMessageContent('');
       setShowNewMessageSection(false);
     }
   };
+  
 
   const toggleNewMessageSection = () => {
     setShowNewMessageSection(true);

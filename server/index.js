@@ -56,7 +56,10 @@ app.get("/api/messages", async (req, res) => {
 const postSchema = new mongoose.Schema({
   profileImg: String,
   name: String,
-  time: String,
+  timestamp: {
+    type: Date,
+    default: Date.now,  // Set to capture the creation time of the post
+  },
   content: String,
   postImg: String,
   upvotes: { type: Number, default: 0 },
@@ -74,7 +77,7 @@ const Post = mongoose.model("Post", postSchema);
 // Get all posts
 app.get("/api/posts", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ time: -1 });
+    const posts = await Post.find().sort({ timestamp: -1 });  // Sort by timestamp (newest first)
     res.json(posts);
   } catch (err) {
     console.error("Error fetching posts:", err);
@@ -86,36 +89,16 @@ app.get("/api/posts", async (req, res) => {
 app.post("/api/posts", async (req, res) => {
   const { profileImg, name, content, postImg } = req.body;
   try {
-    const newPost = new Post({ profileImg, name, time: "Just now", content, postImg });
+    const newPost = new Post({ profileImg, name, content, postImg });
     await newPost.save();
     res.status(201).json({ success: true, post: newPost });
-    io.emit("new_post", newPost);
+    io.emit("new_post", newPost);  // Emit the new post with timestamp to the frontend
   } catch (err) {
     console.error("Error creating post:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
-// Add a comment to a post
-app.post("/api/posts/:postId/comments", async (req, res) => {
-  const { postId } = req.params;
-  const { author, comment } = req.body;
-  try {
-    const post = await Post.findById(postId);
-    if (post) {
-      const newComment = { author, comment };
-      post.comments.push(newComment);
-      await post.save();
-      res.status(201).json({ success: true, comment: newComment });
-      io.emit("receive_comment", { postId, comment: newComment });
-    } else {
-      res.status(404).json({ success: false, message: "Post not found" });
-    }
-  } catch (err) {
-    console.error("Error adding comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
 
 // Socket.IO events for real-time chat
 io.on("connection", (socket) => {

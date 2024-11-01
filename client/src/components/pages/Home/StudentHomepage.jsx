@@ -20,11 +20,26 @@ const StudentHomepage = () => {
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+  // Function to format the time difference as "x minutes ago", "x hours ago", etc.
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diffInMs = now - postDate;
+    const diffInMinutes = Math.floor(diffInMs / 60000);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
   // Fetch posts from backend on component mount
   useEffect(() => {
     fetch("http://localhost:3001/api/posts")
       .then((res) => res.json())
-      .then((data) => setPostsData(data))
+      .then((data) => setPostsData(data)) // Data is already sorted by backend
       .catch((err) => console.error("Error fetching posts:", err));
 
     // Listen for new posts and comments in real-time
@@ -46,6 +61,14 @@ const StudentHomepage = () => {
       socket.off("new_post");
       socket.off("receive_comment");
     };
+  }, []);
+
+  // Update elapsed time display every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPostsData((prevPosts) => [...prevPosts]); // Trigger re-render to update timestamps
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleInputChange = (e) => {
@@ -79,13 +102,15 @@ const StudentHomepage = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            setPostsData((prevPosts) => [data.post, ...prevPosts]);
+            // Do not manually add data.post to postsData here
+            // Instead, rely on the socket event to update the list
           }
           handleClosePopup();
         })
         .catch((err) => console.error("Error adding post:", err));
     }
   };
+  
 
   const handleCommentSubmit = (postId, commentText) => {
     if (commentText.trim()) {
@@ -139,7 +164,7 @@ const StudentHomepage = () => {
         <img src={post.profileImg || profileicon} alt={post.name} />
         <div className="frompost">
           <h5>{post.name}</h5>
-          <p>{post.time}</p>
+          <p>{formatTimeAgo(post.timestamp)}</p> {/* Display formatted timestamp */}
         </div>
       </div>
       <div className="postcontent">
