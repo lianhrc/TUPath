@@ -37,6 +37,7 @@ function StudentSignup() {
         }
     };
 
+    // Handle Google sign-up for students only
     const handleGoogleSignup = async (response) => {
         try {
             const googleToken = response.credential;
@@ -51,7 +52,6 @@ function StudentSignup() {
             setMessage('An error occurred during Google sign-up. Please try again.');
         }
     };
-
 
 
 

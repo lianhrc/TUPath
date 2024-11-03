@@ -58,12 +58,13 @@ app.post('/google-signup', async (req, res) => {
       const { email, sub: googleId, name } = googleResponse.data;
       const Model = role === 'student' ? Tupath_usersModel : Expert_usersModel;
 
+      // Check if the user already exists; if not, create a new one
       let user = await Model.findOne({ email });
       if (!user) {
           user = await Model.create({ name, email, password: googleId, isNewUser: true });
       }
 
-      const jwtToken = jwt.sign({ email, googleId, name, id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+      const jwtToken = jwt.sign({ email, googleId, name, id: user._id, role }, JWT_SECRET, { expiresIn: '1h' });
       res.json({ success: true, token: jwtToken });
   } catch (error) {
       res.status(500).json({ success: false, message: 'Google sign-up failed' });
@@ -74,22 +75,48 @@ app.post('/google-signup', async (req, res) => {
 
 
 
+
 // Google login endpoint
 app.post('/google-login', async (req, res) => {
-  const { token } = req.body;
+  const { token, role } = req.body;
+
   try {
     const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
     if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
       return res.status(400).json({ success: false, message: 'Invalid Google token' });
     }
+
     const { email, sub: googleId, name } = googleResponse.data;
-    const user = await Tupath_usersModel.findOne({ email }) || await Expert_usersModel.findOne({ email });
-    const jwtToken = jwt.sign({ email, googleId, name, id: user ? user._id : null }, JWT_SECRET, { expiresIn: '1h' });
+
+    // Check if user exists based on role
+    let user;
+    if (role === 'student') {
+      user = await Tupath_usersModel.findOne({ email });
+      if (!user) {
+        user = await Tupath_usersModel.create({ name, email, password: '', googleSignup: true });
+      }
+    } else if (role === 'expert') {
+      user = await Expert_usersModel.findOne({ email });
+      if (!user) {
+        user = await Expert_usersModel.create({ name, email, password: '', googleSignup: true });
+      }
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    // Deny Google login if the user was not signed up via Google
+    if (!user.googleSignup) {
+      return res.status(400).json({ success: false, message: 'This account was not registered with Google. Please use email/password login.' });
+    }
+
+    const jwtToken = jwt.sign({ email, googleId, name, id: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, token: jwtToken });
   } catch (error) {
+    console.error('Google login error:', error);
     res.status(500).json({ success: false, message: 'Google login failed' });
   }
 });
+
 
 
 

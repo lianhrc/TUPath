@@ -23,17 +23,20 @@ function Login() {
     const handleGoogleLogin = async (response) => {
         try {
             const googleToken = response.credential;
-            const res = await axiosInstance.post('/google-login', { token: googleToken });
+            const res = await axiosInstance.post('/google-login', { token: googleToken, role });
+            
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/studenthomepage', { replace: true });
+                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
-                setMessage('Google login failed. Please try again.');
+                setMessage(res.data.message || 'Google login failed. Please try again.');
             }
         } catch (error) {
+            console.error("Google login error:", error);
             setMessage('An error occurred during Google login. Please try again.');
         }
     };
+
 
     const handleLogin = async (event) => {
         event.preventDefault();

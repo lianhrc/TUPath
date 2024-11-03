@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../services/axiosInstance';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css'
+import { GoogleLogin } from '@react-oauth/google';
 
 function ExpertSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
@@ -16,7 +18,7 @@ function ExpertSignup() {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:3001/expertsignup', { firstName, lastName, email, password });
+            const response = await axios.post('http://localhost:3001/expertsignup', { firstName, lastName, email, password, role });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
@@ -29,6 +31,22 @@ function ExpertSignup() {
         }
     };
 
+
+    const handleGoogleSignup = async (response) => {
+        try {
+            const googleToken = response.credential;
+            const res = await axiosInstance.post('/google-signup', { token: googleToken, role: 'expert' });
+            if (res.data.success) {
+                localStorage.setItem('token', res.data.token);
+                navigate('/employeehomepage', { replace: true });
+            } else {
+                setMessage('Google sign-up failed. Please try again.');
+            }
+        } catch (error) {
+            setMessage('An error occurred during Google sign-up. Please try again.');
+        }
+    }
+
     const handleLoginRedirect = () => {
         navigate('/login');
     };
@@ -37,9 +55,10 @@ function ExpertSignup() {
         <div className="container mt-5" style={{ maxWidth: '600px' }}>
             <h2 className="text-center mb-4">Expert Sign Up</h2>
             <div className="d-flex justify-content-center mb-3">
-            <button className="gbtn" style={{ width: '40%' }}>
-                <span className="google-icon" /> Continue with Google
-            </button>
+            <GoogleLogin
+                    onSuccess={handleGoogleSignup}
+                    onError={() => setMessage('Google sign-up failed')}
+                />
             </div>
             <p className="d-flex justify-content-center mb-3">or</p>
             <form onSubmit={handleSignup}>
@@ -85,6 +104,20 @@ function ExpertSignup() {
                         required
                     />
                 </div>
+                <div className="form-group mb-3">
+                    <label className="form-label">your role:</label>
+                    <div className="form-check">
+                        <input
+                            type="radio"
+                            className="form-check-input"
+                            id="roleExpert"
+                            value="expert"
+                            checked={role === 'expert'}
+                            onChange={() => setRole('expert')}
+                        />
+                        <label className="form-check-label" htmlFor="roleStudent">Expert</label>
+                    </div>
+                    </div>
                 <div className="form-check mb-3">
                     <input
                         type="checkbox"
