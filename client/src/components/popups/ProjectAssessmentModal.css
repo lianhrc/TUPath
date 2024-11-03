@@ -1,0 +1,81 @@
+.assessment-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+  
+  .assessment-modal-content {
+    background: white;
+    padding: 50px  50px 20px  50px;
+    border-radius: 8px;
+    width: auto;
+    text-align: center;
+  }
+  .assessment-modal-content .header-p{
+    margin-bottom: 50px;
+  }
+  
+  .assessment-question {
+    margin-bottom: 15px;
+  }
+  
+  .star-rating {
+    display: flex;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 1.5rem;
+
+    justify-content: center;
+  }
+  
+  .star {
+    color: #ccc;
+    transition: color 0.2s;
+  }
+  
+  .star.selected {
+    border: none;
+    color: #9D0E0F; /* Highlight selected stars */
+  }
+  
+  .assessment-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+    width: 100%;
+  }
+  
+  .assessment-cancel-btn, .assessment-submit-btn {
+    background-color: #9D0E0F;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .assessment-submit-btn:hover, .assessment-cancel-btn:hover {
+    background-color: #b30e10;
+  }
+  
+  .assessment-next-btn {
+    background-color: #9D0E0F;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .assessment-next-btn:hover {
+    background-color: #b30e10;
+  }
+  

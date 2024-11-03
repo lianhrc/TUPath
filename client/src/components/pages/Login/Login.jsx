@@ -13,6 +13,7 @@ function Login() {
     const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
@@ -29,8 +30,14 @@ function Login() {
                 navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
                 setMessage('Google login failed. Please try again.');
+                setMessage('Google login failed. Please try again.');
             }
         } catch (error) {
+            if (error.response && error.response.status === 404) {
+                setMessage('Account not found. Please sign up first.');
+            } else {
+                setMessage('An error occurred during Google login. Please try again.');
+            }
             if (error.response && error.response.status === 404) {
                 setMessage('Account not found. Please sign up first.');
             } else {
@@ -46,12 +53,17 @@ function Login() {
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
                 navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
+                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
         } catch (error) {
             setMessage('An error occurred. Please try again.');
         }
+    };
+
+    const handleSignupRedirect = () => {
+        navigate('/loginroles'); // Redirects to the signup page
     };
 
     return (
@@ -68,6 +80,7 @@ function Login() {
                     <div className='chooserolecontainer'>
                         <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
                             <img src={student} alt="Student" />
+                            <img src={student} alt="Student" />
                             <label>
                                 <input
                                     type="radio"
@@ -79,7 +92,9 @@ function Login() {
                             Student
                         </div>
 
+
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
+                            <img src={employer} alt="Employer" />
                             <img src={employer} alt="Employer" />
                             <label>
                                 <input
@@ -89,6 +104,7 @@ function Login() {
                                     onChange={() => setRole('expert')}
                                 />
                             </label>
+                            Expert
                             Expert
                         </div>
                     </div>
@@ -124,7 +140,7 @@ function Login() {
                     {message && <p className="message">{message}</p>}
 
                     <p className="signup-prompt">
-                        Don't have an account? <span onClick={() => navigate('/signup')} className="signup-link">Sign Up</span>
+                        Don't have an account? <span onClick={handleSignupRedirect} className="signup-link">Sign Up</span>
                     </p>
                 </div>
             </div>

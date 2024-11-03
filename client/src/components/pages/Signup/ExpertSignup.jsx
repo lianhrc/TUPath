@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './Signup.css'
+import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
 
 function ExpertSignup() {
@@ -10,7 +10,7 @@ function ExpertSignup() {
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('student'); // Default role
+    const [role, setRole] = useState('expert'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
@@ -53,14 +53,14 @@ function ExpertSignup() {
         <div className="container mt-5" style={{ maxWidth: '600px' }}>
             <h2 className="text-center mb-4">Expert Sign Up</h2>
             <div className="d-flex justify-content-center mb-3">
-            <GoogleLogin
+                <GoogleLogin
                     onSuccess={handleGoogleSignup}
                     onError={() => setMessage('Google sign-up failed')}
                 />
             </div>
             <p className="d-flex justify-content-center mb-3">or</p>
             <form onSubmit={handleSignup}>
-               <div className='nameinput'>
+                <div className="nameinput">
                     <div className="form-groups mb-3">
                         <input
                             type="text"
@@ -103,7 +103,7 @@ function ExpertSignup() {
                     />
                 </div>
                 <div className="form-group mb-3">
-                    <label className="form-label">your role:</label>
+                    <label className="form-label">Your role:</label>
                     <div className="form-check">
                         <input
                             type="radio"
@@ -113,9 +113,9 @@ function ExpertSignup() {
                             checked={role === 'expert'}
                             onChange={() => setRole('expert')}
                         />
-                        <label className="form-check-label" htmlFor="roleStudent">Expert</label>
+                        <label className="form-check-label" htmlFor="roleExpert">Expert</label>
                     </div>
-                    </div>
+                </div>
                 <div className="form-check mb-3">
                     <input
                         type="checkbox"

@@ -84,6 +84,20 @@
   display: none;
 }
 
+
+.dropdown-menu Link{
+  text-decoration: none;
+  color: black;
+  padding: 10px;
+  display: block;
+}
+
+.dropdown-menu button{
+  color: black;
+  background: none;
+  border: none;
+}
+
 .dropdown:hover .dropdown-menu,
 .dropdown .dropdown-menu {
   display: block;

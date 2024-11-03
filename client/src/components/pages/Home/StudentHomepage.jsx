@@ -1,45 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import './StudentHomepage.css';
 import Headerhomepage from '../../common/headerhomepage';
 import profileicon from '../../../assets/profileicon.png';
-import profileicon2 from '../../../assets/profile2.png';
 import mediaupload from '../../../assets/mediaupload.png';
-import postimage from '../../../assets/joinTUP.jpg';
 import upvoteicon from '../../../assets/upvote.png';
 import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
+import GenericModal from '../../popups/GenericModal';
+
+const socket = io("http://localhost:3001"); // Connect to backend Socket.IO
 
 const StudentHomepage = () => {
-  const [postsData, setPostsData] = useState([
-    {
-      id: 1,
-      profileImg: profileicon2,
-      name: 'Stupidyante',
-      time: '2hrs ago',
-      content: 'These 5 students are about to land the dream gig at the greatest company ever as software engineers! Gusto mo bang sumali? Comment below if you\'re ready to level up!',
-      postImg: postimage,
-      upvotes: 130,
-      comments: [],
-      showComments: false,
-    },
-    {
-      id: 2,
-      profileImg: profileicon,
-      name: 'Stupidyante',
-      time: '3hrs ago',
-      content: 'In today’s fast-paced tech world, the demand for skilled software engineers has skyrocketed...',
-      postImg: null,
-      upvotes: 20,
-      comments: [],
-      showComments: false,
-    }
-  ]);
-
+  const [postsData, setPostsData] = useState([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  // Function to format the time difference as "x minutes ago", "x hours ago", etc.
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diffInMs = now - postDate;
+    const diffInMinutes = Math.floor(diffInMs / 60000);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
+  // Fetch posts from backend on component mount
+  useEffect(() => {
+    fetch("http://localhost:3001/api/posts")
+      .then((res) => res.json())
+      .then((data) => setPostsData(data)) // Data is already sorted by backend
+      .catch((err) => console.error("Error fetching posts:", err));
+
+    // Listen for new posts and comments in real-time
+    socket.on("new_post", (post) => {
+      setPostsData((prevPosts) => [post, ...prevPosts]);
+    });
+    socket.on("receive_comment", ({ postId, comment }) => {
+      setPostsData((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? { ...post, comments: [...post.comments, comment] }
+            : post
+        )
+      );
+    });
+
+    // Clean up event listeners on component unmount
+    return () => {
+      socket.off("new_post");
+      socket.off("receive_comment");
+    };
+  }, []);
+
+  // Update elapsed time display every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPostsData((prevPosts) => [...prevPosts]); // Trigger re-render to update timestamps
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleInputChange = (e) => {
     setNewPostContent(e.target.value);
@@ -56,8 +85,70 @@ const StudentHomepage = () => {
     }
   };
 
-  const handleOpenPopup = () => {
-    setIsPopupOpen(true);
+  const handleAddPost = () => {
+    if (newPostContent.trim()) {
+      const newPost = {
+        profileImg: profileicon,
+        name: 'Stupidyante',
+        content: newPostContent,
+        postImg: newPostImage,
+      };
+      fetch("http://localhost:3001/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPost),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            // Do not manually add data.post to postsData here
+            // Instead, rely on the socket event to update the list
+          }
+          handleClosePopup();
+        })
+        .catch((err) => console.error("Error adding post:", err));
+    }
+  };
+  
+
+  const handleCommentSubmit = (postId, commentText) => {
+    if (commentText.trim()) {
+      const newComment = { author: 'Student', comment: commentText };
+      fetch(`http://localhost:3001/api/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newComment),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setPostsData((prevPosts) =>
+              prevPosts.map((post) =>
+                post._id === postId
+                  ? { ...post, comments: [...post.comments, data.comment] }
+                  : post
+              )
+            );
+          }
+        })
+        .catch((err) => console.error("Error adding comment:", err));
+    }
+  };
+
+  const toggleComments = (postId) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post._id === postId ? { ...post, showComments: !post.showComments } : post
+      )
+    );
+  };
+
+  const handleUpvote = (postId) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post._id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
+      )
+    );
   };
 
   const handleClosePopup = () => {
@@ -66,51 +157,13 @@ const StudentHomepage = () => {
     setNewPostImage(null);
   };
 
-  const handleAddPost = () => {
-    if (newPostContent.trim()) {
-      const newPost = {
-        id: postsData.length + 1,
-        profileImg: profileicon,
-        name: 'Stupidyante',
-        time: 'Just now',
-        content: newPostContent,
-        postImg: newPostImage,
-        upvotes: 0,
-        comments: [],
-        showComments: false,
-      };
-      setPostsData([newPost, ...postsData]);
-      handleClosePopup(); // Close popup after adding post
-    }
-  };
-
-  const handleUpvote = (postId) => {
-    setPostsData((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
-      )
-    );
-  };
-
-  const handleCommentSubmit = (postId, comment) => {
-    if (comment.trim()) {
-      setPostsData((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId
-            ? { ...post, comments: [comment, ...post.comments] } // Prepend new comment
-            : post
-        )
-      );
-    }
-  };
-
   const renderPost = (post) => (
-    <div className="post" key={post.id}>
+    <div className="post" key={post._id}>
       <div className="toppostcontent">
-        <img src={post.profileImg} alt={post.name} />
+        <img src={post.profileImg || profileicon} alt={post.name} />
         <div className="frompost">
           <h5>{post.name}</h5>
-          <p>{post.time}</p>
+          <p>{formatTimeAgo(post.timestamp)}</p> {/* Display formatted timestamp */}
         </div>
       </div>
       <div className="postcontent">
@@ -122,10 +175,10 @@ const StudentHomepage = () => {
         )}
       </div>
       <div className="downpostcontent">
-        <button onClick={() => handleUpvote(post.id)}>
+        <button onClick={() => handleUpvote(post._id)}>
           <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
         </button>
-        <button onClick={() => toggleComments(post.id)}>
+        <button onClick={() => toggleComments(post._id)}>
           <img src={commenticon} alt="Comment" /> {post.comments.length}
         </button>
       </div>
@@ -140,13 +193,24 @@ const StudentHomepage = () => {
     </div>
   );
 
-  const toggleComments = (postId) => {
-    setPostsData((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, showComments: !post.showComments } : post
-      )
-    );
-  };
+  
+  /*----- GENERIC MODALS -------------*/
+
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
+  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+  const [achievementModalOpen, setAchievementModalOpen] = useState(false);
+  
+  // State to store added items
+  const [skills, setSkills] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [certificates, setCertificates] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+
+  const addSkill = (skill) => setSkills((prev) => [...prev, skill]);
+  const addExperience = (experience) => setExperiences((prev) => [...prev, experience]);
+  const addCertificate = (certificate) => setCertificates((prev) => [...prev, certificate]);
+  const addAchievement = (achievement) => setAchievements((prev) => [...prev, achievement]);
 
   return (
     <div className="StudentHomepage-container">
@@ -161,19 +225,18 @@ const StudentHomepage = () => {
             <p>Metro Manila, Philippines</p>
           </div>
           <div className="complete-section">
-            <h4>Complete</h4>
-            <div className="add-btn-container">
-              <button className="add-experience">+ Add Experience</button>
-              <button className="add-certificate">+ Add Certificate</button>
-              <button className="add-skills">+ Add Achievement</button>
-              <button className="add-skills">+ Add Skills</button>
-              <button className="add-skills">+ Add Skills</button>
-            </div>
-          </div>
+        <h4>Complete</h4>
+        <div className="add-btn-container">
+          <button className="add-skills" onClick={() => setSkillsModalOpen(true)}>+ Add Skills</button>
+          <button className="add-experience" onClick={() => setExperienceModalOpen(true)}>+ Add Experience</button>
+          <button className="add-certificate" onClick={() => setCertificateModalOpen(true)}>+ Add Certificate</button>
+          <button className="add-skills" onClick={() => setAchievementModalOpen(true)}>+ Add Achievement</button>
+        </div>
+      </div>
         </aside>
 
         <main className="feed">
-          <div className="post-input" onClick={handleOpenPopup}>
+          <div className="post-input" onClick={() => setIsPopupOpen(true)}>
             <div>
               <img src={profileicon} alt="Profile Icon" />
             </div>
@@ -183,7 +246,7 @@ const StudentHomepage = () => {
                 placeholder="Start a post"
                 readOnly
               />
-              <button className="media-btn" onClick={handleOpenPopup}>
+              <button className="media-btn">
                 <img src={mediaupload} alt="Media Upload" /> Media
               </button>
             </div>
@@ -206,6 +269,34 @@ const StudentHomepage = () => {
           handleAddPost={handleAddPost}
         />
       )}
+      
+
+        <GenericModal 
+        show={skillsModalOpen} 
+        onClose={() => setSkillsModalOpen(false)} 
+        title="Skills" 
+        onSave={addSkill} 
+      />
+      <GenericModal 
+        show={experienceModalOpen} 
+        onClose={() => setExperienceModalOpen(false)} 
+        title="Experience" 
+        onSave={addExperience} 
+      />
+      <GenericModal 
+        show={certificateModalOpen} 
+        onClose={() => setCertificateModalOpen(false)} 
+        title="Certificate" 
+        onSave={addCertificate} 
+      />
+      <GenericModal 
+        show={achievementModalOpen} 
+        onClose={() => setAchievementModalOpen(false)} 
+        title="Achievement" 
+        onSave={addAchievement} 
+      />
+
+
     </div>
   );
 };

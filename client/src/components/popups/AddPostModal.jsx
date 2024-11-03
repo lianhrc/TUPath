@@ -4,8 +4,8 @@ import './AddPostModal.css'
 
 const AddPostModal = ({ newPostContent, handleInputChange, newPostImage, handleImageChange, handleClosePopup, handleAddPost }) => {
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="AddPostModalmodal-overlay">
+      <div className="AddPostModalmodal-content">
         <h6>+ Create a post</h6>
         <textarea
           placeholder="What's on your mind?"
