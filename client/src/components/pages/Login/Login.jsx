@@ -80,7 +80,6 @@ function Login() {
                     <div className='chooserolecontainer'>
                         <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
                             <img src={student} alt="Student" />
-                            <img src={student} alt="Student" />
                             <label>
                                 <input
                                     type="radio"
@@ -94,7 +93,6 @@ function Login() {
 
 
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
-                            <img src={employer} alt="Employer" />
                             <img src={employer} alt="Employer" />
                             <label>
                                 <input
