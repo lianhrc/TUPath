@@ -9,7 +9,7 @@ import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
-import projectThumbnail from '../../../assets/joinTUP.jpg';
+import projectThumbnail from '../../../assets/project1.png';
 import GenericModal from '../../popups/GenericModal';
 
 function Profilepage() {
