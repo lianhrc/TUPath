@@ -16,21 +16,21 @@ function ExpertSignup() {
 
     const handleSignup = async (event) => {
         event.preventDefault();
-
         try {
-            const response = await axios.post('http://localhost:3001/expertsignup', { firstName, lastName, email, password, role });
+            const response = await axiosInstance.post('/expertsignup', {
+                firstName,
+                lastName,
+                email,
+                password,
+            });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
-            } else {
-                setMessage('Signup failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error during signup:', error.response ? error.response.data : error.message);
-            setMessage('An error occurred. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
         }
     };
-
 
     const handleGoogleSignup = async (response) => {
         try {
@@ -38,14 +38,12 @@ function ExpertSignup() {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role: 'expert' });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/employeehomepage', { replace: true });
-            } else {
-                setMessage('Google sign-up failed. Please try again.');
+                navigate('/experthomepage', { replace: true });
             }
         } catch (error) {
-            setMessage('An error occurred during Google sign-up. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
-    }
+    };
 
     const handleLoginRedirect = () => {
         navigate('/login');

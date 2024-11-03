@@ -16,24 +16,19 @@ function StudentSignup() {
 
     const handleSignup = async (event) => {
         event.preventDefault();
-
         try {
-            const response = await axiosInstance.post('http://localhost:3001/studentsignup', {
+            const response = await axiosInstance.post('/studentsignup', {
                 firstName,
                 lastName,
                 email,
                 password,
-                role,
             });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
-            } else {
-                setMessage('Signup failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error during signup:', error.response ? error.response.data : error.message);
-            setMessage('An error occurred. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
         }
     };
 
@@ -45,11 +40,9 @@ function StudentSignup() {
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 navigate('/studenthomepage', { replace: true });
-            } else {
-                setMessage('Google sign-up failed. Please try again.');
             }
         } catch (error) {
-            setMessage('An error occurred during Google sign-up. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
     };
 

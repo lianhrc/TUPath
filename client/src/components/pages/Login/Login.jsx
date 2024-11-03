@@ -16,27 +16,28 @@ function Login() {
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
-            navigate('/studenthomepage', { replace: true });
+            navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
         }
-    }, [navigate]);
+    }, [navigate, role]);
 
     const handleGoogleLogin = async (response) => {
         try {
             const googleToken = response.credential;
             const res = await axiosInstance.post('/google-login', { token: googleToken, role });
-            
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
-                setMessage(res.data.message || 'Google login failed. Please try again.');
+                setMessage('Google login failed. Please try again.');
             }
         } catch (error) {
-            console.error("Google login error:", error);
-            setMessage('An error occurred during Google login. Please try again.');
+            if (error.response && error.response.status === 404) {
+                setMessage('Account not found. Please sign up first.');
+            } else {
+                setMessage('An error occurred during Google login. Please try again.');
+            }
         }
     };
-
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -44,7 +45,7 @@ function Login() {
             const response = await axiosInstance.post('/login', { email, password, role });
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
-                navigate('/studenthomepage', { replace: true });
+                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
@@ -66,7 +67,7 @@ function Login() {
                     {/* Role selection between student and expert */}
                     <div className='chooserolecontainer'>
                         <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
-                            <img src={student} alt="Student Showcase" />
+                            <img src={student} alt="Student" />
                             <label>
                                 <input
                                     type="radio"
@@ -77,8 +78,9 @@ function Login() {
                             </label>
                             Student
                         </div>
+
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
-                            <img src={employer} alt="Employer Showcase" />
+                            <img src={employer} alt="Employer" />
                             <label>
                                 <input
                                     type="radio"
@@ -87,7 +89,7 @@ function Login() {
                                     onChange={() => setRole('expert')}
                                 />
                             </label>
-                            Employer
+                            Expert
                         </div>
                     </div>
 
