@@ -10,7 +10,7 @@ const TupathUserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,  
+    unique: true,
   },
   password: {
     type: String,
@@ -19,6 +19,10 @@ const TupathUserSchema = new mongoose.Schema({
   isNewUser: {
     type: Boolean,
     default: true, // Set to true for new users
+  },
+  googleSignup: {
+    type: Boolean,
+    default: false, // Track if signed up via Google
   },
 });
 
@@ -31,7 +35,7 @@ const ExpertUserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,  
+    unique: true,
   },
   password: {
     type: String,
@@ -40,6 +44,10 @@ const ExpertUserSchema = new mongoose.Schema({
   isNewUser: {
     type: Boolean,
     default: true, // Set to true for new users
+  },
+  googleSignup: {
+    type: Boolean,
+    default: false, // Track if signed up via Google
   },
 });
 

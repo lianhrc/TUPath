@@ -16,52 +16,55 @@ import StudentProfile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Landingpage />} />  
-        
-        {/* Protected Routes */}
-        <Route 
-          path='/studentlandpage' 
-          element={
-            <ProtectedRoute>
-              <Studentlandpage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path='/studenthomepage' 
-          element={
-            <ProtectedRoute>
-              <StudentHomepage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path='/employeehomepage' 
-          element={
-            <ProtectedRoute>
-              <EmployeeHomepage />
-            </ProtectedRoute>
-          } 
-        />
+    <GoogleOAuthProvider clientId="625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com">
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<Landingpage />} />  
 
-        {/* Public Routes */}
-        <Route path='/employerlandpage' element={<Employerlandpage />} />
-        <Route path='/studentsignup' element={<StudentSignup />} />
-        <Route path='/expertsignup' element={<ExpertSignup />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/loginroles' element={<LoginRoles />} /> 
-        <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
-        <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
-        <Route path='/StudentProfile' element={<StudentProfile />} />
-        <Route path='/Inboxpage' element={<Inboxpage />} />
-        <Route path='/Settings' element={<Settings />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Protected Routes */}
+          <Route 
+            path='/studentlandpage' 
+            element={
+              <ProtectedRoute>
+                <Studentlandpage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path='/studenthomepage' 
+            element={
+              <ProtectedRoute>
+                <StudentHomepage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path='/employeehomepage' 
+            element={
+              <ProtectedRoute>
+                <EmployeeHomepage />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Public Routes */}
+          <Route path='/employerlandpage' element={<Employerlandpage />} />
+          <Route path='/studentsignup' element={<StudentSignup />} />
+          <Route path='/expertsignup' element={<ExpertSignup />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/loginroles' element={<LoginRoles />} /> 
+          <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
+          <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
+          <Route path='/StudentProfile' element={<StudentProfile />} />
+          <Route path='/Inboxpage' element={<Inboxpage />} />
+          <Route path='/Settings' element={<Settings />} />
+        </Routes>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
 

@@ -1,16 +1,16 @@
-// Required libraries
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const express = require("express");
-const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const axios = require("axios");
+const http = require("http");
 const { Server } = require("socket.io");
 const { Tupath_usersModel, Expert_usersModel } = require("./models/Tupath_users");
 
-const JWT_SECRET = 'your-secret-key';
+const JWT_SECRET = "your-secret-key";
+const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
 
-// Express app and server setup
 const app = express();
 const server = http.createServer(app);
 
@@ -19,25 +19,20 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection
-mongoose.connect("mongodb://127.0.0.1:27017/tupath_users")
+mongoose
+  .connect("mongodb://127.0.0.1:27017/tupath_users")
   .then(() => console.log("MongoDB connected successfully"))
-  .catch(err => console.error("MongoDB connection error:", err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // JWT verification middleware
 const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Access Denied" });
 
-  if (!token) {
-    return res.status(403).json({ success: false, message: "No token provided." });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ success: false, message: "Unauthorized." });
-    }
-
-    req.userId = decoded.id;
-    req.userRole = decoded.role;
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid Token" });
+    req.user = user;
     next();
   });
 };
@@ -45,7 +40,7 @@ const verifyToken = (req, res, next) => {
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Client's URL (Vite)
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -134,41 +129,69 @@ io.on("connection", (socket) => {
 // Login endpoint
 app.post("/login", async (req, res) => {
   const { email, password, role } = req.body;
-
   try {
-    let user;
-    if (role === "student") {
-      user = await Tupath_usersModel.findOne({ email });
-    } else if (role === "expert") {
-      user = await Expert_usersModel.findOne({ email });
-    } else {
-      return res.status(400).json({ success: false, message: "Invalid user role." });
+    const user = role === "student" ? await Tupath_usersModel.findOne({ email }) : await Expert_usersModel.findOne({ email });
+    if (!user || !await bcrypt.compare(password, user.password)) {
+      return res.status(400).json({ success: false, message: "Invalid email or password" });
     }
-
-    if (!user) {
-      return res.status(400).json({ success: false, message: "User not found" });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ success: false, message: "Password is incorrect" });
-    }
-
-    // Generate JWT
-    const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: '1h' });
-
-    // Determine redirect path based on user role
+    const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
     let redirectPath = role === "student" ? "/studenthomepage" : "/employerhomepage";
     if (user.isNewUser) {
       redirectPath = role === "student" ? "/studentprofilecreation" : "/employeeprofilecreation";
       user.isNewUser = false;
       await user.save();
     }
-
     res.status(200).json({ success: true, token, message: "Login successful", redirectPath });
   } catch (err) {
-    console.error("Error during login:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Google Signup endpoint
+app.post("/google-signup", async (req, res) => {
+  const { token, role } = req.body;
+  try {
+    const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+    if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
+      return res.status(400).json({ success: false, message: "Invalid Google token" });
+    }
+    const { email, sub: googleId, name } = googleResponse.data;
+    const existingStudent = await Tupath_usersModel.findOne({ email });
+    const existingExpert = await Expert_usersModel.findOne({ email });
+
+    if ((role === "student" && existingStudent) || (role === "expert" && existingExpert)) {
+      return res.status(409).json({ success: false, message: "Account already exists. Please log in." });
+    } else if (existingStudent || existingExpert) {
+      return res.status(409).json({ success: false, message: "Account already exists with another role. Please log in." });
+    }
+
+    const Model = role === "student" ? Tupath_usersModel : Expert_usersModel;
+    const newUser = await Model.create({ name, email, password: googleId, isNewUser: true });
+    const jwtToken = jwt.sign({ email, googleId, name, id: newUser._id, role }, JWT_SECRET, { expiresIn: "1h" });
+    res.json({ success: true, token: jwtToken });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Google sign-up failed" });
+  }
+});
+
+// Google login endpoint
+app.post("/google-login", async (req, res) => {
+  const { token, role } = req.body;
+  try {
+    const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+    if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
+      return res.status(400).json({ success: false, message: "Invalid Google token" });
+    }
+    const { email, sub: googleId, name } = googleResponse.data;
+    const Model = role === "student" ? Tupath_usersModel : Expert_usersModel;
+    const user = await Model.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not registered. Please sign up first." });
+    }
+    const jwtToken = jwt.sign({ email, googleId, name, id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
+    res.json({ success: true, token: jwtToken });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Google login failed" });
   }
 });
 
@@ -176,71 +199,54 @@ app.post("/login", async (req, res) => {
 app.post("/studentsignup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   const name = `${firstName} ${lastName}`;
-
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
-  }
-
   try {
-    const existingUser = await Tupath_usersModel.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists." });
+    const existingStudent = await Tupath_usersModel.findOne({ email });
+    const existingExpert = await Expert_usersModel.findOne({ email });
+
+    if (existingStudent) {
+      return res.status(409).json({ success: false, message: "Student account already exists. Please log in." });
+    } else if (existingExpert) {
+      return res.status(409).json({ success: false, message: "Account with another role exists. Please log in." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await Tupath_usersModel.create({ 
-      name, 
-      email, 
-      password: hashedPassword, 
-      isNewUser: true
-    });
-
-    console.log("New student registered:", newUser);
+    const newUser = await Tupath_usersModel.create({ name, email, password: hashedPassword, isNewUser: true });
     res.status(201).json({ success: true, user: newUser });
   } catch (err) {
-    console.error("Error during registration:", err);
-    res.status(500).json({ success: false, message: "Internal server error." });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
 // Expert signup endpoint
 app.post("/expertsignup", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-  const name = `${firstName} ${lastName}`;
-
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
-  }
-
+  const { companyName, companyEmail, companyAddress, companyWebsite, password } = req.body;
   try {
-    const existingUser = await Expert_usersModel.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "Expert already exists." });
+    const existingExpert = await Expert_usersModel.findOne({ email: companyEmail });
+    const existingStudent = await Tupath_usersModel.findOne({ email: companyEmail });
+
+    if (existingExpert) {
+      return res.status(409).json({ success: false, message: "Expert account already exists. Please log in." });
+    } else if (existingStudent) {
+      return res.status(409).json({ success: false, message: "Account with another role exists. Please log in." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await Expert_usersModel.create({
-      name,
-      email,
+    const newExpert = await Expert_usersModel.create({
+      name: companyName,
+      email: companyEmail,
       password: hashedPassword,
-      isNewUser: true
+      companyAddress,
+      companyWebsite,
+      isNewUser: true,
     });
-
-    console.log("New expert registered:", newUser);
-    res.status(201).json({ success: true, user: newUser });
+    res.status(201).json({ success: true, expert: newExpert });
   } catch (err) {
-    console.error("Error during registration:", err);
-    res.status(500).json({ success: false, message: "Internal server error." });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
-// Protected route example
-app.get('/protected', verifyToken, (req, res) => {
-  res.status(200).json({ success: true, message: "This is a protected route." });
-});
-
-// Start server
-const PORT = 3001;
+// Server setup
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

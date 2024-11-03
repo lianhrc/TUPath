@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
 import Header from '../../common/header';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
+import { GoogleLogin } from '@react-oauth/google';
 import './Login.css';
-import { useEffect } from 'react';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -13,72 +13,88 @@ function Login() {
     const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
-
     const token = localStorage.getItem('token');
 
     useEffect(() => {
         if (token) {
-            navigate('/studenthomepage', { replace: true });
+            navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
         }
-    }, [token, navigate]);
+    }, [token, navigate, role]);
+
+    const handleGoogleLogin = async (response) => {
+        try {
+            const googleToken = response.credential;
+            const res = await axiosInstance.post('/google-login', { token: googleToken, role });
+            if (res.data.success) {
+                localStorage.setItem('token', res.data.token);
+                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
+            } else {
+                setMessage('Google login failed. Please try again.');
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                setMessage('Account not found. Please sign up first.');
+            } else {
+                setMessage('An error occurred during Google login. Please try again.');
+            }
+        }
+    };
 
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
             const response = await axiosInstance.post('/login', { email, password, role });
-
             if (response.data.success) {
-                setMessage('Login successful!');
                 localStorage.setItem('token', response.data.token);
-                navigate('/studenthomepage', { replace: true });
+                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
         } catch (error) {
-            console.error('Error during login:', error);
             setMessage('An error occurred. Please try again.');
         }
     };
 
     const handleSignupRedirect = () => {
-        navigate('/loginroles'); // Redirects to a signup page, adjust the route if needed
+        navigate('/loginroles'); // Redirects to the signup page
     };
-    
+
     return (
         <div className="Login">
             <Header />
             <div className='logincontent'>
                 <div className="Login-container">
                     <h2>Make the most of your career</h2>
-
-                    <button className="google-login">Continue with Google</button>
+                    <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
+                    
                     <div className="separator">or</div>
 
                     {/* Role selection between student and expert */}
                     <div className='chooserolecontainer'>
                         <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
-                            <img src={student} alt="Student Showcase" />
+                            <img src={student} alt="Student" />
                             <label>
                                 <input
                                     type="radio"
                                     value="student"
                                     checked={role === 'student'}
-                                    onChange={() => setRole('student')} // Set role as student
+                                    onChange={() => setRole('student')}
                                 />
-                                </label>
-                                Student
+                            </label>
+                            Student
                         </div>
+
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
-                            <img src={employer} alt="Employer Showcase" />
+                            <img src={employer} alt="Employer" />
                             <label>
                                 <input
                                     type="radio"
                                     value="expert"
                                     checked={role === 'expert'}
-                                    onChange={() => setRole('expert')} // Set role as expert
+                                    onChange={() => setRole('expert')}
                                 />
-                                </label>
-                                Employer
+                            </label>
+                            Expert
                         </div>
                     </div>
 
@@ -112,12 +128,13 @@ function Login() {
                     {/* Display message if there's any feedback */}
                     {message && <p className="message">{message}</p>}
 
-                    <p className="signup-prompt">Don't have an account? <span onClick={handleSignupRedirect} className="signup-link">Sign Up</span></p>
+                    <p className="signup-prompt">
+                        Don't have an account? <span onClick={handleSignupRedirect} className="signup-link">Sign Up</span>
+                    </p>
                 </div>
             </div>
         </div>
     );
 }
-
 
 export default Login;

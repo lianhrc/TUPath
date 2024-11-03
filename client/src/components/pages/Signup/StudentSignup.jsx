@@ -2,21 +2,27 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './Signup.css'
+import './Signup.css';
+import { GoogleLogin } from '@react-oauth/google';
 
 function StudentSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('student'); // Default role for Google Signup
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
     const handleSignup = async (event) => {
         event.preventDefault();
-
         try {
-            const response = await axiosInstance.post('http://localhost:3001/studentsignup', { firstName, lastName, email, password });
+            const response = await axiosInstance.post('/studentsignup', {
+                firstName,
+                lastName,
+                email,
+                password,
+            });
             if (response.data.success) {
                 setMessage('Signup successful!');
                 navigate('/login');
@@ -24,8 +30,20 @@ function StudentSignup() {
                 setMessage('Signup failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error during signup:', error.response ? error.response.data : error.message);
-            setMessage('An error occurred. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
+        }
+    };
+
+    const handleGoogleSignup = async (response) => {
+        try {
+            const googleToken = response.credential;
+            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
+            if (res.data.success) {
+                localStorage.setItem('token', res.data.token);
+                navigate('/studenthomepage', { replace: true });
+            }
+        } catch (error) {
+            setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
     };
 
@@ -37,13 +55,14 @@ function StudentSignup() {
         <div className="container mt-5" style={{ maxWidth: '600px' }}>
             <h2 className="text-center mb-4">Student Sign Up</h2>
             <div className="d-flex justify-content-center mb-3">
-            <button className="gbtn" style={{ width: '40%' }}>
-                <span className="google-icon" /> Continue with Google
-            </button>
+                <GoogleLogin
+                    onSuccess={handleGoogleSignup}
+                    onError={() => setMessage('Google sign-up failed')}
+                />
             </div>
             <p className="d-flex justify-content-center mb-3">or</p>
             <form onSubmit={handleSignup}>
-               <div className='nameinput'>
+                <div className='nameinput'>
                     <div className="form-groups mb-3">
                         <input
                             type="text"
