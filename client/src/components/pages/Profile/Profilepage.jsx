@@ -1,27 +1,84 @@
+// Profilepage.js
 import React, { useState } from 'react';
 import HeaderHomepage from '../../common/headerhomepage';
 import MessagePop from '../../popups/messagingpop';
 import EditDescriptionModal from '../../popups/EditDescriptionModal';
+import ProjectUploadModal from '../../popups/ProjectUpModal';
+import ProjectPreviewModal from '../../popups/ProjectPreviewModal'; // Import ProjectPreviewModal
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
 import projectThumbnail from '../../../assets/joinTUP.jpg';
-import ProjectUploadModal from '../../popups/ProjectUpModal';
+import GenericModal from '../../popups/GenericModal';
 
 function Profilepage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
-  const [description, setDescription] = useState('Hello! I am passionate in doing great project like video editing, designs for brochures, YouTube thumbnails and cartoon portraits. In past 3 years I do several works that depends on the clients on what they want.');
+  const [description, setDescription] = useState('Hello! I am passionate in doing great projects like video editing, designs for brochures, YouTube thumbnails, and cartoon portraits. In the past 3 years, I have done several works that depend on the clients on what they want.');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false); // State for skills modal
+  const [skills, setSkills] = useState([]); // State to manage skills
+  const [certificatesModalOpen, setCertificatesModalOpen] = useState(false); // State for certificates modal
+  const [certificates, setCertificates] = useState([]); // State to manage certificates
+
+  const projects = [
+    { 
+      id: 1, 
+      name: 'Project 1', 
+      description: 'Description of project 1', 
+      duration: '2 months', 
+      technologies: 'React, Node.js', 
+      image: projectThumbnail 
+    },
+    { 
+      id: 2, 
+      name: 'Project 2', 
+      description: 'Description of project 2', 
+      duration: '1 month', 
+      technologies: 'Python, Django', 
+      image: projectThumbnail 
+    },
+    // Add more projects here...
+  ];
 
   const handleAddProjectClick = () => setShowUploadModal(true);
   const handleCloseModal = () => setShowUploadModal(false);
   const handleCloseEditDescriptionModal = () => setShowEditDescriptionModal(false);
-  
   const handleEditDescriptionClick = () => setShowEditDescriptionModal(true);
-  const handleSaveDescription = (newDescription) => {
-    setDescription(newDescription);
+  const handleSaveDescription = (newDescription) => setDescription(newDescription);
+  
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setShowPreviewModal(true);
   };
+
+  const handleClosePreviewModal = () => {
+    setShowPreviewModal(false);
+    setSelectedProject(null);
+  };
+
+  const handleAddSkillClick = (event) => {
+    event.preventDefault(); // Prevent default anchor click behavior
+    setSkillsModalOpen(true); // Open skills modal
+  };
+  
+  const handleCloseSkillsModal = () => setSkillsModalOpen(false); // Close skills modal
+  const addSkill = (newSkill) => {
+    setSkills([newSkill]); // Replace existing skills with the new one
+  };
+
+  const handleAddCertificateClick = (event) => {
+    event.preventDefault(); // Prevent default anchor click behavior
+    setCertificatesModalOpen(true); // Open certificates modal
+  };
+  
+  const handleCloseCertificatesModal = () => setCertificatesModalOpen(false); // Close certificates modal
+  const addCertificate = (newCertificate) => {
+    setCertificates([newCertificate]); // Replace existing certificates with the new one
+  };
+
   return (
     <div className='Profilepage-container'>
       <HeaderHomepage />
@@ -51,21 +108,21 @@ function Profilepage() {
                 <h3>Description</h3>
                 <a href="#" onClick={handleEditDescriptionClick}>Edit Description</a>
               </div>
-              <p>Hello! I am passionate in doing great project like video editing, designs for brochures, YouTube thumbnails and cartoon portraits. In past 3 years I do several works that depends on the clients on what they want.</p>
+              <p>{description}</p>
             </div>
             <div className="profile-section">
               <div className='profilesectiontop'>
                 <h3>Skills</h3>
-                <a href="#">Add New</a>
+                <a href="#" onClick={handleAddSkillClick}>Add New</a> {/* Open skills modal */}
               </div>
-              <p>Front-end Developer</p>
+              <p>{skills.length > 0 ? skills.join(', ') : 'N/A'}</p> {/* Display the most recent skill or 'N/A' */}
             </div>
             <div className="profile-section">
               <div className='profilesectiontop'>
                 <h3>Certificates / Achievements</h3>
-                <a href="#">Add New</a>
+                <a href="#" onClick={handleAddCertificateClick}>Add New</a> {/* Open certificates modal */}
               </div>
-              <p>N/A</p>
+              <p>{certificates.length > 0 ? certificates.join(', ') : 'N/A'}</p> {/* Display the most recent certificate or 'N/A' */}
             </div>
           </div>
         </div>
@@ -78,23 +135,19 @@ function Profilepage() {
               <p>+</p>
               <p>Add a Project</p>
             </div>
-            <div className="project-card">
-              <img src={projectThumbnail} alt="Project Thumbnail" />
-            </div>
-            <div className="project-card">
-              <img src={projectThumbnail} alt="Project Thumbnail" />
-            </div>
-            <div className="project-card">
-              <img src={projectThumbnail} alt="Project Thumbnail" />
-            </div>
-            <div className="project-card">
-              <img src={projectThumbnail} alt="Project Thumbnail" />
-            </div>
+            {projects.map((project) => (
+              <div 
+                key={project.id} 
+                className="project-card" 
+                onClick={() => handleProjectClick(project)}
+              >
+                <img src={project.image} alt="Project Thumbnail" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Render the ProjectUploadModal */}
       <ProjectUploadModal show={showUploadModal} onClose={handleCloseModal} />
       <EditDescriptionModal 
         show={showEditDescriptionModal} 
@@ -102,8 +155,26 @@ function Profilepage() {
         currentDescription={description} 
         onSave={handleSaveDescription} 
       />
-    
-      </div>
+      <ProjectPreviewModal 
+        show={showPreviewModal} 
+        onClose={handleClosePreviewModal} 
+        project={selectedProject} 
+      />
+
+      <GenericModal 
+        show={skillsModalOpen} 
+        onClose={handleCloseSkillsModal} 
+        title="Add New Skill" 
+        onSave={addSkill} 
+      />
+
+      <GenericModal 
+        show={certificatesModalOpen} 
+        onClose={handleCloseCertificatesModal} 
+        title="Add New Certificate" 
+        onSave={addCertificate} 
+      />
+    </div>
   );
 }
 

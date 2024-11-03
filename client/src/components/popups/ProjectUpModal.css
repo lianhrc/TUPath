@@ -1,4 +1,4 @@
-.modal-overlay {
+.ProjectUploadModal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,36 +11,38 @@
     z-index: 1000;
 }
 
-.modal-content {
+.ProjectUploadModal-content {
     position: relative;
-    height: 600px;
+    height: 600px; /* Limit the height of the modal */
     padding: 20px;
     border-radius: 8px;
     max-width: 1000px;
     width: 100%;
     background: white;
+    overflow: hidden; /* Prevent overflow */
 }
 
-.modal-content .upheader {
+
+
+.ProjectUploadModal-content .upheader {
     display: flex;
     justify-content: space-between;
     width: 100%;
 }
 
-.modal-content .upheader .projectup-close-btn {
+.ProjectUploadModal-content .upheader .projectup-close-btn {
     position: absolute;
-    top: -5px;
     right: 10px;
     color: black;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 16px;
-    width: 40px;
+    width:26px;
     border-radius: 4px;
 }
 
-.modal-content .upheader .projectup-close-btn:hover {
+.ProjectUploadModal-content .upheader .projectup-close-btn:hover {
     background-color: #9D0E0F;
     color: white;
     border-radius: 50%;
@@ -50,8 +52,9 @@
     display: flex;
     flex-direction: row;    
     gap: 20px;
-    height: 100%;
+    height: calc(100% - 70px); /* Adjust height to account for the submit button */
     padding: 20px;
+    overflow-y: auto; /* Allow vertical scrolling if content overflows */
 }
 
 .leftprojup-container {
@@ -156,7 +159,6 @@
 .submit-btn-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
 }
 
 .submit-btn-container button[type="submit"] {
@@ -167,6 +169,7 @@
     width: 200px;
     border-radius: 4px;
     cursor: pointer;
+    margin-top: 10px; /* Space above the button */
 }
 
 .submit-btn-container button[type="submit"]:hover {

@@ -17,24 +17,24 @@ const GenericModal = ({ show, onClose, title, onSave }) => {
   return (
     <div className="GMmodal-overlay">
       <div className="GMmodal-content">
-        <h2>{title}</h2>
-        <button onClick={onClose}>X</button>
+        <div className="GMmodal-header">
+          <h6><strong>{title}</strong></h6>
+          <button className="GM-close-btn" onClick={onClose}>X</button>
+        </div>
         <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)} // Update input value
-        placeholder="Enter skill"
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)} // Update input value
+          placeholder="Enter skill"
+          className="GM-input"
         />
         
         <div className="modal-actions">
-        <button onClick={handleSave}>Save</button>
+          <button className='GM-save-btn' onClick={handleSave}>Save</button>
         </div>
       </div>
-      
     </div>
-    
   );
-  
 };
 
 export default GenericModal;

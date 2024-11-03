@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
@@ -10,7 +10,6 @@ import './headerhomepage.css';
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     // Clear localStorage to remove JWT token and any user data
@@ -108,7 +107,7 @@ function HeaderHomepage() {
               <div className="dropdown-menu profile-menu">
                 <Link to="/StudentProfile">Profile</Link>
                 <Link to="/Settings">Settings</Link>
-                <button onClick={handleLogout}>Logout</button>
+                <Link  onClick={handleLogout}>Logout</Link>
               </div>
             )}
           </div>

@@ -21,26 +21,37 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
+    position: relative; /* Set position relative for absolute positioning */
+}
+
+.GMmodal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative; /* Set position relative for absolute positioning */
+}
+
+/* Close Button */
+.GMmodal-header .GM-close-btn {
+    position: absolute; /* Position it absolutely within the header */
+    top: -5px; /* Align to the top */
+    right: 0; /* Align to the right */
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px; /* Adjust font size if needed */
 }
 
 /* Header */
 .GMmodal-content h6 {
     margin: 0 0 15px 0;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-/* Close Button */
-.GMmodal-content button {
-    align-self: flex-end; /* Align close button to the right */
-    background: none;
-    border: none;
     font-size: 16px;
-    cursor: pointer;
+    padding-right: 30px; /* Add space for the close button */
 }
 
 /* Input Field */
-.GMmodal-contentinput[type="text"] {
+.GM-input {
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 10px;
@@ -48,9 +59,15 @@
     font-size: 14px;
 }
 
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: space-between; /* Space between buttons */
+}
+
 /* Save Button */
-.GMmodal-content button:last-child {
-    background-color: #9D0E0F; /* Green color */
+.GM-save-btn {
+    background-color: #9D0E0F; /* Color */
     color: white;
     border: none;
     border-radius: 4px;
@@ -59,6 +76,6 @@
     transition: background-color 0.3s ease;
 }
 
-.GMmodal-content-content button:last-child:hover {
-    background-color: #9D0E0F; /* Darker green on hover */
+.GM-save-btn:hover {
+    background-color: #b30e10; /* Darker on hover */
 }
