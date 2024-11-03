@@ -31,14 +31,20 @@
     border-bottom: 0.1px solid #d2c7c7;
     padding-bottom: 10px;
   }
-  
-  .AddPostModal textarea {
-    width: 100%;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
+ /* Textarea */
+.AddPostModalmodal-content textarea {
+  width: 100%;
+  padding: 10px; /* Increased padding for better spacing */
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  resize: vertical; /* Allows users to resize the textarea vertically */
+}
+
+/* Placeholder styling */
+.AddPostModalmodal-content textarea::placeholder {
+  color: #aaa; /* Light color for the placeholder */
+}
+
   /* Image Preview */
   .AddPostModalmodal-content .image-preview {
     margin-top: 10px;

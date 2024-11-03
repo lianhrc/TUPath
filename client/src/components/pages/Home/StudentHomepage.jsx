@@ -89,7 +89,7 @@ const StudentHomepage = () => {
     if (newPostContent.trim()) {
       const newPost = {
         profileImg: profileicon,
-        name: 'Stupidyante',
+        name: 'Maykel Jisun',
         content: newPostContent,
         postImg: newPostImage,
       };
