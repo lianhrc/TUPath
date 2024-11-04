@@ -53,10 +53,12 @@ function StudentSignup() {
         <div className="container mt-5" style={{ maxWidth: '600px' }}>
             <h2 className="text-center mb-4">Student Sign Up</h2>
             <div className="d-flex justify-content-center mb-3">
-                <GoogleLogin
-                    onSuccess={handleGoogleSignup}
-                    onError={() => setMessage('Google sign-up failed')}
-                />
+                <div className="google-signup-btn">
+                        <GoogleLogin
+                        onSuccess={handleGoogleSignup}
+                        onError={() => setMessage('Google sign-up failed')}
+                    />
+                </div>
             </div>
             <p className="d-flex justify-content-center mb-3">or</p>
             <form onSubmit={handleSignup}>
@@ -110,14 +112,14 @@ function StudentSignup() {
                         required
                     />
                     <label className="form-check-label" htmlFor="termsCheck">
-                        Yes, I understand and agree to the <a href="#">Terms of Service</a> including the <a href="#">Privacy Policy</a>
+                        Yes, I understand and agree to the <span><button>Terms of Service</button></span>including the <span><button>Privacy Policy</button></span>.
                     </label>
                 </div>
                 <button type="submit" className="createbtn">Create my account</button>
             </form>
             {message && <p className="mt-3 text-center">{message}</p>}
-            <p className="text-center mt-3">
-                Already have an account? <button onClick={handleLoginRedirect} className="btn btn-link p-0">Login</button>
+            <p className="text-center mt-3 ">
+                Already have an account? <button onClick={handleLoginRedirect} className="btn btn-link p-0 logindirect-btn" >Login</button>
             </p>
         </div>
     );
