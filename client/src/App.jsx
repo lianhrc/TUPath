@@ -26,14 +26,7 @@ function App() {
           <Route path='/' element={<Landingpage />} />  
 
           {/* Protected Routes */}
-          <Route 
-            path='/studentlandpage' 
-            element={
-              <ProtectedRoute>
-                <Studentlandpage />
-              </ProtectedRoute>
-            } 
-          />
+       
           <Route 
             path='/studenthomepage' 
             element={
@@ -51,17 +44,41 @@ function App() {
             } 
           />
 
-          {/* Public Routes */}
+          <Route 
+          path='/Inboxpage' 
+          element={
+            <ProtectedRoute>
+              <Inboxpage />
+            </ProtectedRoute>
+          } 
+        />
+
+          <Route 
+          path='/StudentProfile' 
+          element={
+            <ProtectedRoute>
+              <StudentProfile />
+            </ProtectedRoute>
+          } 
+        />
+
+          <Route 
+          path='/Settings' 
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } 
+        />
+
           <Route path='/employerlandpage' element={<Employerlandpage />} />
+          <Route path='/studentlandpage' element={<Studentlandpage />} />
           <Route path='/studentsignup' element={<StudentSignup />} />
           <Route path='/expertsignup' element={<ExpertSignup />} />
           <Route path='/login' element={<Login />} />
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employeeprofilecreation' element={<EmployeeProfileCreation />} />
-          <Route path='/StudentProfile' element={<StudentProfile />} />
-          <Route path='/Inboxpage' element={<Inboxpage />} />
-          <Route path='/Settings' element={<Settings />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
