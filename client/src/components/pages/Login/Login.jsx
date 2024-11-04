@@ -72,7 +72,10 @@ function Login() {
             <div className='logincontent'>
                 <div className="Login-container">
                     <h2>Make the most of your career</h2>
-                    <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
+                    <div className="google-login-button">
+                        <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
+                    </div>
+
                     
                     <div className="separator">or</div>
 
@@ -102,7 +105,6 @@ function Login() {
                                     onChange={() => setRole('expert')}
                                 />
                             </label>
-                            Expert
                             Expert
                         </div>
                     </div>

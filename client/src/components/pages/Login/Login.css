@@ -17,7 +17,11 @@
     text-align: center;
     margin-top: 20px;
     width: 600px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
+
 
 h2 {
     margin-bottom: 20px;
@@ -25,20 +29,26 @@ h2 {
     font-weight: bold;
 }
 
-.google-login {
+.google-login-button{
     width: 50%;
-    padding: 10px;
-    background-color: #8DC1F2; /* Google Blue */
-    color: white;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 12px;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0;
 }
 
-.google-login:hover {
-    background-color: #357ae8; /* Darker blue on hover */
-}
+.google-login-button button {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .google-login-button button:hover {
+    background-color: #357ae8;
+  }
+  
 
 .separator {
     margin: 15px 0;
