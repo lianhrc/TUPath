@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
-import Header from '../../common/header';
+import Header from '../../common/headerlogsign';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import { GoogleLogin } from '@react-oauth/google';
@@ -85,7 +85,7 @@ function Login() {
                     <Header />
                     <div className='logincontent'>
                         <div className="Login-container">
-                            <h2>Make the most of your career</h2>
+                            <h3>Make the most of your career</h3>
                             <div className="google-login-button">
                                 <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
                             </div>
