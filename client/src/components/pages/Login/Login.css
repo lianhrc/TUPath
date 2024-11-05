@@ -1,26 +1,36 @@
 /* Login.css */
 
 
+
 .Login {
     display: flex;
     flex-direction: column;
+    background-image: url(../../../assets/loginbg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
-.logincontent{
+.logincontent {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: column;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
 }
+
 .Login-container {
     height: 85vh;
     text-align: center;
-    margin-top: 20px;
-    width: 600px;
+    width: 540px;
     display: flex;
     justify-content: center;
     flex-direction: column;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
 }
+
 
 
 h2 {
@@ -133,4 +143,18 @@ input[type="password"]:focus {
 .signup-link {
     color: #007bff; /* Blue color for the signup link */
     cursor: pointer; /* Pointer cursor for link */
+}
+
+
+
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
