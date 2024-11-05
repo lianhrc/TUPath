@@ -94,3 +94,7 @@
   border-radius: 5px;
   text-decoration: none;
 }
+.signup-btn:hover{
+  background-color: #a13838;
+
+}
