@@ -1,3 +1,21 @@
+.studentsignup-container{
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    height: 100vh;
+    background-image: url('../../../assets/loginbg.jpg'); /* Replace with your image path */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.studentsignup-container .div{
+    max-width: 530px;
+    width: 100%;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
+    margin-top: 100px;
+
+}
 .createbtn{
     border: none;
     background-color: #9D0E0F;
@@ -69,8 +87,9 @@ background-color: #357ae8;
 
 .form-check-label{
     width:100%;
-    display: flex;
-    align-items: center;
+    max-width: 300px;
+    display:block;
+    text-align: center;
 }
 
 .form-check-label span{
@@ -97,4 +116,15 @@ background-color: #357ae8;
 .logindirect-btn{
     font-size: 12px;
     text-decoration: none;
+}
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
