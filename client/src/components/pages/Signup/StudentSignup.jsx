@@ -50,8 +50,9 @@ function StudentSignup() {
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: '600px' }}>
-            <h2 className="text-center mb-4">Student Sign Up</h2>
+        <div className="studentsignup-container">
+            <div className="div">
+            <h4 className="text-center mb-4">Student Sign Up</h4>
             <div className="d-flex justify-content-center mb-3">
                 <div className="google-signup-btn">
                         <GoogleLogin
@@ -121,6 +122,7 @@ function StudentSignup() {
             <p className="text-center mt-3 ">
                 Already have an account? <button onClick={handleLoginRedirect} className="btn btn-link p-0 logindirect-btn" >Login</button>
             </p>
+            </div>
         </div>
     );
 }

@@ -182,12 +182,3 @@
     }
 }
 
-
-@keyframes background-slide {
-    0% {
-        background-position: 0% 50%; /* Start from left */
-    }
-    100% {
-        background-position: 100% 50%; /* End at right */
-    }
-}
