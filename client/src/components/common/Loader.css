@@ -8,6 +8,12 @@
     background-repeat: no-repeat;
     background-size: cover;
     height: 100vh; /* Adjust to your layout needs */
+    z-index: 9999; /* High z-index value to place it on top */
+    position: fixed; /* Fix the position to cover the entire viewport */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .spinner {
