@@ -17,7 +17,7 @@ function StudentSignup() {
     const navigate = useNavigate();
 
     const handleSignup = async (event) => {
-        event.preventDefault();
+        event.preventDefault(); 
         setLoading(true); // Set loading to true
 
         try {
@@ -44,28 +44,48 @@ function StudentSignup() {
         }
     };
 
+    
     const handleGoogleSignup = async (response) => {
-        setLoading(true); // Set loading to true for Google signup
-
+        // Check for the "Account already exists" case first
+        const googleToken = response.credential;
+        
         try {
-            const googleToken = response.credential;
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
-
-            // Simulate a delay of 3 seconds before navigating
+    
+            // If account already exists, show the message and do not show loader
+            if (res.data.message === 'Account already exists. Please log in.') {
+                setMessage('Account already exists. Please log in.');
+                return; // Stop here, do not show loader
+            }
+    
+            // Proceed to loading and signup if account doesn't exist
+            setLoading(true); // Start the loader when the signup is in process
+    
             setTimeout(() => {
                 if (res.data.success) {
                     localStorage.setItem('token', res.data.token);
                     navigate('/studenthomepage', { replace: true });
+                } else {
+                    setMessage(res.data.message || 'Sign-up failed. Please try again.');
                 }
-            }, 3000);
+            }, 3000); // Simulate delay for success
+    
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         } finally {
-            setTimeout(() => {
-                setLoading(false); // Reset loading after 3 seconds
-            }, 3000);
+            // Stop the loader after the process is done
+            if (message !== 'Account already exists. Please log in.') {
+                setTimeout(() => {
+                    setLoading(false); // Stop loader after success/failure
+                }, 3000);
+            }
         }
     };
+    
+    
+    
+
+    
 
     const handleLoginRedirect = () => {
         navigate('/login');

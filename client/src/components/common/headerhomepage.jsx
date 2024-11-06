@@ -106,7 +106,7 @@ function HeaderHomepage() {
                 {isProfileOpen && (
                   <div className="dropdown-menu profile-menu">
                     <Link to="/StudentProfile">Profile</Link>
-                    <Link to="/Settings">Settings</Link>
+                    {/*<Link to="/Settings">Settings</Link>*/}
                     <Link onClick={handleLogout}>Logout</Link>
                   </div>
                 )}
