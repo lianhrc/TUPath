@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
@@ -77,13 +78,18 @@ function Login() {
     };
 
     return (
-        <div className="Login">
+        <div className="Login" >
             {loading ? ( // Only display loader when loading
                 <Loader />
             ) : (
                 <>
                     <Header />
-                    <div className='logincontent'>
+                    <motion.div className='logincontent'
+                        initial={{ opacity: 0, y: 100 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 100, damping: 10 }}
+                        viewport={{ once: true, amount: 0.2 }}  
+                    >
                         <div className="Login-container">
                             <h3>Make the most of your career</h3>
                             <div className="google-login-button">
@@ -146,7 +152,7 @@ function Login() {
                                 Don't have an account? <span onClick={handleSignupRedirect} className="signup-link">Sign Up</span>
                             </p>
                         </div>
-                    </div>
+                    </motion.div>
                 </>
             )}
         </div>
