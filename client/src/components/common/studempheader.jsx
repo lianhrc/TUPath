@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../../assets/logoicon2.png'; // Adjust the path as necessary
-import './header.css'; // Import CSS if needed
+import logo from '../../assets/logoicon.png'; // Adjust the path as necessary
+import './studempheader.css'; // Import CSS if needed
 
 
 
@@ -11,8 +10,8 @@ const Header = () => {
       <a className='lefticon' href="/">
         <img src={logo} alt="Tupath Logo" className="logo" />
       </a>
-      <div className="auth-buttons">
-        <nav className="nav-links">
+      <div className="studempheader-buttons">
+        <nav className="studempheader-links">
           <a href="/Studentlandpage">For Students</a>
           <a href="/Employerlandpage">For Employers</a>
         </nav>

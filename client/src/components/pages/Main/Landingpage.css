@@ -11,17 +11,27 @@ body {
   line-height: 1.6; /* Improve readability with line-height */
   background-color: white;
   
+  
 }
   
 .landing-page {
   text-align: center;
   color: #333;
+  background-image: url('../../../assets/loadersbg.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 
 /* Hero Section styling */
 .hero-section {
   display: flex;
+  animation: fadeInSlideUp 0.8s ease forwards;
   align-items: center;
   justify-content: center;
   height:75vh;
@@ -29,22 +39,25 @@ body {
 }
 
 .hero-content {
-  padding-left: 50px;
-  width: 40%;
+  padding-left: 40px;
+  width: 45%;
   text-align: left; /* Align text to the left */
   display: flex;
   flex-direction: column;
   justify-content: center;
+  
+  color: white;
 }
 
 .hero-content h1 {
   font-size: 2.5rem;
   font-weight: bold;
+
   margin: 0;
 }
 
 .hero-content .p1 {
-  color: #9D0E0F;
+  color: rgb(158, 157, 157);
   font-size: 0.8rem;
 
 }
@@ -52,7 +65,8 @@ body {
 .hero-content .p {
   font-size: 0.8rem;
   margin: 30px 0;
-  color: rgb(113, 111, 111);
+  color: rgb(172, 120, 7);
+
   line-height: 30px;
 }
 .hero-buttons .get-started-btn,
@@ -70,17 +84,22 @@ body {
   color: white;
   text-decoration: none;
 }
+.get-started-btn:hover{
+  background-color: #a92d2d;
+  color: white;
+}
 
 .hero-buttons .explore-btn {
   background: none;
-  color: #9D0E0F;
+  color: rgb(158, 157, 157);
+
 }
 
 .hero-buttons .explore-btn::after {
   content: ''; /* Required for the pseudo-element */
   display: block;
   height: 2px; /* Height of the underline */
-  background-color: #9D0E0F; /* Underline color */
+  background-color:white; /* Underline color */
   position: absolute;
   left: 0;
   right: 0;
@@ -98,25 +117,23 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  
+  background: transparent;
+  background-color: lightblue;
+  width: 40%;
 }
 
-.hero-image img {
-  height: auto; /* Maintain aspect ratio */
-  max-height: 500px; /* Set a maximum height for the image */
-  border-radius: 10px; /* Optional: add rounded corners */
-}
 
 
 .unleash-section {
   width: auto;
-  margin-top: 65px;
+  margin-top: 90px;
   background-color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 80px;
+  padding-bottom: 50px;
+
 }
 
 .unleash-top {
@@ -203,7 +220,7 @@ body {
 }
 
 .unleash-bottom{
-  margin: 80px 0 40px 0;
+  margin: 20px 0 10px 0;
   display: flex;
   width: 80%;
   justify-content: center;
@@ -251,7 +268,7 @@ body {
   height: 400px;
   display: flex;
   flex-direction: row;
-  background-color: #990000;
+  background-color: rgb(126, 21, 29);
   border-radius: 25px;
 }
 
@@ -307,7 +324,7 @@ body {
   height: auto;
   border: none;
   border-radius: 25px;
-  background-image: url('../../../assets//joinTUP.jpg');
+  background-image: url('../../../assets/joinustoday.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -400,3 +417,19 @@ body {
 }
 
 
+@keyframes fadeInSlideUp {
+  0% {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  100% {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* New class to be added dynamically on scroll */
+.animate-on-scroll {
+  opacity: 0;
+  animation: fadeInSlideUp 0.8s ease forwards;
+}

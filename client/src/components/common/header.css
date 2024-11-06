@@ -30,7 +30,7 @@
 
 .nav-links a {
   margin: 0 15px;
-  color: black;
+  color: white;
   text-decoration: none;
   position: relative;
 }
@@ -39,7 +39,7 @@
   content: ''; /* Required for the pseudo-element */
   display: block;
   height: 2px; /* Height of the underline */
-  background-color: #9D0E0F; /* Underline color */
+  background-color: white; /* Underline color */
   position: absolute;
   left: 0;
   right: 0;
@@ -60,6 +60,8 @@
 .auth-buttons .signup-btn {
   margin-left: 10px;
   padding: 10px 20px;
+  color: white;
+
   border: none;
   cursor: pointer;
 }
@@ -75,7 +77,7 @@
   content: ''; /* Required for the pseudo-element */
   display: block;
   height: 2px; /* Height of the underline */
-  background-color: #9D0E0F; /* Underline color */
+  background-color: white; /* Underline color */
   position: absolute;
   left: 0;
   right: 0;
@@ -93,4 +95,8 @@
   color: white;
   border-radius: 5px;
   text-decoration: none;
+}
+.signup-btn:hover{
+  background-color: #800b0b;
+  color: white;
 }

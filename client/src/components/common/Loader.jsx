@@ -1,7 +1,7 @@
 import React from 'react';
 import './Loader.css'; // Import the CSS file
 import logoiconloaders from '../../assets/logo.png'; // Path to your main logo
-import logoicon2loaders from '../../assets/logoicon.png'; // Path to your logo icon
+import logoicon2loaders from '../../assets/logoicon2.png'; // Path to your logo icon
 
 const Loader = () => {
   return (

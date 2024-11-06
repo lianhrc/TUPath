@@ -1,6 +1,6 @@
 import React from 'react'
 import './employerlandpage.css'
-import Header from '../../common/header';
+import Header from '../../common/studempheader';
 import Footer from '../../common/footer';
 import search from '../../../assets/search.png';
 import rank from '../../../assets/ranking.png';

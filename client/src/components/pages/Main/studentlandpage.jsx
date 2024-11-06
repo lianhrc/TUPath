@@ -1,6 +1,6 @@
 import React from 'react'
 import './studentlandpage.css'
-import Header from '../../common/header';
+import Header from '../../common/studempheader';
 import Footer from '../../common/footer'
 import profile from '../../../assets/reviewericon.png';
 
@@ -111,7 +111,7 @@ function studentlandpage() {
               </div> 
               <h3>Answer AI Questions</h3>
               <p>
-                Enhance your profile by answering AI-generated questions tailored to highlight your strengths.
+                Enhance your profile by answering system indicators tailored to highlight your strengths.
               </p>
             </div>
           </div>

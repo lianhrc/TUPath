@@ -17,7 +17,7 @@ const Header = () => {
           <a href="/Employerlandpage">For Employers</a>
         </nav>
         <a href="/login" className="login-btn">Login</a>
-        <a href="/LoginRoles" className="signup-btn">Sign Up</a>
+        <a href="/LoginRoles" className="navbarsign-btn">Sign Up</a>
       </div>
     </header>
   );

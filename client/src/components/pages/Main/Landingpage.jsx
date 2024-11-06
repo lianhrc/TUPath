@@ -1,7 +1,6 @@
 import React, {useEffect} from 'react';
 import './Landingpage.css';
-import portimg from '../../../assets/portimg.png'; // Adjust the path as necessary
-import rightarrow from '../../../assets/right-arrow.png';
+
 import profileicon from '../../../assets/profile.png';
 import fileicon from '../../../assets/file.png';
 import boticon from '../../../assets/bot.png';
@@ -36,11 +35,11 @@ const LandingPage = () => {
             <div className="hero-buttons">
 
               <a href="/Login"> <button className="get-started-btn">Get Started </button></a>
-              <a href="/studentlandpage"><button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button></a>
+              <a href="/studentlandpage"><button className="explore-btn">Explore Features &#62;</button></a>
             </div>
         </div>
         <div className="hero-image">
-          <img src={portimg} alt="Academic Showcase" /> {/* Use your imported image here */}
+         
         </div>
       </section>
 

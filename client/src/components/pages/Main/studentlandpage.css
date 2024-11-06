@@ -26,8 +26,8 @@
     flex-direction: column;
     align-items: center;
     color: white;
-    background-color: #9D0E0F;
-    background-position: right center;
+    background-image: url(../../../assets/loadersbg.jpg);
+    background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
   }
@@ -200,32 +200,38 @@
 .subsubsec2 {
   display: flex;
   flex-direction: row;
+  border-radius: 10px;
+  padding: 30px 30px;
   width: 80%;
   gap: 20px; /* Adds space between text and image containers */
   margin-bottom: 20px;
 }
 
 .text-container2 {
-  width: 45%; /* Adjust width to balance with image */
+  width: 60%; /* Adjust width to balance with image */
   display: flex;
   flex-direction: column;
   padding: 20px;
   justify-content: center;
+  
   align-items: flex-start;
   text-align: left;
+
+
 }
 
 .image-container2 {
-  width: 45%; /* Adjusted width for better balance */
-  height: 300px; /* Set ideal height */
+  width: 60%; /* Adjusted width for better balance */
   border-radius: 10px;
-  background-image: url('../assets/portimg.png');
+  height: 300px; /* Set ideal height */
+  background-image: url('../../../assets/successfortupians.jpg');
   background-position: center;
-  background-size: contain;
+  background-size: cover;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
   background-repeat: no-repeat;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
 }
 
 /* Responsive adjustments */
