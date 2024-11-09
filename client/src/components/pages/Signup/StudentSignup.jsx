@@ -38,7 +38,7 @@ function StudentSignup() {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/studenthomepage', { replace: true });
+                navigate('/studentprofilecreation', { replace: true }); // Redirect to profile creation
             }
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
@@ -48,6 +48,7 @@ function StudentSignup() {
     const handleLoginRedirect = () => {
         navigate('/login');
     };
+
 
     return (
         <div className="container mt-5" style={{ maxWidth: '600px' }}>

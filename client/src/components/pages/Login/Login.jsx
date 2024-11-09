@@ -16,10 +16,10 @@ function Login() {
     const token = localStorage.getItem('token');
 
     useEffect(() => {
-        if (localStorage.getItem('token')) {
+        if (token) {
             navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
         }
-    }, [navigate, role]);
+    }, [navigate, role, token]);
 
     const handleGoogleLogin = async (response) => {
         try {
@@ -27,17 +27,12 @@ function Login() {
             const res = await axiosInstance.post('/google-login', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
+                const redirectPath = res.data.redirectPath || '/studenthomepage';
+                navigate(redirectPath, { replace: true });
             } else {
-                setMessage('Google login failed. Please try again.');
                 setMessage('Google login failed. Please try again.');
             }
         } catch (error) {
-            if (error.response && error.response.status === 404) {
-                setMessage('Account not found. Please sign up first.');
-            } else {
-                setMessage('An error occurred during Google login. Please try again.');
-            }
             if (error.response && error.response.status === 404) {
                 setMessage('Account not found. Please sign up first.');
             } else {
@@ -52,8 +47,8 @@ function Login() {
             const response = await axiosInstance.post('/login', { email, password, role });
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
-                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
-                navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
+                const redirectPath = response.data.redirectPath || '/studenthomepage';
+                navigate(redirectPath, { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
             }
@@ -72,8 +67,10 @@ function Login() {
             <div className='logincontent'>
                 <div className="Login-container">
                     <h2>Make the most of your career</h2>
-                    <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setMessage('Google login failed')} />
-                    
+                    <GoogleLogin
+                        onSuccess={handleGoogleLogin}
+                        onError={() => setMessage('Google login failed')}
+                    />
                     <div className="separator">or</div>
 
                     {/* Role selection between student and expert */}
@@ -90,8 +87,6 @@ function Login() {
                             </label>
                             Student
                         </div>
-
-
                         <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
                             <img src={employer} alt="Employer" />
                             <label>
@@ -102,7 +97,6 @@ function Login() {
                                     onChange={() => setRole('expert')}
                                 />
                             </label>
-                            Expert
                             Expert
                         </div>
                     </div>
@@ -120,6 +114,7 @@ function Login() {
                                 required
                             />
                         </div>
+
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
                             <input
