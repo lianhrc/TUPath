@@ -4,21 +4,21 @@ import axiosInstance from '../../../services/axiosInstance.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
-import Loader from '../../common/Loader.jsx'; // Import the Loader component
+import Loader from '../../common/Loader.jsx';
 
 function StudentSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('student'); // Default role for Google Signup
+    const [role, setRole] = useState('student');
     const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(false); // New loading state
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSignup = async (event) => {
-        event.preventDefault(); 
-        setLoading(true); // Set loading to true
+        event.preventDefault();
+        setLoading(true);
 
         try {
             const response = await axiosInstance.post('/studentsignup', {
@@ -28,64 +28,45 @@ function StudentSignup() {
                 password,
             });
 
-            // Simulate a delay of 3 seconds before navigating
             setTimeout(() => {
                 if (response.data.success) {
                     setMessage('Signup successful!');
-                    navigate('/login');
+                    navigate('/studentprofilecreation', { replace: true });
                 }
+                setLoading(false);
             }, 3000);
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
-        } finally {
-            setTimeout(() => {
-                setLoading(false); // Reset loading after 3 seconds
-            }, 3000);
+            setLoading(false);
         }
     };
 
-    
     const handleGoogleSignup = async (response) => {
-        // Check for the "Account already exists" case first
         const googleToken = response.credential;
-        
+
         try {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
-    
-            // If account already exists, show the message and do not show loader
+            
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');
-                return; // Stop here, do not show loader
+                return;
             }
-    
-            // Proceed to loading and signup if account doesn't exist
-            setLoading(true); // Start the loader when the signup is in process
-    
+
+            setLoading(true);
             setTimeout(() => {
                 if (res.data.success) {
                     localStorage.setItem('token', res.data.token);
-                    navigate('/studenthomepage', { replace: true });
+                    navigate('/studentprofilecreation', { replace: true });
                 } else {
                     setMessage(res.data.message || 'Sign-up failed. Please try again.');
                 }
-            }, 3000); // Simulate delay for success
-    
+                setLoading(false);
+            }, 3000);
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
-        } finally {
-            // Stop the loader after the process is done
-            if (message !== 'Account already exists. Please log in.') {
-                setTimeout(() => {
-                    setLoading(false); // Stop loader after success/failure
-                }, 3000);
-            }
+            setLoading(false);
         }
     };
-    
-    
-    
-
-    
 
     const handleLoginRedirect = () => {
         navigate('/login');
@@ -93,7 +74,7 @@ function StudentSignup() {
 
     return (
         <div className="studentsignup-container">
-            {loading ? ( // Only display loader when loading
+            {loading ? (
                 <Loader />
             ) : (
                 <div className="div">
@@ -158,13 +139,13 @@ function StudentSignup() {
                                 required
                             />
                             <label className="form-check-label" htmlFor="termsCheck">
-                                Yes, I understand and agree to the <span><button>Terms of Service</button></span> including the <span><button>Privacy Policy</button></span>.
+                                Yes, I understand and agree to the <button>Terms of Service</button> including the <button>Privacy Policy</button>.
                             </label>
                         </div>
                         <button type="submit" className="createbtn">Create my account</button>
                     </form>
                     {message && <p className="mt-3 text-center">{message}</p>}
-                    <p className="text-center mt-3 ">
+                    <p className="text-center mt-3">
                         Already have an account? <button onClick={handleLoginRedirect} className="btn btn-link p-0 logindirect-btn">Login</button>
                     </p>
                 </div>

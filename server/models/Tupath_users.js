@@ -24,6 +24,18 @@ const TupathUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
+  profileDetails: { // New section for profile details
+    fullName: String,
+    studentId: String,
+    department: String,
+    yearLevel: String,
+    bio: String,
+    city: String,
+    contact: String,
+    profileImg: String, // Add this line to store the image URL
+    projectFiles: [String], // New field for storing project file paths
+    certificatePhotos: [String], // New field for storing certificate image paths
+  }
 });
 
 // Schema for TUPATH experts
@@ -48,7 +60,8 @@ const ExpertUserSchema = new mongoose.Schema({
   googleSignup: {
     type: Boolean,
     default: false, // Track if signed up via Google
-  },
+  }
+
 });
 
 // Models

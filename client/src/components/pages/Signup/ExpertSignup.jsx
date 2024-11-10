@@ -10,7 +10,7 @@ function ExpertSignup() {
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('expert'); // Default role
+    const [role] = useState('expert'); // Fixed role for expert
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ function ExpertSignup() {
             });
             if (response.data.success) {
                 setMessage('Signup successful!');
-                navigate('/login');
+                navigate('/login'); // Redirect to login page
             }
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
@@ -35,13 +35,13 @@ function ExpertSignup() {
     const handleGoogleSignup = async (response) => {
         try {
             const googleToken = response.credential;
-            const res = await axiosInstance.post('/google-signup', { token: googleToken, role: 'expert' });
+            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/experthomepage', { replace: true });
+                navigate('/experthomepage', { replace: true }); // Redirect to expert homepage
             }
         } catch (error) {
-            setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
+            setMessage(error.response?.data?.message || 'An error occurred during Google signup. Please try again.');
         }
     };
 
@@ -101,20 +101,6 @@ function ExpertSignup() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </div>
-                <div className="form-group mb-3">
-                    <label className="form-label">Your role:</label>
-                    <div className="form-check">
-                        <input
-                            type="radio"
-                            className="form-check-input"
-                            id="roleExpert"
-                            value="expert"
-                            checked={role === 'expert'}
-                            onChange={() => setRole('expert')}
-                        />
-                        <label className="form-check-label" htmlFor="roleExpert">Expert</label>
-                    </div>
                 </div>
                 <div className="form-check mb-3">
                     <input
