@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
-import logo from '../../../assets/logoicon.png';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';

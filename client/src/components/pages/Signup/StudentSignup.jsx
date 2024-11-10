@@ -4,7 +4,6 @@ import axiosInstance from '../../../services/axiosInstance.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
-import Loader from '../../common/Loader.jsx';
 
 function StudentSignup() {
     const [firstName, setFirstName] = useState('');
