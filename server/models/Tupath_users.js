@@ -33,6 +33,8 @@ const TupathUserSchema = new mongoose.Schema({
     city: String,
     contact: String,
     profileImg: String, // Add this line to store the image URL
+    projectFiles: [String], // New field for storing project file paths
+    certificatePhotos: [String], // New field for storing certificate image paths
   }
 });
 

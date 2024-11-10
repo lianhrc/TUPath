@@ -10,6 +10,7 @@ function Profilepage() {
     const [profileData, setProfileData] = useState({});
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState(''); // For feedback messages
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -35,6 +36,36 @@ function Profilepage() {
     const profileImageUrl = profileData.profileDetails?.profileImg
         ? `http://localhost:3001${profileData.profileDetails.profileImg}`
         : avatar; // Use fallback avatar if no image is provided
+
+    const handleProjectUpload = async (e) => {
+        const formData = new FormData();
+        Array.from(e.target.files).forEach(file => formData.append("projectFiles", file));
+        try {
+            const response = await axiosInstance.post('/api/uploadProject', formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            if (response.data.success) {
+                setMessage("Project files uploaded successfully");
+            }
+        } catch (error) {
+            setMessage("Failed to upload project files");
+        }
+    };
+
+    const handleCertificateUpload = async (e) => {
+        const formData = new FormData();
+        Array.from(e.target.files).forEach(file => formData.append("certificatePhotos", file));
+        try {
+            const response = await axiosInstance.post('/api/uploadCertificate', formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            if (response.data.success) {
+                setMessage("Certificate photos uploaded successfully");
+            }
+        } catch (error) {
+            setMessage("Failed to upload certificate photos");
+        }
+    };
 
     return (
         <div className='Profilepage-container'>
@@ -87,6 +118,13 @@ function Profilepage() {
                                 <p>{profileData.profileDetails?.contact || 'Contact Not Available'}</p>
                             </div>
                         </div>
+                        <div className="profile-section">
+                            <h3>Upload Your Projects</h3>
+                            <input type="file" multiple onChange={handleProjectUpload} />
+                            <h3>Upload Your Certificates</h3>
+                            <input type="file" multiple onChange={handleCertificateUpload} />
+                        </div>
+                        {message && <p className="feedback-message">{message}</p>}
                     </div>
                 </div>
             </div>

@@ -20,6 +20,9 @@ const path = require("path");
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/projects", express.static(path.join(__dirname, "projects")));
+app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+
 
 
 // MongoDB connection
@@ -357,6 +360,53 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
       res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+// Endpoint for uploading project files
+app.post("/api/uploadProject", verifyToken, upload.array("projectFiles", 5), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const filePaths = req.files.map(file => `/projects/${file.filename}`);
+
+    const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+      userId,
+      { $push: { "profileDetails.projectFiles": { $each: filePaths } } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Project files uploaded successfully", projectFiles: filePaths });
+  } catch (error) {
+    console.error("Error uploading project files:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Endpoint for uploading certificate photos
+app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const filePaths = req.files.map(file => `/certificates/${file.filename}`);
+
+    const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+      userId,
+      { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
+  } catch (error) {
+    console.error("Error uploading certificate photos:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 
 

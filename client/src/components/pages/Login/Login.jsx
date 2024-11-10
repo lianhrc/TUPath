@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
-import Header from '../../common/headerlogsign';
+import Header from '../../common/header';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
 import { GoogleLogin } from '@react-oauth/google';
-import Loader from '../../common/Loader.jsx'; // Import the Loader component
 import './Login.css';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('student');
+    const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(false); // New loading state
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         if (token) {
@@ -23,12 +22,9 @@ function Login() {
     }, [navigate, role, token]);
 
     const handleGoogleLogin = async (response) => {
-        setLoading(true); // Set loading to true immediately
-    
         try {
             const googleToken = response.credential;
             const res = await axiosInstance.post('/google-login', { token: googleToken, role });
-    
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 const redirectPath = res.data.redirectPath || '/studenthomepage';
@@ -44,11 +40,9 @@ function Login() {
             }
         }
     };
-    
+
     const handleLogin = async (event) => {
         event.preventDefault();
-        setLoading(true); // Set loading to true
-    
         try {
             const response = await axiosInstance.post('/login', { email, password, role });
             if (response.data.success) {
@@ -57,14 +51,11 @@ function Login() {
                 navigate(redirectPath, { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
-                setLoading(false); // Reset loading on failure
             }
         } catch (error) {
             setMessage('An error occurred. Please try again.');
-            setLoading(false); // Reset loading on error
         }
     };
-    
 
     const handleSignupRedirect = () => {
         navigate('/loginroles'); // Redirects to the signup page
@@ -151,3 +142,6 @@ function Login() {
 }
 
 export default Login;
+
+
+
