@@ -1,40 +1,62 @@
 import React, { useState, useRef } from 'react';
 import './ProjectUpModal.css';
+import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
 import ProjectAssessmentModal from './ProjectAssessmentModal';
 
 const ProjectUploadModal = ({ show, onClose }) => {
-  
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false); // State for the assessment modal
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const fileInputRef = useRef(null);
 
   if (!show) return null;
 
-  const handleFileChange = (e) => {
+  // Handle file selection
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
+
+    const formData = new FormData();
+    files.forEach(file => formData.append("projectFiles", file));
+
+    try {
+      const response = await axiosInstance.post('/api/uploadProject', formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (response.data.success) {
+        console.log("Project files uploaded successfully!");
+      } else {
+        console.error("Failed to upload project files");
+      }
+    } catch (error) {
+      console.error("Error uploading project files:", error);
+    }
   };
 
+
+
+  // Handle file removal
   const handleFileRemove = (fileToRemove) => {
     setSelectedFiles((prevFiles) =>
       prevFiles.filter((file) => file !== fileToRemove)
     );
   };
 
+  // Open file dialog
   const handleChooseFileClick = () => {
     fileInputRef.current.click();
   };
 
+  // Handle submit (open assessment modal)
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowAssessmentModal(true); // Show assessment modal
+    setShowAssessmentModal(true);
   };
 
+  // Handle final submission after assessment
   const handleFinalSubmit = () => {
-    // Handle final project submission here
     console.log("Project submitted successfully!");
     setShowAssessmentModal(false);
-    onClose(); // Close both modals
+    onClose();  // Close both modals
   };
 
   return (
@@ -90,10 +112,9 @@ const ProjectUploadModal = ({ show, onClose }) => {
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="file-input"
-                      style={{ display: 'none' }}
                       multiple
+                      onChange={handleFileChange}  // Trigger upload on file selection
+                      style={{ display: 'none' }}
                     />
                   </div>
                 )}
