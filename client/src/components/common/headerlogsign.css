@@ -55,12 +55,18 @@
   display: flex;
 }
 
-.navbarlogsignauth-buttons .login-btn,
-.navbarlogsignauth-buttons .signup-btn {
+.navbarlogsignauth-buttons .login-btn {
   margin-left: 10px;
   padding: 10px 20px;
   border: none;
   color: white;
+  cursor: pointer;
+}
+
+.navbarlogsignauth-buttons .navbarsign-btn{
+  margin-left: 10px;
+  padding: 10px 20px;
+  border: none;
   cursor: pointer;
 }
 
@@ -88,13 +94,13 @@
   transform: scaleX(1); /* Scale to full width on hover */
 }
 
-.signup-btn {
+.navbarsign-btn {
   background-color: #9D0E0F;
   color: white;
   border-radius: 5px;
   text-decoration: none;
 }
-.signup-btn:hover{
-  background-color: #a13838;
-
+.navbarsign-btn:hover{
+  background-color: #800b0b;
+  color: white;
 }

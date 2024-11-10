@@ -1,5 +1,3 @@
-
-
 /* Profile Page Styling */
 .Profilepage-container {
   display: flex;
@@ -11,9 +9,9 @@
 
 .main-content {
   display: flex;
-  gap: 20px;
+  gap: 40px;
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1300px;
   width: 100%;
 }
 
@@ -28,57 +26,61 @@
   gap: 20px;
 }
 
-.profile-header,.profile-main {
+.profile-header,
+.profile-main {
   margin-bottom: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: white;
   width: 100%;
-  height: auto;
   padding: 20px;
 }
 
-.profilesectiontop{
+.profilesectiontop {
   display: flex;
-  margin-bottom: 10px;
   justify-content: space-between;
 }
 
-.profilesectiontop a{
+.profilesectiontop a {
   color: #9D0E0F;
   font-size: 10px;
   text-decoration: none;
 }
 
-.profile-header  h2{
-  font-weight: 500;
+.profile-header h2 {
+  font-weight: bold;
+  font-size: 24px;
 }
 
+.profile-header img{
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
-.subheader{
+.subheader {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
   opacity: 0.8;
 }
 
-
-.subheader img{
+.subheader img {
   width: 15px;
   height: 15px;
   margin-right: 10px;
 }
 
-
-
-.profile-header-left{
+.profile-header-left {
   display: flex;
-  align-items: flex-start;
   flex-direction: column;
+  text-align: left;
+
 }
 
 .profile-header-right{
   display: flex;
-  align-items: flex-end;
+  text-align: right;
   flex-direction: column;
 }
 
@@ -101,22 +103,21 @@
   color: #666;
 }
 
-.profile-section p {
-  margin: 5px 0;
-  margin-bottom: 50px;
-}
-
 .profile-section {
   width: 100%;
+  margin-bottom: 40px;
   text-align: left;
 }
+
+.profile-section p {
+  margin: 5px 0;
+}
+
 
 .profile-section h3 {
   font-size: 14px;
   color: #333;
 }
-
-
 
 /* Projects Section */
 .projects-section {
@@ -140,12 +141,14 @@
 .project-card {
   background-color: #f0f2f5;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   border: 1px solid #ddd;
   overflow: hidden;
   border-radius: 5px;
   cursor: pointer;
+  height: 150px;
   transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
 
@@ -156,17 +159,13 @@
   opacity: 0.5;
 }
 
-.project-card hr {
-  width: 100%;
-  border-top: 1px solid #ddd;
-  margin: 15px 0;
-}
-
 .project-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
+/* Add Project Button */
 .add-project {
   background-color: #ffffff;
   cursor: pointer;
@@ -178,7 +177,7 @@
   transition: background-color 0.3s;
 }
 
-.add-project:hover {
+.add-project:hover {  
   background-color: #e6f0ff;
 }
 
@@ -186,4 +185,34 @@
   margin: 0;
   font-size: 1em;
   color: #9D0E0F;
+}
+
+/* File Upload Section */
+.project-section {
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+  padding: 30px;
+}
+
+
+.project-section h3 {
+  margin-bottom: 10px;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.feedback-message {
+  color: #d9534f;
+  margin-top: 10px;
+  font-size: 14px;
 }

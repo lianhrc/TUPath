@@ -1,6 +1,7 @@
+import { motion } from 'framer-motion';
 import React from 'react'
 import './employerlandpage.css'
-import Header from '../../common/header';
+import Header from '../../common/studempheader';
 import Footer from '../../common/footer';
 import search from '../../../assets/search.png';
 import rank from '../../../assets/ranking.png';
@@ -8,20 +9,23 @@ import insights from '../../../assets/insigths.png';
 import profile from '../../../assets/reviewericon.png';
 
 
-
-
 function employerlandpage() {
   return (
     <div className='employerlandpage'>
     <Header />
     
-      <section className='employer-welcome-section'>
+      <section className='employer-welcome-section' >
          <div className='emplyer-welcome-subsection'>
             <h1>Discover Top Talent with TUPath</h1>
             <p>Streamline your recruitment process by accessing accurated pool of highly skilled students.</p>
          </div>
 
-         <section className='discover-section'>
+         <motion.section className='discover-section'
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }} 
+         >
           <div className="discover-container">
               <div className="discover-sub-container">
                 <div>
@@ -60,10 +64,15 @@ function employerlandpage() {
                 </div>
               </div>
             </div>
-            </section>
+            </motion.section>
           </section>
 
-          <section className="talent-section">
+          <motion.section className="talent-section"
+            initial={{ opacity: 0, y: 100 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 10 }}
+            viewport={{ once: true, amount: 0.2 }} 
+          >
           <div className="talent-content">
             <h2>Efficient Talent Acquisition</h2>
             <div className="talent-cards">
@@ -97,10 +106,15 @@ function employerlandpage() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
         
 
-        <section className="testimonial-container">
+        <motion.section className="testimonial-container"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }} 
+        >
           <div className="stars">
             {Array(5).fill().map((_, i) => (
               <span key={i} className="star">★</span>
@@ -120,8 +134,13 @@ function employerlandpage() {
               <p>Computer Science Graduate</p>
             </div>
           </div>
-        </section>
-        <section className="testimonial-container">
+        </motion.section>
+        <motion.section className="testimonial-container"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }} 
+        >
         <div className="stars">
           {Array(5).fill().map((_, i) => (
             <span key={i} className="star">★</span>
@@ -141,9 +160,14 @@ function employerlandpage() {
             <p>Computer Science Graduate</p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="testimonial-container">
+      <motion.section className="testimonial-container"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }} 
+        >
       <div className="stars">
         {Array(5).fill().map((_, i) => (
           <span key={i} className="star">★</span>
@@ -163,7 +187,7 @@ function employerlandpage() {
           <p>Computer Science Graduate</p>
         </div>
       </div>
-    </section>
+    </motion.section>
 
           
    

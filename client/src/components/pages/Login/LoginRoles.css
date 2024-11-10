@@ -30,7 +30,6 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    animation: fadeInSlideUp 0.5s ease forwards;
 
 }
 
@@ -45,8 +44,9 @@
 .title {
     margin-bottom: 30px;
     margin-top: 50px;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: bold;
+    color: transparenxt;      
 }
 
 /* Card Choice */
@@ -117,6 +117,7 @@
 
 .card-body h5 {
     font-size: 12px;
+    font-weight: normal;
 }
 
 /* Hide the default radio button */
@@ -170,15 +171,4 @@
     color: #9D0E0F;
 }
 
-
-@keyframes fadeInSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 

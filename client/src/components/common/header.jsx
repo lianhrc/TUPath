@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../../assets/logoicon.png'; // Adjust the path as necessary
+import logo from '../../assets/logoicon2.png'; // Adjust the path as necessary
 import './header.css'; // Import CSS if needed
 
 

@@ -1,14 +1,13 @@
+import { motion } from 'framer-motion';
 import React, {useEffect} from 'react';
-import './Landingpage.css';
-import portimg from '../../../assets/portimg.png'; // Adjust the path as necessary
-import rightarrow from '../../../assets/right-arrow.png';
+import { useNavigate } from 'react-router-dom';
 import profileicon from '../../../assets/profile.png';
 import fileicon from '../../../assets/file.png';
 import boticon from '../../../assets/bot.png';
 import reviewericon from '../../../assets/reviewericon.png';
 import Header from '../../common/header';
 import Footer from '../../common/footer';
-import { useNavigate } from 'react-router-dom';
+import './Landingpage.css';
 
 
 const LandingPage = () => {
@@ -28,7 +27,12 @@ const LandingPage = () => {
     <div className="landing-page">
     <Header />
 
-      <section className="hero-section">
+      <motion.section className="hero-section"
+      initial={{ opacity: 0, y: 100 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 10 }}
+      viewport={{ once: true, amount: 0.2 }}
+      >
         <div className="hero-content">
           <p className='p1'>Empowering Students, Engaging Employers</p>
           <h1>Showcase Your Academic Journey</h1>
@@ -36,15 +40,21 @@ const LandingPage = () => {
             <div className="hero-buttons">
 
               <a href="/Login"> <button className="get-started-btn">Get Started </button></a>
-              <a href="/studentlandpage"><button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button></a>
+              <a href="/studentlandpage"><button className="explore-btn">Explore Features &#62;</button></a>
             </div>
         </div>
         <div className="hero-image">
-          <img src={portimg} alt="Academic Showcase" /> {/* Use your imported image here */}
+         
         </div>
-      </section>
+      </motion.section>
 
-       <section className="unleash-section">
+       <motion.section className="unleash-section"
+       initial={{ opacity: 0, y: 100 }}
+       whileInView={{ opacity: 1, y: 0 }}
+       transition={{ type: "spring", stiffness: 100, damping: 10 }}
+       viewport={{ once: true, amount: 0.2 }}
+       
+        >
           <div className="unleash-top">
             <div className="column">
               <h2>Unleash Your Potential</h2>
@@ -109,10 +119,15 @@ const LandingPage = () => {
                       <p>TUP HR</p>
                     </div>
               </div>
-        </section>
+        </motion.section>
 
 
-      <section class="tupath-join-section">
+      <motion.section class="tupath-join-section"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }}  
+          >
            <div class="tupath-content">
               <div class="tupath-content-left">
                 <h1>Join TUPATH Today</h1>
@@ -125,10 +140,15 @@ const LandingPage = () => {
             <div class="tupath-content-right">
             </div>
            </div>
-      </section>
+      </motion.section>
 
 
-      <section class="faq-section">
+      <motion.section class="faq-section"
+        initial={{ opacity: 0, y: 100 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 10 }}
+        viewport={{ once: true, amount: 0.2 }}
+        >
         <h2>Frequently Asked Questions</h2>
         <p>Find answers to common questions about using TUPATH for managing your academic portfolio.</p>
         
@@ -165,7 +185,7 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
 
       <Footer />

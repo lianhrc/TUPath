@@ -16,7 +16,6 @@
     justify-content: center;
     align-items: flex-start;
     flex-direction: column;
-    animation: fadeInSlideUp 0.5s ease forwards;
 
 }
 
@@ -27,14 +26,16 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    animation: fadeInSlideUp 0.5s ease forwards;
 
+}
+.Login-container .googlelogincontainer{
+  width: 50%;
+  margin: 0 auto;
 }
 
 
-
-h2 {
-    margin-bottom: 20px;
+.Login-container h5 {
+    margin-bottom: 40px;
     color: #333; /* Title color */
     font-weight: bold;
 }
@@ -146,15 +147,3 @@ input[type="password"]:focus {
 }
 
 
-
-
-@keyframes fadeInSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}

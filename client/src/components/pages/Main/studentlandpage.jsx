@@ -1,6 +1,7 @@
+import { motion } from 'framer-motion';
 import React from 'react'
 import './studentlandpage.css'
-import Header from '../../common/header';
+import Header from '../../common/studempheader';
 import Footer from '../../common/footer'
 import profile from '../../../assets/reviewericon.png';
 
@@ -9,11 +10,23 @@ function studentlandpage() {
     <div className='studentlandpage'>
         <Header />
         <section className='welcome-section'>
-          <h1>Welcome to TUPath</h1>
-          <p>Start your journey towards a successful career by building a standout academic portfolio.</p>
+         <motion.div className="div"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }}  
+         >
+         <h1>Welcome to TUPath</h1>
+         <p>Start your journey towards a successful career by building a standout academic portfolio.</p>
+         </motion.div>
         </section>
 
-        <section className="academic-pathway-container">
+        <motion.section className="academic-pathway-container"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }}  
+        >
           <div className='subsec'>
               <div className='subsubsec'>
                   <div className="image-container">
@@ -47,11 +60,16 @@ function studentlandpage() {
               </div>
            </div>
           </div>
-         </section>
+         </motion.section>
 
       
 
-        <section className="testimonial-container">
+        <motion.section className="testimonial-container"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }}  
+        >
           <div className="stars">
             {Array(5).fill().map((_, i) => (
               <span key={i} className="star">★</span>
@@ -71,9 +89,14 @@ function studentlandpage() {
               <p>Computer Science Graduate</p>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="academic-pathway-container2">
+        <motion.section className="academic-pathway-container2"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 10 }}
+          viewport={{ once: true, amount: 0.2 }}  
+        >
           <div className='subsubsec2'>
             <div className="text-container2">
                 <h2>Your Path to Success</h2>
@@ -83,9 +106,14 @@ function studentlandpage() {
                 <div className="image-container2">
               </div>
             </div>
-         </section>
+         </motion.section>
 
-         <section className="steps-section-container">
+         <motion.section className="steps-section-container"
+            initial={{ opacity: 0, y: 100 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 10 }}
+            viewport={{ once: true, amount: 0.2 }}     
+         >
           <div className="steps-container">
             <div className="step">
               <div>
@@ -111,7 +139,7 @@ function studentlandpage() {
               </div> 
               <h3>Answer AI Questions</h3>
               <p>
-                Enhance your profile by answering AI-generated questions tailored to highlight your strengths.
+                Enhance your profile by answering system indicators tailored to highlight your strengths.
               </p>
             </div>
           </div>
@@ -122,7 +150,7 @@ function studentlandpage() {
             </div>
             <button className="cta-button">Create Your Profile</button>
           </div>
-       </section>
+       </motion.section>
          
 
         <Footer />
