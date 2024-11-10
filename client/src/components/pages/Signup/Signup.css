@@ -1,8 +1,27 @@
+.studentsignup-container{
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    height: 100vh;
+    background-image: url('../../../assets/loginbg.jpg'); /* Replace with your image path */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.studentsignup-container .div{
+    max-width: 530px;
+    width: 100%;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
+    margin-top: 100px;
+
+}
 .createbtn{
     border: none;
     background-color: #9D0E0F;
     color: white;
     width: 50%;
+    padding: 10px;
     border-radius: 10px;
 }
 
@@ -36,7 +55,7 @@ form{
     
 }
 .gbtn{
-    background-color: #8DC1F2;
+background-color: #8DC1F2;
 color: white;
 border: none;
 height: 3rem;
@@ -45,8 +64,46 @@ font-weight: bold;
 border-radius: 5rem;
 }
 
+.google-signup-btn{
+    width: 50%;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 10px;
+
+}
+
+.google-signup-btnbutton {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+.google-signup-btn button:hover {
+background-color: #357ae8;
+}
+
 .form-check-label{
-    width: 60%;
+    width:100%;
+    max-width: 300px;
+    display:block;
+    text-align: center;
+}
+
+.form-check-label span{
+    vertical-align: middle;
+}
+
+.form-check-label span button{
+    background: none;
+    padding: 0 5px;
+    border: none;
+}
+
+.form-check-label span button:hover{
+    color: #9D0E0F;
 }
 
 .form-check{
@@ -54,4 +111,20 @@ border-radius: 5rem;
     justify-content: center;
     gap: .5rem;
     
+}
+
+.logindirect-btn{
+    font-size: 12px;
+    text-decoration: none;
+}
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -34,8 +34,9 @@ const LandingPage = () => {
           <h1>Showcase Your Academic Journey</h1>
           <p className='p'>Discover TUPATH, the ultimate platform to manage and present your academic achievements, connecting you with opportunities and future employers.</p>
             <div className="hero-buttons">
-              <button className="get-started-btn">Get Started</button>
-              <button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button>
+
+              <a href="/Login"> <button className="get-started-btn">Get Started </button></a>
+              <a href="/studentlandpage"><button className="explore-btn">Explore Features <img src={rightarrow} alt="Tupath Logo" className="logo" /></button></a>
             </div>
         </div>
         <div className="hero-image">

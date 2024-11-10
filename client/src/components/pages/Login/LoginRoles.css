@@ -15,13 +15,31 @@
     
 /* Main Content Container */
 .LoginRoles {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    background-image: url('../../../assets/signinbg.jpg'); /* Replace with your image path */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 
 }
 
 
 .loginroles-container{
-    height: 78vh;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
+}
+
+.loginroles-container .div{
+    display: flex;
+    flex-direction: column;
+    margin-left: 80px;
+    justify-content: center;
+    align-items: center;
 }
 /* Title */
 .title {
@@ -151,3 +169,16 @@
 .linklogin {
     color: #9D0E0F;
 }
+
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

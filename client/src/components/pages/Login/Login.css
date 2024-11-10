@@ -1,23 +1,37 @@
 /* Login.css */
 
 
+
 .Login {
     display: flex;
     flex-direction: column;
+    background-image: url(../../../assets/loginbg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
-.logincontent{
+.logincontent {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: column;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
 }
+
 .Login-container {
     height: 85vh;
     text-align: center;
-    margin-top: 20px;
-    width: 600px;
+    width: 540px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    animation: fadeInSlideUp 0.5s ease forwards;
+
 }
+
+
 
 h2 {
     margin-bottom: 20px;
@@ -25,20 +39,26 @@ h2 {
     font-weight: bold;
 }
 
-.google-login {
+.google-login-button{
     width: 50%;
-    padding: 10px;
-    background-color: #8DC1F2; /* Google Blue */
-    color: white;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 12px;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 0;
 }
 
-.google-login:hover {
-    background-color: #357ae8; /* Darker blue on hover */
-}
+.google-login-button button {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .google-login-button button:hover {
+    background-color: #357ae8;
+  }
+  
 
 .separator {
     margin: 15px 0;
@@ -123,4 +143,18 @@ input[type="password"]:focus {
 .signup-link {
     color: #007bff; /* Blue color for the signup link */
     cursor: pointer; /* Pointer cursor for link */
+}
+
+
+
+
+@keyframes fadeInSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
