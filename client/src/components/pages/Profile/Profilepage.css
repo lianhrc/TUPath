@@ -28,7 +28,15 @@
   gap: 20px;
 }
 
-.profile-header,.profile-main {
+.profile-header {
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  width: 100%;
+  padding: 20px;
+
+}
+.profile-main{
   margin-bottom: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: white;
@@ -36,6 +44,14 @@
   height: auto;
   padding: 20px;
 }
+
+.profile-header img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover; /* Ensures the image is not distorted and covers the area without stretching */
+}
+
 
 .profilesectiontop{
   display: flex;

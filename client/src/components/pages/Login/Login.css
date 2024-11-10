@@ -28,11 +28,14 @@
     flex-direction: column;
 
 }
+.Login-container .googlelogincontainer{
+  width: 50%;
+  margin: 0 auto;
+}
 
 
-
-h2 {
-    margin-bottom: 20px;
+.Login-container h5 {
+    margin-bottom: 40px;
     color: #333; /* Title color */
     font-weight: bold;
 }

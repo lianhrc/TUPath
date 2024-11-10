@@ -24,6 +24,9 @@
     padding: 10px;
     border-radius: 10px;
 }
+.div h5{
+    font-weight: bold;
+}
 
 .form-control{
     font-size: 12px;
