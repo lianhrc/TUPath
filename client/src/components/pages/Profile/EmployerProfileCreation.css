@@ -1,0 +1,157 @@
+/* Profile container */
+.employee-profile-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background-image: url(../../../assets/loadersbg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 100%; /* Ensure it takes up full width of the parent */
+    height: 100vh; /* Full viewport height */
+}
+
+/* Profile content */
+.employee-profile-content {
+    display: flex;
+    flex-direction: row;
+    width: 70%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    height: calc(100vh - 40px); /* Allow room for padding */
+}
+
+
+/* Title section */
+.title-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45%;
+}
+
+.title-section h6 {
+    color: white;
+    font-size: 12px;
+    margin-bottom: 30px;
+    font-weight: normal;
+}
+
+/* Sidebar styling */
+.employee-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+    margin-right: 20px;
+    align-items: flex-start;
+}
+
+/* Sidebar button styles */
+/* Sidebar button styles with left border transition */
+.employee-sidebar button {
+    background: transparent;
+    border: none;
+    color: #9D0E0F;
+    font-size: 14px;
+    width: 100%;
+    padding: 12px 20px;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.3s ease, border-left 0.3s ease, opacity 0.3s ease;
+    opacity: 0.6; /* Default lower opacity for all buttons */
+}
+
+/* Hover effect with vertical line on the left */
+.employee-sidebar button:hover {
+    background-color: #f1f1f1;     /* Light background on hover */
+    border-left: 4px solid #9D0E0F; /* Show left border line on hover */
+    opacity: 1;                    /* Full opacity on hover */
+    font-weight: 600;              /* Optional: slightly bold text */
+}
+
+/* Active button style with permanent left border */
+.employee-sidebar button.active {
+    background-color: #f4f4f4;      /* Highlighted background color */
+    border-left: 4px solid #9D0E0F; /* Left border color */
+    font-weight: bold;
+    color: #9D0E0F;
+    opacity: 1;                     /* Full opacity for active button */
+}
+
+/* Inactive state to reduce opacity */
+.employee-sidebar button.inactive {
+    opacity: 0.6;                   /* Dim the inactive buttons */
+}
+
+/* Optional pressed effect on click */
+.employee-sidebar button:active {
+    transform: scale(0.98);
+    transition: transform 0.2s ease;
+}
+
+
+/* Form container */
+.form-container {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 20px;
+}
+
+/* Profile picture upload area */
+.profile-img-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 20px;
+    margin-left: 80px;
+    margin-right: auto;
+}
+
+
+
+.profile-img-container input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Form fields */
+.employee-profile-form input,
+.employee-profile-form select,
+.employee-profile-form textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.employee-profile-form textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+/* Error message styling */
+.error-msg {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
