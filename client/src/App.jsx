@@ -11,7 +11,7 @@ import Employerlandpage from './components/pages/Main/employerlandpage';
 import StudentHomepage from './components/pages/Home/StudentHomepage';
 import EmployeeHomepage from './components/pages/Home/EmployeeHomepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
-import EmployeeProfileCreation from './components/pages/Profile/EmployeeProfileCreation';
+import EmployeeProfileCreation from './components/pages/Profile/EmployerProfileCreation.jsx';
 import StudentProfile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
