@@ -296,39 +296,13 @@ app.post('/expertsignup', async (req, res) => {
 app.post('/api/updateProfile', verifyToken, async (req, res) => {
   try {
       const userId = req.user.id;
-      const { firstName, 
-        lastName, 
-        middleName,
-        studentId,
-        department, 
-        yearLevel,  
-        contact, 
-        profileImg, 
-        dob, 
-        gender, 
-        techSkills, 
-        softSkills,
-        email, 
-        address } = req.body;
+      const { fullName, studentId, department, yearLevel, bio, city, contact, profileImg } = req.body;
 
       const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
           userId,
           {
               $set: {
-                  profileDetails: { firstName, 
-                                    lastName, 
-                                    middleName,
-                                    studentId,
-                                    department, 
-                                    yearLevel,  
-                                    contact, 
-                                    profileImg, 
-                                    dob, 
-                                    gender, 
-                                    techSkills, 
-                                    softSkills,
-                                    email, 
-                                    address }
+                  profileDetails: { fullName, studentId, department, yearLevel, bio, city, contact, profileImg }
               }
           },
           { new: true, upsert: true }
