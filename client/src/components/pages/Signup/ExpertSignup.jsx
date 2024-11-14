@@ -26,11 +26,11 @@ function StudentSignup() {
 
             if (response.data.success) {
                 setMessage('Signup successful!');
-                navigate('/studentprofilecreation', { replace: true });
+                navigate('/employeeprofilecreation', { replace: true });
             }
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
-        }
+        }s
     };
 
     const handleGoogleSignup = async (response) => {
@@ -46,7 +46,7 @@ function StudentSignup() {
 
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/studentprofilecreation', { replace: true });
+                navigate('/employeeprofilecreation', { replace: true });
             } else {
                 setMessage(res.data.message || 'Sign-up failed. Please try again.');
             }
