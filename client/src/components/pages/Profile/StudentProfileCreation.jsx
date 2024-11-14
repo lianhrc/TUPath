@@ -31,21 +31,32 @@ function StudentProfileCreation() {
     const handleImageUpload = async (file) => {
         const formData = new FormData();
         formData.append("profileImg", file);
-
+    
         try {
+            const token = localStorage.getItem("token"); // Retrieve token from localStorage
+            if (!token) {
+                setMessage("Authentication token not found. Please log in again.");
+                return;
+            }
+    
             const response = await axiosInstance.post("/api/uploadProfileImage", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`, // Ensure "Bearer" prefix is included
+                },
             });
-
+    
             if (response.data.success) {
                 setUploadedImage(response.data.profileImg);
             } else {
                 setMessage("Image upload failed. Please try again.");
             }
         } catch (error) {
+            console.error("Image upload error:", error); // Log error for debugging
             setMessage("Error uploading image. Please try again.");
         }
     };
+    
 
     const handleSubmit = async (event) => {
         event.preventDefault();

@@ -25,16 +25,23 @@ const TupathUserSchema = new mongoose.Schema({
     default: false, // Track if signed up via Google
   },
   profileDetails: { // New section for profile details
-    fullName: String,
+    firstName: String,
+    lastName: String,
+    middleName: String,
     studentId: String,
     department: String,
     yearLevel: String,
-    bio: String,
-    city: String,
+    gender: String,
+    address: String,
     contact: String,
     profileImg: String, // Add this line to store the image URL
     projectFiles: [String], // New field for storing project file paths
     certificatePhotos: [String], // New field for storing certificate image paths
+    techSkills: [String],
+    softSkills: [String],
+    email: String,
+    dob: Date,
+
   }
 });
 

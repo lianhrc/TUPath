@@ -251,43 +251,59 @@ app.post("/google-login", async (req, res) => {
 // Student signup endpoint
 app.post("/studentsignup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  const name = `${firstName} ${lastName}`;
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
-  }
+
   try {
     const existingUser = await Tupath_usersModel.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists." });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await Tupath_usersModel.create({ name, email, password: hashedPassword, isNewUser: true });
-    console.log("New student registered:", newUser);
-    return res.status(201).json({ success: true, user: newUser });
+    const newUser = await Tupath_usersModel.create({
+      name: `${firstName} ${lastName}`,
+      email,
+      password: hashedPassword,
+      isNewUser: true,
+    });
+
+    // Generate a token and include it in the response
+    const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' });
+    
+    return res.status(201).json({ success: true, token, user: newUser });
   } catch (err) {
-      res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error during signup:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
 
+
+
 // Expert signup endpoint
-app.post('/expertsignup', async (req, res) => {
+app.post("/expertsignup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  const name = `${firstName} ${lastName}`;
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
-  }
-  try {                             
+
+  try {
     const existingUser = await Expert_usersModel.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: "Expert already exists." });
+      return res.status(400).json({ success: false, message: "User already exists." });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await Expert_usersModel.create({ name, email, password: hashedPassword, isNewUser: true });
-    console.log("New expert registered:", newUser);
-    return res.status(201).json({ success: true, user: newUser });
+    const newUser = await Expert_usersModel.create({
+      name: `${firstName} ${lastName}`,
+      email,
+      password: hashedPassword,
+      isNewUser: true,
+    });
+
+    // Generate a token and include it in the response
+    const token = jwt.sign({ id: newUser._id, role: 'expert' }, JWT_SECRET, { expiresIn: '1h' });
+    
+    return res.status(201).json({ success: true, token, user: newUser });
   } catch (err) {
-      res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error during signup:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
@@ -296,13 +312,42 @@ app.post('/expertsignup', async (req, res) => {
 app.post('/api/updateProfile', verifyToken, async (req, res) => {
   try {
       const userId = req.user.id;
-      const { fullName, studentId, department, yearLevel, bio, city, contact, profileImg } = req.body;
+      const {
+        studentId,
+        firstName,
+        lastName,
+        middleName,
+        department,
+        yearLevel,
+        dob,
+        profileImg,
+        gender,
+        address,
+        techSkills,
+        softSkills,
+        contact,
+        email  } = req.body;
 
       const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
           userId,
           {
               $set: {
-                  profileDetails: { fullName, studentId, department, yearLevel, bio, city, contact, profileImg }
+                  profileDetails: { 
+                    studentId,
+                    firstName,
+                    lastName,
+                    middleName,
+                    department,
+                    yearLevel,
+                    dob,
+                    profileImg,
+                    gender,
+                    address,
+                    techSkills,
+                    softSkills,
+                    contact,
+                    email
+                   }
               }
           },
           { new: true, upsert: true }
