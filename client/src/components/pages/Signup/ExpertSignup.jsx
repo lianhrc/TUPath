@@ -5,33 +5,41 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
 
-function StudentSignup() {
+function ExpertSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('student');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
     const handleSignup = async (event) => {
         event.preventDefault();
+    
+        if (!firstName || !lastName || !email || !password) {
+            setMessage('All fields are required.');
+            return;
+        }
+    
         try {
-            const response = await axiosInstance.post('/studentsignup', {
+            const response = await axiosInstance.post('/expertsignup', {
                 firstName,
                 lastName,
                 email,
                 password,
             });
-
+    
             if (response.data.success) {
                 setMessage('Signup successful!');
-                navigate('/employeeprofilecreation', { replace: true });
+                localStorage.setItem('token', response.data.token); // Save token if provided
+                navigate('/employerprofilecreation', { replace: true });
             }
         } catch (error) {
             setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
-        }s
+            console.error("Signup error:", error); // Log detailed error for debugging
+        }
     };
+    
 
     const handleGoogleSignup = async (response) => {
         const googleToken = response.credential;
@@ -46,7 +54,7 @@ function StudentSignup() {
 
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                navigate('/employeeprofilecreation', { replace: true });
+                navigate('/employerprofilecreation', { replace: true });
             } else {
                 setMessage(res.data.message || 'Sign-up failed. Please try again.');
             }
@@ -62,7 +70,7 @@ function StudentSignup() {
     return (
         <div className="studentsignup-container">
             <div className="div">
-                <h5 className="text-center mb-4">Expert Sign Up</h5>
+                <h5 className="text-center mb-4">Employer Sign Up</h5>
                 <div className="d-flex justify-content-center mb-3">
                     <div className="google-signup-btn">
                         <GoogleLogin
@@ -99,7 +107,7 @@ function StudentSignup() {
                         <input
                             type="email"
                             className="form-control"
-                            placeholder="Student Email Address"
+                            placeholder="Employer Email Address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -137,4 +145,4 @@ function StudentSignup() {
     );
 }
 
-export default StudentSignup;
+export default ExpertSignup;

@@ -284,7 +284,7 @@ app.post("/expertsignup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   try {
-    const existingUser = await Expert_usersModel.findOne({ email });
+    const existingUser = await Tupath_usersModel.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists." });
     }
@@ -298,7 +298,7 @@ app.post("/expertsignup", async (req, res) => {
     });
 
     // Generate a token and include it in the response
-    const token = jwt.sign({ id: newUser._id, role: 'expert' }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' });
     
     return res.status(201).json({ success: true, token, user: newUser });
   } catch (err) {
@@ -309,7 +309,7 @@ app.post("/expertsignup", async (req, res) => {
 
 //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
-app.post('/api/updateProfile', verifyToken, async (req, res) => {
+app.post('/api/updateStudentProfile', verifyToken, async (req, res) => {
   try {
       const userId = req.user.id;
       const {
@@ -362,6 +362,69 @@ app.post('/api/updateProfile', verifyToken, async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+app.post('/api/updateEmployerProfile', verifyToken, async (req, res) => {
+  try {
+      const userId = req.user.id;
+      const {
+        firstName,
+        lastName,
+        middleName,
+        dob,
+        gender,
+        nationality,
+        address,
+        profileImg,
+        companyName,
+        industry,
+        location,
+        aboutCompany,
+        contactPersonName,
+        position,
+        email,
+        phoneNumber,
+        preferredRoles,
+        internshipOpportunities,
+        preferredSkills } = req.body;
+
+      const updatedUser = await Expert_usersModel.findByIdAndUpdate(
+          userId,
+          {
+              $set: {
+                  profileDetails: { 
+                    firstName,
+                    lastName,
+                    middleName,
+                    dob,
+                    gender,
+                    nationality,
+                    address,
+                    profileImg,
+                    companyName,
+                    industry,
+                    location,
+                    aboutCompany,
+                    contactPersonName,
+                    position,
+                    email,
+                    phoneNumber,
+                    preferredRoles,
+                    internshipOpportunities,
+                    preferredSkills
+                   }
+              }
+          },
+          { new: true, upsert: true }
+      );
+
+      if (!updatedUser) {
+          return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
+      res.status(200).json({ success: true, message: 'Profile updated successfully', updatedUser });
+  } catch (error) {
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
 
@@ -372,13 +435,19 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     const userId = req.user.id;
 
     // Find the user in the database
-    const user = await Tupath_usersModel.findById(userId).select('profileDetails createdAt googleSignup');
+    const tupathUser = await Tupath_usersModel.findById(userId).select('profileDetails createdAt googleSignup');
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (tupathUser) {
+      return res.status(200).json({ success: true, profile: tupathUser });
     }
 
-    res.status(200).json({ success: true, profile: user });
+    const expertUser = await Expert_usersModel.findby(userId).select('profileDetails createdAt googleSignup');
+
+    if (expertUser) {
+      return res.status(200).json({success:true, profile:expertUser});
+    }
+
+    res.status(404).json({ success: false, profile: 'User not Found' });
   } catch (error) {
     console.error('Error fetching profile:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -390,21 +459,30 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
       const userId = req.user.id;
       const profileImgPath = `/uploads/${req.file.filename}`;
 
-      const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+      // Update for both student and expert models
+      const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
           userId,
           { $set: { "profileDetails.profileImg": profileImgPath } },
           { new: true }
       );
 
-      if (!updatedUser) {
+      const updatedExpert = await Expert_usersModel.findByIdAndUpdate(
+          userId,
+          { $set: { "profileDetails.profileImg": profileImgPath } },
+          { new: true }
+      );
+
+      if (!updatedStudent && !updatedExpert) {
           return res.status(404).json({ success: false, message: "User not found" });
       }
 
       res.status(200).json({ success: true, message: "Profile image uploaded successfully", profileImg: profileImgPath });
   } catch (error) {
+      console.error("Error uploading profile image:", error);
       res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 // Endpoint for uploading project files
 app.post("/api/uploadProject", verifyToken, upload.array("projectFiles", 5), async (req, res) => {

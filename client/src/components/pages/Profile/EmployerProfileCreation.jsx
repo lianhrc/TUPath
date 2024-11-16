@@ -29,50 +29,75 @@ function EmployerProfileCreation() {
         internshipOpportunities: false,
         preferredSkills: '',
     });
+
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleImageUpload = async (file) => {
-        const formData = new FormData();
-        formData.append("profileImage", file);
-
+        const imageData = new FormData();
+        imageData.append("profileImg", file);
+    
         try {
-            const response = await axiosInstance.post("/api/uploadEmployeeProfileImage", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setMessage("Authentication token not found. Please log in again.");
+                return;
+            }
+    
+            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
+                },
             });
-
+    
             if (response.data.success) {
-                setUploadedImage(response.data.profileImage);
+                setUploadedImage(response.data.profileImg);
+                setMessage("Image uploaded successfully!");
             } else {
                 setMessage("Image upload failed. Please try again.");
             }
         } catch (error) {
+            console.error("Image upload error:", error);
             setMessage("Error uploading image. Please try again.");
         }
     };
-
+    
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-
+    
         try {
-            const response = await axiosInstance.post('/api/updateEmployeeProfile', {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setMessage("Authentication token not found. Please log in again.");
+                setLoading(false);
+                return;
+            }
+    
+            const response = await axiosInstance.post('/api/updateEmployerProfile', {
                 ...formData,
-                profileImage: uploadedImage,
+                profileImg: uploadedImage,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             });
-
+    
             if (response.data.success) {
-                navigate('/EmployeeProfile', { replace: true });
+                navigate('/employeehomepage', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }
             setLoading(false);
         } catch (error) {
-            setMessage('An error occurred while updating profile. Please try again.');
+            console.error('Profile update error:', error);
+            setMessage('An error occurred while updating the profile. Please try again.');
             setLoading(false);
         }
     };
+    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -83,8 +108,7 @@ function EmployerProfileCreation() {
         switch (activeSection) {
             case 'Personal Information':
                 return (
-                    <>
-                        <div className="personal-information-container">
+                    <div className="personal-information-container">
                         <div className="profile-img-container" onClick={() => setIsModalOpen(true)}>
                             {uploadedImage ? (
                                 <img src={uploadedImage} alt="Profile" />
@@ -93,21 +117,19 @@ function EmployerProfileCreation() {
                             )}
                             <input type="file" onChange={(e) => handleImageUpload(e.target.files[0])} />
                         </div>
-                            <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
-                            <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
-                            <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
-                            <input type="date" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleInputChange} />
-                            <select name="gender" value={formData.gender} onChange={handleInputChange}>
-                                <option value="">Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Prefer not to say">Prefer not to say</option>
-                            </select>
-                            <input type="text" name="nationality" placeholder="Nationality" value={formData.nationality} onChange={handleInputChange} />
-                            <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
-                        </div>
-                        
-                    </>
+                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
+                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
+                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
+                        <input type="date" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleInputChange} />
+                        <select name="gender" value={formData.gender} onChange={handleInputChange}>
+                            <option value="">Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                        <input type="text" name="nationality" placeholder="Nationality" value={formData.nationality} onChange={handleInputChange} />
+                        <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
+                    </div>
                 );
             case 'Company Information':
                 return (
@@ -136,7 +158,6 @@ function EmployerProfileCreation() {
                             <input type="checkbox" name="internshipOpportunities" checked={formData.internshipOpportunities} onChange={(e) => setFormData({ ...formData, internshipOpportunities: e.target.checked })} />
                         </label>
                         <textarea name="preferredSkills" placeholder="Preferred Skills" value={formData.preferredSkills} onChange={handleInputChange}></textarea>
-                        <button type="submit" className="submit-btn">Submit</button>
                     </>
                 );
             default:
@@ -162,6 +183,7 @@ function EmployerProfileCreation() {
                     <div className="form-container">
                         <form className="employee-profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
+                            <button type="submit" className="submit-btn">Submit</button>
                         </form>
                         {message && <p className="error-msg">{message}</p>}
                     </div>

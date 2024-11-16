@@ -29,30 +29,31 @@ function StudentProfileCreation() {
     const navigate = useNavigate();
 
     const handleImageUpload = async (file) => {
-        const formData = new FormData();
-        formData.append("profileImg", file);
-    
+        const imageData = new FormData();
+        imageData.append("profileImg", file);
+
         try {
-            const token = localStorage.getItem("token"); // Retrieve token from localStorage
+            const token = localStorage.getItem("token");
             if (!token) {
                 setMessage("Authentication token not found. Please log in again.");
                 return;
             }
-    
-            const response = await axiosInstance.post("/api/uploadProfileImage", formData, {
+
+            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${token}`, // Ensure "Bearer" prefix is included
+                    Authorization: `Bearer ${token}`,
                 },
             });
-    
+
             if (response.data.success) {
                 setUploadedImage(response.data.profileImg);
+                setMessage("Image uploaded successfully!");
             } else {
                 setMessage("Image upload failed. Please try again.");
             }
         } catch (error) {
-            console.error("Image upload error:", error); // Log error for debugging
+            console.error("Image upload error:", error);
             setMessage("Error uploading image. Please try again.");
         }
     };
@@ -63,7 +64,7 @@ function StudentProfileCreation() {
         setLoading(true);
 
         try {
-            const response = await axiosInstance.post('/api/updateProfile', {
+            const response = await axiosInstance.post('/api/updateStudentProfile', {
                 ...formData,
                 profileImg: uploadedImage,
             });

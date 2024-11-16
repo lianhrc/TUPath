@@ -67,6 +67,26 @@ const ExpertUserSchema = new mongoose.Schema({
   googleSignup: {
     type: Boolean,
     default: false, // Track if signed up via Google
+  },
+  profileDetails:{
+    firstName: String,
+    lastName: String ,
+    middleName: String ,
+    dob: Date,
+    gender: String,
+    nationality: String,
+    address: String,
+    companyName: String,
+    industry: String,
+    location: String,
+    aboutCompany: String,
+    contactPersonName: String,
+    position: String,
+    email: String,
+    phoneNumber: String,
+    preferredRoles: [String],
+    internshipOpportunities: {type: Boolean, default: false},
+    preferredSkills: {String},
   }
 
 });
