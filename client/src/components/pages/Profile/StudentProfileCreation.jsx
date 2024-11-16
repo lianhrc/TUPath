@@ -70,7 +70,7 @@ function StudentProfileCreation() {
             });
 
             if (response.data.success) {
-                navigate('/StudentProfile', { replace: true });
+                navigate('/Profile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }

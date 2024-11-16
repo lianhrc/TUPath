@@ -12,7 +12,7 @@ import Employerlandpage from './components/pages/Main/employerlandpage';
 import StudentHomepage from './components/pages/Home/StudentHomepage';
 import EmployeeHomepage from './components/pages/Home/EmployeeHomepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
-import StudentProfile from './components/pages/Profile/Profilepage';
+import Profile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
@@ -54,10 +54,10 @@ function App() {
         />
 
           <Route 
-          path='/StudentProfile' 
+          path='/Profile' 
           element={
             <ProtectedRoute>
-              <StudentProfile />
+              <Profile />
             </ProtectedRoute>
           } 
         />
