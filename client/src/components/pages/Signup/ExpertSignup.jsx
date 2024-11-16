@@ -43,15 +43,16 @@ function ExpertSignup() {
 
     const handleGoogleSignup = async (response) => {
         const googleToken = response.credential;
-
+        const role = "expert"; // Define the role explicitly
+    
         try {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
-
+    
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');
                 return;
             }
-
+    
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 navigate('/employerprofilecreation', { replace: true });
@@ -62,6 +63,7 @@ function ExpertSignup() {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
     };
+    
 
     const handleLoginRedirect = () => {
         navigate('/login');

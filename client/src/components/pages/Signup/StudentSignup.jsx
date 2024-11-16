@@ -44,15 +44,16 @@ function StudentSignup() {
 
     const handleGoogleSignup = async (response) => {
         const googleToken = response.credential;
-
+        const role = "student"; // Explicitly define the role
+    
         try {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
-
+    
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');
                 return;
             }
-
+    
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 navigate('/studentprofilecreation', { replace: true });
@@ -63,6 +64,7 @@ function StudentSignup() {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
     };
+    
 
     const handleLoginRedirect = () => {
         navigate('/login');

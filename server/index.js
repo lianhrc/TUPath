@@ -18,11 +18,18 @@ const path = require("path");
 
 // Middleware setup
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/projects", express.static(path.join(__dirname, "projects")));
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
+
+// Middleware for setting COOP headers
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups'); // Added COOP header
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // Added CORP header
+  next();
+});
 
 
 // MongoDB connection
@@ -191,7 +198,14 @@ app.post("/login", async (req, res) => {
 // Google Signup endpoint
 app.post("/google-signup", async (req, res) => {
   const { token, role } = req.body;
+
+  // Validate role from the request payload
+  if (!['student', 'expert'].includes(role)) {
+    return res.status(400).json({ success: false, message: 'Invalid role specified' });
+  }
+
   try {
+    // Verify the Google token using Google API
     const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
 
     if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
@@ -200,24 +214,35 @@ app.post("/google-signup", async (req, res) => {
 
     const { email, sub: googleId, name } = googleResponse.data;
 
-    const existingStudent = await Tupath_usersModel.findOne({ email });
-    const existingExpert = await Expert_usersModel.findOne({ email });
+    // Choose the correct model based on the role
+    const UserModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
 
-    if ((role === 'student' && existingStudent) || (role === 'expert' && existingExpert)) {
+    // Check if the user already exists in the respective collection
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) {
       return res.status(409).json({ success: false, message: 'Account already exists. Please log in.' });
-    } else if (existingStudent || existingExpert) {
-      return res.status(409).json({ success: false, message: 'Account already exists with another role. Please log in.' });
     }
 
-    const Model = role === 'student' ? Tupath_usersModel : Expert_usersModel;
-    const newUser = await Model.create({ name, email, password: googleId, isNewUser: true, googleSignup: true });
+    // Create a new user (Google ID as password placeholder)
+    const newUser = await UserModel.create({
+      name,
+      email,
+      password: googleId, // Placeholder for password
+      isNewUser: true,
+      googleSignup: true,
+    });
 
+    // Generate JWT token
     const jwtToken = jwt.sign({ email, googleId, name, id: newUser._id, role }, JWT_SECRET, { expiresIn: '1h' });
+
     res.json({ success: true, token: jwtToken });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Google sign-up failed" });
+    console.error('Google sign-up error:', error);
+    res.status(500).json({ success: false, message: 'Google sign-up failed' });
   }
 });
+
+
 
 
 // Google login endpoint
@@ -453,6 +478,8 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
+
 
 app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {

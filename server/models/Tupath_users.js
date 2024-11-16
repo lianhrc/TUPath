@@ -68,6 +68,10 @@ const ExpertUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
+  isExpert:{
+    type: Boolean,
+    default: true,
+  },
   profileDetails:{
     firstName: String,
     lastName: String ,

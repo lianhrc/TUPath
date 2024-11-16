@@ -81,34 +81,6 @@ function Login() {
                     </div>
                     <div className="separator">or</div>
 
-                    {/* Role selection between student and expert */}
-                    <div className='chooserolecontainer'>
-                        <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
-                            <img src={student} alt="Student" />
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="student"
-                                    checked={role === 'student'}
-                                    onChange={() => setRole('student')}
-                                />
-                            </label>
-                            Student
-                        </div>
-                        <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
-                            <img src={employer} alt="Employer" />
-                            <label>
-                                <input
-                                    type="radio"
-                                    value="expert"
-                                    checked={role === 'expert'}
-                                    onChange={() => setRole('expert')}
-                                />
-                            </label>
-                            Expert
-                        </div>
-                    </div>
-
                     {/* Login form */}
                     <form onSubmit={handleLogin}>
                         <div className="form-group">
