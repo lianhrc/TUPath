@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
+import imageCompression from 'browser-image-compression';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
@@ -29,11 +30,20 @@ function StudentProfileCreation() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+
     const handleImageUpload = async (file) => {
-        const imageData = new FormData();
-        imageData.append("profileImg", file);
+        const options = {
+            maxSizeMB: 1, // Max image size in MB
+            maxWidthOrHeight: 800, // Max width or height
+            useWebWorker: true,
+        };
 
         try {
+            // Compress the image
+            const compressedFile = await imageCompression(file, options);
+            const imageData = new FormData();
+            imageData.append("profileImg", compressedFile);
+
             const token = localStorage.getItem("token");
             if (!token) {
                 setMessage("Authentication token not found. Please log in again.");
@@ -58,6 +68,7 @@ function StudentProfileCreation() {
             setMessage("Error uploading image. Please try again.");
         }
     };
+
     
     const handleSubmit = async (event) => {
         event.preventDefault();
