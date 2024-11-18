@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
+import edit from '../../../assets/writemessage.png';
 import since from '../../../assets/since.png';
 import MessagePop from '../../popups/messagingpop';
 import EditDescriptionModal from '../../popups/EditDescriptionModal';
@@ -19,7 +21,7 @@ function Profilepage() {
         firstName: '',
         lastName: '',
         middleName: '',
-        department: 'Information Technology',
+        department: '',
         yearLevel: '',
         dob: '',
         gender: '',
@@ -28,6 +30,7 @@ function Profilepage() {
         softSkills: [],
         contact: '',
         email: '',
+        memberSince: '',
     });
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(true);
@@ -42,6 +45,7 @@ function Profilepage() {
         const fetchProfileData = async () => {
             try {
                 const response = await axiosInstance.get('/api/profile');
+                console.log(response.data); // Check the full response
                 if (response.data.success) {
                     setProfileData(response.data.profile.profileDetails || {});
                     setDescription(response.data.profile.profileDetails?.bio || '');
@@ -52,14 +56,17 @@ function Profilepage() {
                 setLoading(false);
             }
         };
+        
         fetchProfileData();
     }, []);
-
+    
+    
     if (loading) {
         return <Loader />;
     }
-
+    
     const profileImageUrl = profileData.profileImg ? `http://localhost:3001${profileData.profileImg}` : avatar;
+    const createdat = profileData.memberSince ? new Date(profileData.memberSince) : null;
 
     return (
         <div className='Profilepage-container'>
@@ -78,40 +85,27 @@ function Profilepage() {
                             </div>
                             <div className='profile-header-right'>
                                 <p>{profileData.address || 'Address Not Available'}</p>
-                                <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
+                                <p>{createdat ? format(createdat, 'MMMM dd, yyyy') : 'Not Available'}</p> 
                             </div>
                         </div>
                     </div>
 
                     <div className='profile-main'>
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Description</h3>
-                                <a href="#" onClick={() => setShowEditDescriptionModal(true)}>Edit</a>
-                            </div>
-                            <p>{description || 'No description available'}</p>
-                        </div>
+                      <div className="profile-section">
+                         <div className="div">
+                             <a href="#" onClick={() => setShowEditDescriptionModal(true)}> <img src={edit} alt="" /> </a>
+                         </div>                           
 
                         {/* Added Profile Fields */}
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Student ID</h3>
-                            </div>
-                            <p>{profileData.studentId || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Name</h3>
-                            </div>
-                            <p>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
                                 <h3>Date of Birth</h3>
                             </div>
-                            <p>{profileData.dob || 'Not Available'}</p>
+                            <p>
+                                {profileData.dob 
+                                    ? format(new Date(profileData.dob), 'MMMM dd, yyyy') 
+                                    : 'Not Available'}
+                            </p>
                         </div>
 
                         <div className="profile-section">
@@ -169,6 +163,8 @@ function Profilepage() {
                             </div>
                             <p>{profileData.email || 'Not Available'}</p>
                         </div>
+                        </div>
+
                     </div>
 
                     {/* Project and Certificate Sections */}
@@ -199,11 +195,12 @@ function Profilepage() {
 
                 {/* Modals */}
                 <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
+                
                 <EditDescriptionModal 
                     show={showEditDescriptionModal} 
                     onClose={() => setShowEditDescriptionModal(false)} 
-                    currentDescription={description} 
-                    onSave={setDescription} 
+                    profileData={profileData} 
+                    onSave={(updatedData) => setProfileData(updatedData)} 
                 />
                 <ProjectPreviewModal 
                     show={showPreviewModal} 

@@ -3,6 +3,7 @@ import './StudentProfileCreation.css';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
+import { format } from 'date-fns';
 import StudentProfileImageUploadModal from '../../popups/StudentProfileImageUploadModal';
 
 function StudentProfileCreation() {
@@ -14,7 +15,7 @@ function StudentProfileCreation() {
         firstName: '',
         lastName: '',
         middleName: '',
-        department: 'Information Technology',
+        department: '',
         yearLevel: '',
         dob: '',
         gender: '',
@@ -23,8 +24,8 @@ function StudentProfileCreation() {
         softSkills: [],
         contact: '',
         email: '',
+        
     });
-    const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -58,17 +59,20 @@ function StudentProfileCreation() {
         }
     };
     
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-
+    
+        const currentDate = new Date().toISOString(); // Set the current date as createdAt for new profiles
+        
         try {
             const response = await axiosInstance.post('/api/updateStudentProfile', {
                 ...formData,
+                createdAt: formData.createdAt || currentDate, // Set createdAt if not already present
+                dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
-
+    
             if (response.data.success) {
                 navigate('/Profile', { replace: true });
             } else {
@@ -80,6 +84,8 @@ function StudentProfileCreation() {
             setLoading(false);
         }
     };
+    
+    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -105,28 +111,38 @@ function StudentProfileCreation() {
 
 
     const renderFormFields = () => {
+
+        const formattedDob = formData.dob
+        ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
+        : '';
+
+
         switch (activeSection) {
             case 'Personal Information':
                 return (
                     <>
                         <div className="pi-container">
                             <input type="text" name="studentId" placeholder="Student ID" value={formData.studentId} onChange={handleInputChange} required />      
-                            <select name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
-                                <option value="">Year Level</option>
+                            <select placeholder="year level" name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
                                 <option value="1st Year">1st Year</option>
                                 <option value="2nd Year">2nd Year</option>
                                 <option value="3rd Year">3rd Year</option>
                                 <option value="4th Year">4th Year</option>
                              </select>
+
+                             <select name="department" value={formData.department} onChange={handleInputChange}>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information System">Informaction System</option>
+                             </select>
+                            
                             <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                             <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
                             <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
-                            <input type="date" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleInputChange} />
+                            <input type="date" name="dob" placeholder="Date of Birth" value={formattedDob} onChange={handleInputChange} />
                             <select name="gender" value={formData.gender} onChange={handleInputChange}>
-                                <option value="">Gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
-                                <option value="Prefer not to say">Prefer not to say</option>
                             </select>
                             <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
                            
@@ -167,22 +183,28 @@ function StudentProfileCreation() {
                         <button onClick={() => setActiveSection('Skills')}>Skills</button>
                         <button onClick={() => setActiveSection('Contact')}>Contact</button>
                     </div>
+
                     <div className="form-section">
-                        {activeSection === 'Personal Information' && (
-                            <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
-                                {uploadedImage ? (
-                                    <img src={uploadedImage} alt="Profile" />
-                                ) : (
-                                    <div>+</div>
+
+                    <div className="profile_formcontainer">
+                            <div className="profile_container">
+                            {activeSection === 'Personal Information' && (
+                                <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
+                                    {uploadedImage ? (
+                                        <img src={uploadedImage} alt="Profile" />
+                                    ) : (
+                                        <div>+</div>
+                                        )}
+                                    </div>
                                 )}
-                                <input type="file" onChange={(e) => handleImageUpload(e.target.files[0])} />
-                            </div>
-                        )}
+                        </div> 
+                    </div>
+                       
                         <form className="profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
-                        {message && <p className="error-message">{message}</p>}
                     </div>
+
                 </div>
             )}
             <StudentProfileImageUploadModal
