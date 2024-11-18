@@ -13,6 +13,7 @@ import StudentHomepage from './components/pages/Home/StudentHomepage';
 import EmployeeHomepage from './components/pages/Home/EmployeeHomepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
+import EmployerProfile from './components/pages/Profile/EmployerProfilePage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
@@ -62,6 +63,8 @@ function App() {
           } 
         />
 
+     
+
           <Route 
           path='/Settings' 
           element={
@@ -79,6 +82,7 @@ function App() {
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
+          <Route path='/employerprofile' element={<EmployerProfile />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>

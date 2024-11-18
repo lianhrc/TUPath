@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
+import edit from '../../../assets/writemessage.png';
 import since from '../../../assets/since.png';
 import MessagePop from '../../popups/messagingpop';
 import EditDescriptionModal from '../../popups/EditDescriptionModal';
@@ -170,4 +172,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage;
+export default Profilepage;

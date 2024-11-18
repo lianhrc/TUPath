@@ -1,4 +1,3 @@
-// models/Tupath_users.js
 const mongoose = require("mongoose");
 
 // Schema for TUPATH students
@@ -41,9 +40,12 @@ const TupathUserSchema = new mongoose.Schema({
     softSkills: [String],
     email: String,
     dob: Date,
-
+  },
+  memberSince: { 
+    type: Date,
+    default: Date.now, // Defaults to current date when a user is created
   }
-});
+}, { timestamps: true }); // This will add createdAt and updatedAt automatically
 
 // Schema for TUPATH experts
 const ExpertUserSchema = new mongoose.Schema({
@@ -68,14 +70,14 @@ const ExpertUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
-  isExpert:{
+  isExpert: {
     type: Boolean,
     default: true,
   },
-  profileDetails:{
+  profileDetails: {
     firstName: String,
-    lastName: String ,
-    middleName: String ,
+    lastName: String,
+    middleName: String,
     dob: Date,
     gender: String,
     nationality: String,
@@ -89,11 +91,14 @@ const ExpertUserSchema = new mongoose.Schema({
     email: String,
     phoneNumber: String,
     preferredRoles: [String],
-    internshipOpportunities: {type: Boolean, default: false},
-    preferredSkills: {String},
+    internshipOpportunities: { type: Boolean, default: false },
+    preferredSkills: { String },
+  },
+  memberSince: { 
+    type: Date,
+    default: Date.now, // Defaults to current date when an expert user is created
   }
-
-});
+}, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 // Models
 const Tupath_usersModel = mongoose.model("Tupath_users", TupathUserSchema);
