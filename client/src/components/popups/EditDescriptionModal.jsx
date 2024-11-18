@@ -1,36 +1,88 @@
-import React, { useState } from 'react';
-import './EditDescriptionModal.css';
+import React, { useState } from "react";
+import "./EditDescriptionModal.css";
 
-const EditDescriptionModal = ({ show, onClose, currentDescription, onSave }) => {
-  const [description, setDescription] = useState(currentDescription);
+function EditDescriptionModal({ show, onClose, profileData, onSave }) {
+  const [formData, setFormData] = useState(profileData);
+  const [editMode, setEditMode] = useState({}); // Tracks which fields are in edit mode
 
-  const handleSave = () => {
-    onSave(description);
-    onClose();
+  const handleEditToggle = (field) => {
+    setEditMode((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
-  if (!show) return null; // Don't render anything if the modal isn't shown
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    const endpoint = userRole === "student" ? "/api/updateStudentProfile" : "/api/updateEmployerProfile";
+    try {
+      const response = await axiosInstance.put(endpoint, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        onSave(formData);
+        onClose();
+      } else {
+        console.error("Failed to save profile data");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  // Fields to exclude
+  const excludedFields = ["createdAt", "profileImg", "myProjects", "myCertificates", "exampleFieldToRemove"];
+
+  if (!show) return null;
 
   return (
-    <div className="editdes-modal-overlay">
-      <div className="editdes-modal-content">
-        <div className="topeditdes-container">
-          <h6>Edit Description</h6>
-          <button className='editdesclose-btn' onClick={onClose}>X</button>
+    <div className="modal-overlay">
+      <div className="EditDescriptionModal-content">
+        <h6>Edit Profile Details</h6>
+        <div className="profile-fields">
+          {Object.keys(profileData).map((key) => {
+            // Exclude fields defined in the excludedFields array
+            if (excludedFields.includes(key)) {
+              return null;
+            }
+
+            return (
+              <div key={key} className="profile-field">
+                <label>{key.replace(/([A-Z])/g, " $1")}</label>
+                {editMode[key] ? (
+                  <input
+                    type="text"
+                    name={key}
+                    value={formData[key] || ""}
+                    onChange={handleChange}
+                  />
+                ) : (
+                  <p>{formData[key] || "Not Available"}</p>
+                )}
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditToggle(key)}
+                >
+                  {editMode[key] ? "Save" : "Edit"}
+                </button>
+              </div>
+            );
+          })}
         </div>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows="5"
-          placeholder="Enter your description..."
-          className="description-textarea"
-        />
-        <div className="editdes-modal-buttons">
-          <button className="save-button" onClick={handleSave}>Save</button>
+        <div className="modal-actions">
+          <button onClick={handleSave}>Save All</button>
+          <button onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default EditDescriptionModal;

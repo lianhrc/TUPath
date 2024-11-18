@@ -4,6 +4,7 @@ import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
+import edit from '../../../assets/writemessage.png'
 import since from '../../../assets/since.png';
 import MessagePop from '../../popups/messagingpop';
 import EditDescriptionModal from '../../popups/EditDescriptionModal';
@@ -85,29 +86,13 @@ function Profilepage() {
                     </div>
 
                     <div className='profile-main'>
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Description</h3>
-                                <a href="#" onClick={() => setShowEditDescriptionModal(true)}>Edit</a>
-                            </div>
-                            <p>{description || 'No description available'}</p>
-                        </div>
+                      <div className="profile-section">
+                         <div className="div">
+                             <a href="#" onClick={() => setShowEditDescriptionModal(true)}> <img src={edit} alt="" /> </a>
+
+                         </div>                           
 
                         {/* Added Profile Fields */}
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Student ID</h3>
-                            </div>
-                            <p>{profileData.studentId || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Name</h3>
-                            </div>
-                            <p>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Not Available'}</p>
-                        </div>
-
                         <div className="profile-section">
                             <div className='profilesectiontop'>
                                 <h3>Date of Birth</h3>
@@ -170,6 +155,8 @@ function Profilepage() {
                             </div>
                             <p>{profileData.email || 'Not Available'}</p>
                         </div>
+                        </div>
+
                     </div>
 
                     {/* Project and Certificate Sections */}
@@ -200,12 +187,16 @@ function Profilepage() {
 
                 {/* Modals */}
                 <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
+                
+                
                 <EditDescriptionModal 
-                    show={showEditDescriptionModal} 
-                    onClose={() => setShowEditDescriptionModal(false)} 
-                    currentDescription={description} 
-                    onSave={setDescription} 
+                show={showEditDescriptionModal} 
+                onClose={() => setShowEditDescriptionModal(false)} 
+                profileData={profileData} 
+                onSave={(updatedData) => setProfileData(updatedData)} 
                 />
+
+
                 <ProjectPreviewModal 
                     show={showPreviewModal} 
                     onClose={() => setShowPreviewModal(false)} 
