@@ -1,74 +1,140 @@
 import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
 import './StudentHomepage.css';
 import Headerhomepage from '../../common/headerhomepage';
 import profileicon from '../../../assets/profileicon.png';
+//import profileicon2 from '../../../assets/profile2.png';
 import mediaupload from '../../../assets/mediaupload.png';
+//import postimage from '../../../assets/joinTUP.jpg';
 import upvoteicon from '../../../assets/upvote.png';
 import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
-import GenericModal from '../../popups/GenericModal';
+import GenericModal from '../../popups/GenericModal'
 
-const socket = io("http://localhost:3001"); // Connect to backend Socket.IO
+import { io } from 'socket.io-client';
+import axiosInstance from '../../../services/axiosInstance';
+const socket = io("http://localhost:3001");
 
 const StudentHomepage = () => {
   const [postsData, setPostsData] = useState([]);
+  const [profileData, setProfileData] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    address: '',
+  });
+
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  // Function to format the time difference as "x minutes ago", "x hours ago", etc.
-  const formatTimeAgo = (timestamp) => {
-    const now = new Date();
-    const postDate = new Date(timestamp);
-    const diffInMs = now - postDate;
-    const diffInMinutes = Math.floor(diffInMs / 60000);
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
+  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
+  const [achievementModalOpen, setAchievementModalOpen] = useState(false);
 
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  const addSkill = (skill) => setSkills((prev) => [...prev, skill]);
+  const addExperience = (experience) => setExperiences((prev) => [...prev, experience]);
+  const addCertificate = (certificate) => setCertificates((prev) => [...prev, certificate]);
+  const addAchievement = (achievement) => setAchievements((prev) => [...prev, achievement]);
+  
+  const handleImageUpload = async (file) => {
+    const imageData = new FormData();
+    imageData.append("profileImg", file);
+
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setMessage("Authentication token not found. Please log in again.");
+            return;
+        }
+
+        const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.success) {
+            setUploadedImage(response.data.profileImg);
+            setMessage("Image uploaded successfully!");
+        } else {
+            setMessage("Image upload failed. Please try again.");
+        }
+    } catch (error) {
+        console.error("Image upload error:", error);
+        setMessage("Error uploading image. Please try again.");
+    }
+};
+
+
+
+// Function to format the time difference as "x minutes ago", "x hours ago", etc.
+  const formatTimeAgo = (timestamp) => {
+  const now = new Date();
+  const postDate = new Date(timestamp);
+  const diffInMs = now - postDate;
+  const diffInMinutes = Math.floor(diffInMs / 60000);
+
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+};
+
+// Fetch profile data
+useEffect(() => {
+  const fetchProfileData = async () => {
+    try {
+      const response = await axiosInstance.get('/api/profile');
+      if (response.data.success) {
+        setProfileData(response.data.profile.profileDetails || {});
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    }
   };
 
-  // Fetch posts from backend on component mount
-  useEffect(() => {
-    fetch("http://localhost:3001/api/posts")
-      .then((res) => res.json())
-      .then((data) => setPostsData(data)) // Data is already sorted by backend
-      .catch((err) => console.error("Error fetching posts:", err));
+  fetchProfileData();
+}, []);
 
-    // Listen for new posts and comments in real-time
-    socket.on("new_post", (post) => {
-      setPostsData((prevPosts) => [post, ...prevPosts]);
-    });
-    socket.on("receive_comment", ({ postId, comment }) => {
-      setPostsData((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: [...post.comments, comment] }
-            : post
-        )
-      );
-    });
+// Fetch posts data and setup socket listeners
+useEffect(() => {
+  const fetchPostsData = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/posts");
+      const data = await response.json();
+      setPostsData(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
 
-    // Clean up event listeners on component unmount
-    return () => {
-      socket.off("new_post");
-      socket.off("receive_comment");
-    };
-  }, []);
+  fetchPostsData();
 
-  // Update elapsed time display every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPostsData((prevPosts) => [...prevPosts]); // Trigger re-render to update timestamps
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  socket.on("new_post", (post) => {
+    setPostsData((prevPosts) => [post, ...prevPosts]);
+  });
+  socket.on("receive_comment", ({ postId, comment }) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post._id === postId
+          ? { ...post, comments: [...post.comments, comment] }
+          : post
+      )
+    );
+  });
+
+  return () => {
+    socket.off("new_post");
+    socket.off("receive_comment");
+  };
+}, []);
+
 
   const handleInputChange = (e) => {
     setNewPostContent(e.target.value);
@@ -85,11 +151,18 @@ const StudentHomepage = () => {
     }
   };
 
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setNewPostContent('');
+    setNewPostImage(null);
+  };
+
   const handleAddPost = () => {
     if (newPostContent.trim()) {
       const newPost = {
         profileImg: profileicon,
-        name: 'Maykel Jisun',
+        name: `${profileData.firstName} ${profileData.lastName}` || 'Student',
         content: newPostContent,
         postImg: newPostImage,
       };
@@ -101,84 +174,53 @@ const StudentHomepage = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            // Do not manually add data.post to postsData here
-            // Instead, rely on the socket event to update the list
+            // Rely on socket event to update the list
           }
           handleClosePopup();
         })
         .catch((err) => console.error("Error adding post:", err));
     }
   };
-  
 
-  const handleCommentSubmit = (postId, commentText) => {
-    if (commentText.trim()) {
-      const newComment = { author: 'Student', comment: commentText };
-      fetch(`http://localhost:3001/api/posts/${postId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newComment),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setPostsData((prevPosts) =>
-              prevPosts.map((post) =>
-                post._id === postId
-                  ? { ...post, comments: [...post.comments, data.comment] }
-                  : post
-              )
-            );
-          }
-        })
-        .catch((err) => console.error("Error adding comment:", err));
-    }
-  };
-
-  const toggleComments = (postId) => {
-    setPostsData((prevPosts) =>
-      prevPosts.map((post) =>
-        post._id === postId ? { ...post, showComments: !post.showComments } : post
-      )
-    );
-  };
 
   const handleUpvote = (postId) => {
     setPostsData((prevPosts) =>
       prevPosts.map((post) =>
-        post._id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
+        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
       )
     );
   };
 
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-    setNewPostContent('');
-    setNewPostImage(null);
+  const handleCommentSubmit = (postId, comment) => {
+    if (comment.trim()) {
+      setPostsData((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? { ...post, comments: [comment, ...post.comments] } // Prepend new comment
+            : post
+        )
+      );
+    }
   };
 
   const renderPost = (post) => (
-    <div className="post" key={post._id}>
+    <div className="post" key={post.id}>
       <div className="toppostcontent">
         <img src={post.profileImg || profileicon} alt={post.name} />
         <div className="frompost">
           <h5>{post.name}</h5>
-          <p>{formatTimeAgo(post.timestamp)}</p> {/* Display formatted timestamp */}
+          <p>{formatTimeAgo(post.timestamp)}</p>
         </div>
       </div>
       <div className="postcontent">
         <p>{post.content}</p>
-        {post.postImg && (
-          <div className="postimagecontent">
-            <img src={post.postImg} alt="Post" className="post-image" />
-          </div>
-        )}
+        {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
       </div>
       <div className="downpostcontent">
-        <button onClick={() => handleUpvote(post._id)}>
+        <button onClick={() => handleUpvote(post.id)}>
           <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
         </button>
-        <button onClick={() => toggleComments(post._id)}>
+        <button onClick={() => toggleComments(post.id)}>
           <img src={commenticon} alt="Comment" /> {post.comments.length}
         </button>
       </div>
@@ -193,24 +235,13 @@ const StudentHomepage = () => {
     </div>
   );
 
-  
-  /*----- GENERIC MODALS -------------*/
-
-  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
-  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
-  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
-  const [achievementModalOpen, setAchievementModalOpen] = useState(false);
-  
-  // State to store added items
-  const [skills, setSkills] = useState([]);
-  const [experiences, setExperiences] = useState([]);
-  const [certificates, setCertificates] = useState([]);
-  const [achievements, setAchievements] = useState([]);
-
-  const addSkill = (skill) => setSkills((prev) => [...prev, skill]);
-  const addExperience = (experience) => setExperiences((prev) => [...prev, experience]);
-  const addCertificate = (certificate) => setCertificates((prev) => [...prev, certificate]);
-  const addAchievement = (achievement) => setAchievements((prev) => [...prev, achievement]);
+  const toggleComments = (postId) => {
+    setPostsData((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, showComments: !post.showComments } : post
+      )
+    );
+  };
 
   return (
     <div className="StudentHomepage-container">
@@ -220,19 +251,19 @@ const StudentHomepage = () => {
         <aside className="sidebar">
           <div className="profile">
             <img src={profileicon} alt="Profile Icon" />
-            <h2>Maykel Jisun</h2>
+            <h2>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim()}</h2>
             <p>Student at Technological University of the Philippines</p>
-            <p>Metro Manila, Philippines</p>
+            <p>{profileData.address || 'Not Available'}</p>
           </div>
           <div className="complete-section">
-        <h4>Complete</h4>
-        <div className="add-btn-container">
-          <button className="add-skills" onClick={() => setSkillsModalOpen(true)}>+ Add Skills</button>
-          <button className="add-experience" onClick={() => setExperienceModalOpen(true)}>+ Add Experience</button>
-          <button className="add-certificate" onClick={() => setCertificateModalOpen(true)}>+ Add Certificate</button>
-          <button className="add-skills" onClick={() => setAchievementModalOpen(true)}>+ Add Achievement</button>
-        </div>
-      </div>
+            <h4>Complete</h4>
+            <div className="add-btn-container">
+            <button className="add-skills" onClick={() => setSkillsModalOpen(true)}>+ Add Skills</button>
+              <button className="add-experience" onClick={() => setExperienceModalOpen(true)}>+ Add Experience</button>
+              <button className="add-certificate" onClick={() => setCertificateModalOpen(true)}>+ Add Certificate</button>
+              <button className="add-skills" onClick={() => setAchievementModalOpen(true)}>+ Add Achievement</button>
+            </div>
+          </div>
         </aside>
 
         <main className="feed">
@@ -269,34 +300,31 @@ const StudentHomepage = () => {
           handleAddPost={handleAddPost}
         />
       )}
-      
 
-        <GenericModal 
-        show={skillsModalOpen} 
-        onClose={() => setSkillsModalOpen(false)} 
-        title="Skills" 
-        onSave={addSkill} 
+      <GenericModal
+        show={skillsModalOpen}
+        onClose={() => setSkillsModalOpen(false)}
+        title="Skills"
+        onSave={addSkill}
       />
-      <GenericModal 
-        show={experienceModalOpen} 
-        onClose={() => setExperienceModalOpen(false)} 
-        title="Experience" 
-        onSave={addExperience} 
+      <GenericModal
+        show={experienceModalOpen}
+        onClose={() => setExperienceModalOpen(false)}
+        title="Experience"
+        onSave={addExperience}
       />
-      <GenericModal 
-        show={certificateModalOpen} 
-        onClose={() => setCertificateModalOpen(false)} 
-        title="Certificate" 
-        onSave={addCertificate} 
+      <GenericModal
+        show={certificateModalOpen}
+        onClose={() => setCertificateModalOpen(false)}
+        title="Certificate"
+        onSave={addCertificate}
       />
-      <GenericModal 
-        show={achievementModalOpen} 
-        onClose={() => setAchievementModalOpen(false)} 
-        title="Achievement" 
-        onSave={addAchievement} 
+      <GenericModal
+        show={achievementModalOpen}
+        onClose={() => setAchievementModalOpen(false)}
+        title="Achievement"
+        onSave={addAchievement}
       />
-
-
     </div>
   );
 };
