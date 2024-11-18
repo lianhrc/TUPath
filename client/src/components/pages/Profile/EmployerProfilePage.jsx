@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
-import './Profilepage.css';
+import './EmployerProfilePage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
@@ -13,24 +13,32 @@ import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import Loader from '../../common/Loader';
 
-function Profilepage() {
+function EmployerProfilePage() {
     const [profileData, setProfileData] = useState({
-        studentId: '',
         firstName: '',
         lastName: '',
         middleName: '',
-        department: 'Information Technology',
-        yearLevel: '',
         dob: '',
         gender: '',
+        nationality: '',
         address: '',
-        techSkills: [],
-        softSkills: [],
-        contact: '',
+        companyName: '',
+        industry: '',
+        location: '',
+        aboutCompany: '',
+        contactPersonName: '',
+        position: '',
         email: '',
+        phoneNumber: '',
+        preferredRoles: '',
+        internshipOpportunities: false,
+        preferredSkills: '',
+        profileImg: '',
+        createdAt: '',
     });
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(true);
+
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -44,7 +52,7 @@ function Profilepage() {
                 const response = await axiosInstance.get('/api/profile');
                 if (response.data.success) {
                     setProfileData(response.data.profile.profileDetails || {});
-                    setDescription(response.data.profile.profileDetails?.bio || '');
+                    setDescription(response.data.profile.profileDetails?.aboutCompany || '');
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -69,7 +77,7 @@ function Profilepage() {
                     <div className="profile-header">
                         <img src={profileImageUrl} alt="User Profile" className="avatar" />
                         <h2>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Name Not Available'}</h2>
-                        <p>{profileData.studentId || 'Student ID Not Available'}</p>
+                        <p>{profileData.companyName || 'Company Name Not Available'}</p>
                         <hr />
                         <div className='subheader'>
                             <div className='profile-header-left'>
@@ -77,7 +85,7 @@ function Profilepage() {
                                 <p><img src={since} alt="Since" />Member since</p>
                             </div>
                             <div className='profile-header-right'>
-                                <p>{profileData.address || 'Address Not Available'}</p>
+                                <p>{profileData.location || 'Location Not Available'}</p>
                                 <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
                             </div>
                         </div>
@@ -92,75 +100,47 @@ function Profilepage() {
                             <p>{description || 'No description available'}</p>
                         </div>
 
-                        {/* Added Profile Fields */}
+                        {/* Profile Fields */}
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Student ID</h3>
+                                <h3>Company Name</h3>
                             </div>
-                            <p>{profileData.studentId || 'Not Available'}</p>
+                            <p>{profileData.companyName || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Name</h3>
+                                <h3>Industry</h3>
                             </div>
-                            <p>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Not Available'}</p>
+                            <p>{profileData.industry || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Date of Birth</h3>
+                                <h3>Location</h3>
                             </div>
-                            <p>{profileData.dob || 'Not Available'}</p>
+                            <p>{profileData.location || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Gender</h3>
+                                <h3>About Company</h3>
                             </div>
-                            <p>{profileData.gender || 'Not Available'}</p>
+                            <p>{profileData.aboutCompany || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Department</h3>
+                                <h3>Contact Person</h3>
                             </div>
-                            <p>{profileData.department}</p>
+                            <p>{profileData.contactPersonName || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
                             <div className='profilesectiontop'>
-                                <h3>Year Level</h3>
+                                <h3>Position</h3>
                             </div>
-                            <p>{profileData.yearLevel || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Address</h3>
-                            </div>
-                            <p>{profileData.address || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Technical Skills</h3>
-                            </div>
-                            <p>{profileData.techSkills.length > 0 ? profileData.techSkills.join(', ') : 'N/A'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Soft Skills</h3>
-                            </div>
-                            <p>{profileData.softSkills.length > 0 ? profileData.softSkills.join(', ') : 'N/A'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Contact</h3>
-                            </div>
-                            <p>{profileData.contact || 'Not Available'}</p>
+                            <p>{profileData.position || 'Not Available'}</p>
                         </div>
 
                         <div className="profile-section">
@@ -169,10 +149,37 @@ function Profilepage() {
                             </div>
                             <p>{profileData.email || 'Not Available'}</p>
                         </div>
+
+                        <div className="profile-section">
+                            <div className='profilesectiontop'>
+                                <h3>Phone Number</h3>
+                            </div>
+                            <p>{profileData.phoneNumber || 'Not Available'}</p>
+                        </div>
+
+                        <div className="profile-section">
+                            <div className='profilesectiontop'>
+                                <h3>Preferred Roles</h3>
+                            </div>
+                            <p>{profileData.preferredRoles || 'Not Available'}</p>
+                        </div>
+
+                        <div className="profile-section">
+                            <div className='profilesectiontop'>
+                                <h3>Internship Opportunities</h3>
+                            </div>
+                            <p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p>
+                        </div>
+
+                        <div className="profile-section">
+                            <div className='profilesectiontop'>
+                                <h3>Preferred Skills</h3>
+                            </div>
+                            <p>{profileData.preferredSkills || 'Not Available'}</p>
+                        </div>
                     </div>
 
                     {/* Project and Certificate Sections */}
-                    </div>
                     <div className="project-section">
                         <div className="projectscontainer">
                             <h3>My Projects</h3>
@@ -196,6 +203,7 @@ function Profilepage() {
                             </div>
                         </div>
                     </div>
+                </div>
 
                 {/* Modals */}
                 <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
@@ -214,7 +222,7 @@ function Profilepage() {
                     show={skillsModalOpen} 
                     onClose={() => setSkillsModalOpen(false)} 
                     title="Add New Skill" 
-                    onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...prev.techSkills, newSkill] }))} 
+                    onSave={(newSkill) => setProfileData((prev) => ({ ...prev, preferredSkills: [...prev.preferredSkills, newSkill] }))} 
                 />
                 <CertUpModal 
                     show={certificatesModalOpen} 
@@ -226,4 +234,4 @@ function Profilepage() {
     );
 }
 
-export default Profilepage;
+export default EmployerProfilePage;

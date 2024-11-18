@@ -86,7 +86,7 @@ function EmployerProfileCreation() {
             });
     
             if (response.data.success) {
-                navigate('/Profile', { replace: true });
+                navigate('/employerprofile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }
