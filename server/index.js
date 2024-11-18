@@ -456,20 +456,32 @@ app.post('/api/updateEmployerProfile', verifyToken, async (req, res) => {
 // Profile fetching endpoint
 app.get('/api/profile', verifyToken, async (req, res) => {
   try {
-    // Get the user ID from the token
     const userId = req.user.id;
 
-    // Find the user in the database
+    // Fetch data for Tupath user
     const tupathUser = await Tupath_usersModel.findById(userId).select('profileDetails createdAt googleSignup');
-
     if (tupathUser) {
-      return res.status(200).json({ success: true, profile: tupathUser });
+      return res.status(200).json({
+        success: true,
+        profile: {
+          profileDetails: tupathUser.profileDetails,
+          createdAt: tupathUser.createdAt,
+          googleSignup: tupathUser.googleSignup
+        }
+      });
     }
 
-    const expertUser = await Expert_usersModel.findby(userId).select('profileDetails createdAt googleSignup');
-
+    // Fetch data for Expert user
+    const expertUser = await Expert_usersModel.findById(userId).select('profileDetails createdAt googleSignup');
     if (expertUser) {
-      return res.status(200).json({success:true, profile:expertUser});
+      return res.status(200).json({
+        success: true,
+        profile: {
+          profileDetails: expertUser.profileDetails,
+          createdAt: expertUser.createdAt,
+          googleSignup: expertUser.googleSignup
+        }
+      });
     }
 
     res.status(404).json({ success: false, profile: 'User not Found' });
@@ -478,6 +490,7 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 
 
