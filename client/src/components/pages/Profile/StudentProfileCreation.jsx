@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
+import imageCompression from 'browser-image-compression';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
@@ -15,10 +16,10 @@ function StudentProfileCreation() {
         firstName: '',
         lastName: '',
         middleName: '',
-        department: '',
-        yearLevel: '',
+        department: 'Information Technology',
+        yearLevel: '1st Year',
         dob: '',
-        gender: '',
+        gender: 'Male',
         address: '',
         techSkills: [],
         softSkills: [],
@@ -29,11 +30,36 @@ function StudentProfileCreation() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+
+     // Handle image file selection and display preview
+    const handleImageSelect = (event) => {
+        const file = event.target.files[0]; // Get the selected file
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                setImagePreview(reader.result); // Set the preview as a data URL
+            };
+
+            reader.readAsDataURL(file); // Convert the selected file to a data URL for preview
+        }
+    };
+
+    // Handle image upload after preview
     const handleImageUpload = async (file) => {
-        const imageData = new FormData();
-        imageData.append("profileImg", file);
+        const options = {
+            maxSizeMB: 1, // Max image size in MB
+            maxWidthOrHeight: 800, // Max width or height
+            useWebWorker: true,
+        };
 
         try {
+            // Compress the image
+            const compressedFile = await imageCompression(file, options);
+            const imageData = new FormData();
+            imageData.append("profileImg", compressedFile);
+
             const token = localStorage.getItem("token");
             if (!token) {
                 setMessage("Authentication token not found. Please log in again.");
@@ -48,8 +74,10 @@ function StudentProfileCreation() {
             });
 
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg);
+                setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
+                setImagePreview(''); // Clear the preview once uploaded
                 setMessage("Image uploaded successfully!");
+                setIsModalOpen(false); // Close modal after successful upload
             } else {
                 setMessage("Image upload failed. Please try again.");
             }
@@ -58,6 +86,8 @@ function StudentProfileCreation() {
             setMessage("Error uploading image. Please try again.");
         }
     };
+    
+
     
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -191,11 +221,12 @@ function StudentProfileCreation() {
                             {activeSection === 'Personal Information' && (
                                 <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
                                     {uploadedImage ? (
-                                        <img src={uploadedImage} alt="Profile" />
+                                        <img src={uploadedImage} alt="Profile" />  // This will update once uploadedImage changes
                                     ) : (
-                                        <div>+</div>
-                                        )}
-                                    </div>
+                                        <div>+</div>  // Show a placeholder or icon if no image is uploaded
+                                    )}
+                                </div>
+
                                 )}
                         </div> 
                     </div>

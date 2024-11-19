@@ -16,7 +16,7 @@
 .EditDescriptionModal-content {
     background-color: #ffffff;
     border-radius: 8px;
-    width: 80%;
+    width: 40%;
     height: 500px;
     overflow: auto;
     max-width: 900px;
@@ -32,6 +32,7 @@
     color: #333;
     text-align: center;
     font-weight: bold;
+    margin-bottom: 50px;
 }
 
 /* Form Styling */
@@ -138,7 +139,7 @@
 }
 
 .profile-field label {
-  width: 10%;
+  width: 17%;
 }
 
 .profile-field p {
@@ -147,6 +148,14 @@
   background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 5px;
+  width: 50%;
+}
+
+.profile-img-preview{
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .profile-field input {
@@ -167,4 +176,8 @@
 
 .edit-button:hover {
   background-color: #a53a3a;
+}
+
+.profimgshown {
+    font-size: 8px;
 }

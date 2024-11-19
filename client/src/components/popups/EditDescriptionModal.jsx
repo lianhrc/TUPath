@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { format } from "date-fns";
 import "./EditDescriptionModal.css";
 
 function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   const [formData, setFormData] = useState(profileData);
-  const [editMode, setEditMode] = useState({}); // Tracks which fields are in edit mode
+  const [editMode, setEditMode] = useState({});
+  const [imagePreview, setImagePreview] = useState(""); // For live preview of new image
 
   const handleEditToggle = (field) => {
     setEditMode((prev) => ({
@@ -20,11 +22,39 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL for the selected file
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result); // Set live preview
+      };
+      reader.readAsDataURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        profileImg: file, // Update the profileImg with the uploaded file
+      }));
+    }
+  };
+
   const handleSave = async () => {
-    const endpoint = userRole === "student" ? "/api/updateStudentProfile" : "/api/updateEmployerProfile";
+    const endpoint =
+      userRole === "student"
+        ? "/api/updateStudentProfile"
+        : "/api/updateEmployerProfile";
+
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach((key) => {
+      formDataToSend.append(key, formData[key]);
+    });
+
     try {
-      const response = await axiosInstance.put(endpoint, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axiosInstance.put(endpoint, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
       if (response.data.success) {
         onSave(formData);
@@ -37,8 +67,13 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }
   };
 
-  // Fields to exclude
-  const excludedFields = ["createdAt", "profileImg", "myProjects", "myCertificates", "exampleFieldToRemove"];
+  const excludedFields = [
+    "createdAt",
+    "myProjects",
+    "myCertificates",
+    "projectFiles",
+    "certificatePhotos",
+  ];
 
   if (!show) return null;
 
@@ -46,25 +81,85 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     <div className="modal-overlay">
       <div className="EditDescriptionModal-content">
         <h6>Edit Profile Details</h6>
+
+        {/* Profile Image Display */}
+        <div className="profile-field">
+          <label>Profile Image</label>
+          <div className="profile-img-container">
+            {imagePreview || formData.profileImg ? (
+              <img
+                src={imagePreview || formData.profileImg}  // Use preview if available, otherwise use the uploaded image
+                alt="Profile"
+                className="profile-img-preview"
+              />
+            ) : (
+              <p>No image available</p>  // Fallback when there's no image
+            )}
+          </div>
+          {editMode.profileImg ? (
+            <>
+              <input
+                type="file"
+                name="profileImg"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <button
+                className="edit-button"
+                onClick={() => handleEditToggle("profileImg")}
+              >
+                Save
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="profimgshown">Current image shown.</p>
+              <button
+                className="edit-button"
+                onClick={() => handleEditToggle("profileImg")}
+              >
+                Edit
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Render the rest of the fields */}
         <div className="profile-fields">
           {Object.keys(profileData).map((key) => {
-            // Exclude fields defined in the excludedFields array
-            if (excludedFields.includes(key)) {
+            if (excludedFields.includes(key) || key === "profileImg") {
               return null;
             }
 
             return (
               <div key={key} className="profile-field">
                 <label>{key.replace(/([A-Z])/g, " $1")}</label>
-                {editMode[key] ? (
-                  <input
-                    type="text"
-                    name={key}
-                    value={formData[key] || ""}
-                    onChange={handleChange}
-                  />
+                {key === "dob" ? (
+                  editMode[key] ? (
+                    <input
+                      type="date"
+                      name={key}
+                      value={formData[key] || ""}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    <p>
+                      {formData[key]
+                        ? format(new Date(formData[key]), "MMMM dd, yyyy")
+                        : "Not Available"}
+                    </p>
+                  )
                 ) : (
-                  <p>{formData[key] || "Not Available"}</p>
+                  editMode[key] ? (
+                    <input
+                      type="text"
+                      name={key}
+                      value={formData[key] || ""}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    <p>{formData[key] || "Not Available"}</p>
+                  )
                 )}
                 <button
                   className="edit-button"
@@ -76,6 +171,7 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
             );
           })}
         </div>
+
         <div className="modal-actions">
           <button onClick={handleSave}>Save All</button>
           <button onClick={onClose}>Cancel</button>
