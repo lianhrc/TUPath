@@ -66,16 +66,16 @@
       return res.status(401).json({ message: "Access Denied: Token missing" });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-      if (err) {
-        console.error("Token verification failed:", err);
-        return res.status(403).json({ message: "Invalid Token" });
-      }
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error("Token verification failed:", err);
+      return res.status(403).json({ message: "Invalid Token" });
+    }
 
-      req.user = user;
-      next();
-    });
-  };
+    req.user = user;
+    next();
+  });
+};
 
 
   // Socket.IO setup
@@ -105,6 +105,42 @@
     }
   });
 
+// Increment upvotes for a post
+app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
+  const postId = req.params.id;
+  const { id: userId, username, lastName } = req.user; // Extract user info from token
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    const userIndex = post.votedUsers.findIndex((user) => user.userId === userId);
+
+    if (userIndex > -1) {
+      // User already upvoted, remove upvote
+      post.votedUsers.splice(userIndex, 1);
+      post.upvotes -= 1;
+    } else {
+      // User has not upvoted, add upvote
+      post.votedUsers.push({ userId, username, lastName });
+      post.upvotes += 1;
+    }
+
+    await post.save();
+
+    res.status(200).json({ success: true, post });
+  } catch (err) {
+    console.error("Error toggling upvote:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+
+
   // Define Post schema
   const postSchema = new mongoose.Schema({
     profileImg: String,
@@ -113,7 +149,14 @@
     content: String,
     postImg: String,
     upvotes: { type: Number, default: 0 },
-    comments: [
+    votedUsers: [
+    {
+      userId: String,
+      username: String,
+      lastName: String,
+    },
+  ], // Array of users who upvoted
+  comments: [
       {
         author: String,
         comment: String,
@@ -121,7 +164,10 @@
       },
     ],
   });
-  const Post = mongoose.model("Post", postSchema);
+  
+const Post = mongoose.model("Post", postSchema);
+
+
 
   // Get all posts
   app.get("/api/posts", async (req, res) => {
