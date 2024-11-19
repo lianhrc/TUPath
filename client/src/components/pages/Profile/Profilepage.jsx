@@ -11,6 +11,7 @@ import ProjectUploadModal from '../../popups/ProjectUpModal';
 import ProjectPreviewModal from '../../popups/ProjectPreviewModal';
 import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
+import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
 
 function ProfilePage() {
@@ -26,6 +27,8 @@ function ProfilePage() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [skillsModalOpen, setSkillsModalOpen] = useState(false);
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
+  
+  
 
   // Fetch profile data
   useEffect(() => {
@@ -79,11 +82,13 @@ function ProfilePage() {
 
           {/* Profile Main Section */}
           <div className='profile-main'>
-            <div className='profile-section'>
-              <h3>Description</h3>
-              <p>{description || 'No description available'}</p>
-              <a href='#' onClick={() => setShowEditDescriptionModal(true)}>Edit</a>
-            </div>
+            <div className="profile-section">
+              <div className="div">
+                  <a href="#" onClick={() => setShowEditDescriptionModal(true)}> <img src={edit} alt="" /> </a>
+              </div>        
+            
+          </div>
+            
 
             {/* Student Profile Details */}
             {userRole === 'student' && (
@@ -94,8 +99,7 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Technical Skills</h3><p>{profileData.techSkills?.join(', ') || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Soft Skills</h3><p>{profileData.softSkills?.join(', ') || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Projects</h3><p>{profileData.projectFiles?.join(', ') || 'No Projects Available'}</p></div>
-                <div className='profile-section'><h3>Certificates</h3><p>{profileData.certificatePhotos?.join(', ') || 'No Certificates Available'}</p></div>
+              
               </>
             )}
 
@@ -107,6 +111,7 @@ function ProfilePage() {
                 <div className='profile-section'><h3>About Company</h3><p>{profileData.aboutCompany || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
@@ -115,7 +120,9 @@ function ProfilePage() {
                 <p>{Array.isArray(profileData.preferredSkills) ? profileData.preferredSkills.join(', ') : 'Not Available'}</p>
               </div>
               </>
+              
             )}
+            
 
             {/* Common Profile Details */}
             <div className='profile-section'><h3>Gender</h3><p>{profileData.gender || 'Not Available'}</p></div>
@@ -124,9 +131,72 @@ function ProfilePage() {
           </div>
         </div>
 
+            {/* Project and Certificate Sections */}
+              {userRole === 'student' && (
+                <div className="project-section">
+                  <div className="projectscontainer">
+                    <h3>My Projects</h3>
+                    <hr />
+                    <div className="projects-grid">
+                      <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
+                        <p>+</p>
+                        <p>Add a Project</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="achievementscontainer">
+                    <h3>My Certificates</h3>
+                    <hr />
+                    <div className="projects-grid">
+                      <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
+                        <p>+</p>
+                        <p>Add a Certificate</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+              {/* Project and Certificate Sections */}
+              {userRole === 'expert' && (
+                <div className="project-section">
+                  <div className="projectscontainer">
+                    <h3>Comapany Projects</h3>
+                    <hr />
+                    <div className="projects-grid">
+                      <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
+                        <p>+</p>
+                        <p>Add a Project</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="achievementscontainer">
+                    <h3>My Certificates</h3>
+                    <hr />
+                    <div className="projects-grid">
+                      <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
+                        <p>+</p>
+                        <p>Add a Certificate</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
         {/* Modals */}
         <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
-        <EditDescriptionModal show={showEditDescriptionModal} onClose={() => setShowEditDescriptionModal(false)} currentDescription={description} onSave={setDescription} />
+        <EditDescriptionModal 
+                    show={showEditDescriptionModal} 
+                    onClose={() => setShowEditDescriptionModal(false)} 
+                    profileData={profileData} 
+                    onSave={(updatedData) => setProfileData(updatedData)} 
+                />
+        
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} />
         <GenericModal show={skillsModalOpen} onClose={() => setSkillsModalOpen(false)} title='Add New Skill' onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...(prev.techSkills || []), newSkill] }))} />
         <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
