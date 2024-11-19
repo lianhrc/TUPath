@@ -69,8 +69,6 @@ const StudentHomepage = () => {
     }
 };
 
-
-
 // Function to format the time difference as "x minutes ago", "x hours ago", etc.
   const formatTimeAgo = (timestamp) => {
   const now = new Date();
@@ -182,14 +180,35 @@ useEffect(() => {
     }
   };
 
-
-  const handleUpvote = (postId) => {
-    setPostsData((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
-      )
-    );
+  const handleUpvote = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/posts/${postId}/upvote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to toggle upvote");
+      }
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        setPostsData((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId ? { ...post, upvotes: data.post.upvotes } : post
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling upvote:", err);
+    }
   };
+  
+  
 
   const handleCommentSubmit = (postId, comment) => {
     if (comment.trim()) {
@@ -203,37 +222,50 @@ useEffect(() => {
     }
   };
 
-  const renderPost = (post) => (
-    <div className="post" key={post.id}>
-      <div className="toppostcontent">
-        <img src={post.profileImg || profileicon} alt={post.name} />
-        <div className="frompost">
-          <h5>{post.name}</h5>
-          <p>{formatTimeAgo(post.timestamp)}</p>
+  const renderPost = (post, index) => {
+    const userId = "user_id_from_auth"; // Replace this with actual user ID from authentication
+  
+    const hasUpvoted = post.votedUsers.includes(userId); // Check if user has upvoted
+  
+    return (
+      <div className="post" key={post._id || index}>
+        <div className="toppostcontent">
+          <img src={post.profileImg || profileicon} alt={post.name} />
+          <div className="frompost">
+            <h5>{post.name}</h5>
+            <p>{formatTimeAgo(post.timestamp)}</p>
+          </div>
         </div>
+        <div className="postcontent">
+          <p>{post.content}</p>
+          {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
+        </div>
+        <div className="downpostcontent">
+          <button
+            onClick={() => handleUpvote(post._id)}
+            style={{ backgroundColor: hasUpvoted ? "lightblue" : "white" }} // Highlight upvoted
+          >
+            <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
+          </button>
+          <button onClick={() => toggleComments(post._id)}>
+            <img src={commenticon} alt="Comment" /> {post.comments.length}
+          </button>
+        </div>
+        {post.showComments && (
+          <PostCommentPopup
+            post={post}
+            handleCommentSubmit={handleCommentSubmit}
+            toggleComments={toggleComments}
+          />
+        )}
       </div>
-      <div className="postcontent">
-        <p>{post.content}</p>
-        {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
-      </div>
-      <div className="downpostcontent">
-        <button onClick={() => handleUpvote(post.id)}>
-          <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
-        </button>
-        <button onClick={() => toggleComments(post.id)}>
-          <img src={commenticon} alt="Comment" /> {post.comments.length}
-        </button>
-      </div>
-      {/* Comments Section */}
-      {post.showComments && (
-        <PostCommentPopup
-          post={post}
-          handleCommentSubmit={handleCommentSubmit}
-          toggleComments={toggleComments}
-        />
-      )}
-    </div>
-  );
+    );
+  };
+  
+  
+  /* Updated map function */
+  {postsData.map((post, index) => renderPost(post, index))}
+  
 
   const toggleComments = (postId) => {
     setPostsData((prevPosts) =>
@@ -242,6 +274,7 @@ useEffect(() => {
       )
     );
   };
+
 
   return (
     <div className="StudentHomepage-container">
