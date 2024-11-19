@@ -13,7 +13,10 @@ const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
     // Listen for new comments from the server
     socket.on('receive_comment', (commentData) => {
       if (commentData.postId === post.id) {
-        setComments((prevComments) => [...prevComments, commentData.comment]);
+        setComments((prevComments) => [
+          ...prevComments,
+          { text: commentData.comment, userId: commentData.userId },
+        ]);
       }
     });
 
@@ -29,13 +32,17 @@ const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
         const newComment = {
           postId: post.id,
           comment: commentText,
+          userId: "Name", // Replace this with the actual user's ID
         };
 
         // Emit comment to the server
         socket.emit('send_comment', newComment);
 
         // Optionally update the comments locally
-        setComments((prevComments) => [...prevComments, commentText]);
+        setComments((prevComments) => [
+          ...prevComments,
+          { text: commentText, userId: newComment.userId },
+        ]);
 
         // Clear input after submission
         e.target.value = '';
@@ -57,7 +64,10 @@ const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
         {comments.map((comment, index) => (
           <div className="comment" key={index}>
             <img src={profileicon} alt="Comment Profile" className="comment-profile" />
-            <p>{comment}</p>
+            <div>
+              <p className="comment-user">User ID: {comment.userId}</p> {/* Display the user ID */}
+              <p>{comment.text}</p> {/* Display the comment text */}
+            </div>
           </div>
         ))}
       </div>
