@@ -172,25 +172,25 @@
     const { email, password, role } = req.body;
     try {
       const user = role === "student" ? await Tupath_usersModel.findOne({ email }) : await Expert_usersModel.findOne({ email });
-
+  
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(400).json({ success: false, message: "Invalid email or password" });
       }
-
+  
       const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
-      console.log("Generated Token:", token); // For debugging only; remove in production
-
+  
       let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/studenthomepage";
-      if (role !== "student") redirectPath = "/employerhomepage";
-
+      if (role === "expert") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/employerhomepage";
+  
       user.isNewUser = false;
       await user.save();
-
+  
       res.status(200).json({ success: true, token, message: "Login successful", redirectPath });
     } catch (err) {
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
 
 
 
@@ -198,49 +198,57 @@
   // Google Signup endpoint
   app.post("/google-signup", async (req, res) => {
     const { token, role } = req.body;
-
-    // Validate role from the request payload
+  
+    // Validate role
     if (!['student', 'expert'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role specified' });
     }
-
+  
     try {
       // Verify the Google token using Google API
       const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-
+  
       if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
         return res.status(400).json({ success: false, message: 'Invalid Google token' });
       }
-
+  
       const { email, sub: googleId, name } = googleResponse.data;
-
-      // Choose the correct model based on the role
+  
+      // Select the correct model based on the role
       const UserModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
-
-      // Check if the user already exists in the respective collection
+  
+      // Check if the user already exists
       const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
         return res.status(409).json({ success: false, message: 'Account already exists. Please log in.' });
       }
-
-      // Create a new user (Google ID as password placeholder)
+  
+      // Create a new user
       const newUser = await UserModel.create({
         name,
         email,
         password: googleId, // Placeholder for password
         isNewUser: true,
         googleSignup: true,
+        role, // Add role explicitly
       });
-
+  
       // Generate JWT token
-      const jwtToken = jwt.sign({ email, googleId, name, id: newUser._id, role }, JWT_SECRET, { expiresIn: '1h' });
-
-      res.json({ success: true, token: jwtToken });
+      const jwtToken = jwt.sign(
+        { email, googleId, name, id: newUser._id, role },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+  
+      const redirectPath = role === 'student' ? '/studentprofilecreation' : '/employerprofilecreation';
+  
+      res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {
       console.error('Google sign-up error:', error);
       res.status(500).json({ success: false, message: 'Google sign-up failed' });
     }
   });
+  
 
 
 
@@ -248,58 +256,75 @@
   // Google login endpoint
   app.post("/google-login", async (req, res) => {
     const { token, role } = req.body;
+  
     try {
-        const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-        if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
-            return res.status(400).json({ success: false, message: 'Invalid Google token' });
-        }
-
-        const { email, sub: googleId, name } = googleResponse.data;
-        const Model = role === 'student' ? Tupath_usersModel : Expert_usersModel;
-
-        // Check if the user exists in the respective collection
-        const user = await Model.findOne({ email });
-        if (!user) {
-            // If user does not exist, return an error response
-            return res.status(404).json({ success: false, message: 'User not registered. Please sign up first.' });
-        }
-
-        // If user exists, generate a JWT token
-        const jwtToken = jwt.sign({ email, googleId, name, id: user._id, role }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ success: true, token: jwtToken });
+      const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+  
+      if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
+        return res.status(400).json({ success: false, message: 'Invalid Google token' });
+      }
+  
+      const { email, sub: googleId, name } = googleResponse.data;
+      const UserModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
+  
+      // Check if the user exists
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not registered. Please sign up first.' });
+      }
+  
+      // Generate JWT token
+      const jwtToken = jwt.sign(
+        { email, googleId, name, id: user._id, role },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+  
+      const redirectPath = role === 'student' ? '/studenthomepage' : '/employerhomepage';
+  
+      res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {
       console.error('Google login error:', error);
       res.status(500).json({ success: false, message: 'Google login failed' });
     }
   });
+  
 
   // Student signup endpoint
   app.post("/studentsignup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
-
+  
     try {
       const existingUser = await Tupath_usersModel.findOne({ email });
+  
       if (existingUser) {
         return res.status(400).json({ success: false, message: "User already exists." });
       }
-
+  
       const hashedPassword = await bcrypt.hash(password, 10);
+  
       const newUser = await Tupath_usersModel.create({
         name: `${firstName} ${lastName}`,
         email,
         password: hashedPassword,
         isNewUser: true,
+        role: 'student', // Explicitly set the role
       });
-
-      // Generate a token and include it in the response
+  
       const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' });
-      
-      return res.status(201).json({ success: true, token, user: newUser });
+  
+      return res.status(201).json({
+        success: true,
+        token,
+        message: "Signup successful",
+        redirectPath: "/studentprofilecreation",
+      });
     } catch (err) {
       console.error("Error during signup:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
 
 
 
@@ -307,30 +332,38 @@
   // Expert signup endpoint
   app.post("/expertsignup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
-
+  
     try {
-      const existingUser = await Tupath_usersModel.findOne({ email });
+      const existingUser = await Expert_usersModel.findOne({ email });
+  
       if (existingUser) {
         return res.status(400).json({ success: false, message: "User already exists." });
       }
-
+  
       const hashedPassword = await bcrypt.hash(password, 10);
+  
       const newUser = await Expert_usersModel.create({
         name: `${firstName} ${lastName}`,
         email,
         password: hashedPassword,
         isNewUser: true,
+        role: 'expert', // Explicitly set the role
       });
-
-      // Generate a token and include it in the response
-      const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' });
-      
-      return res.status(201).json({ success: true, token, user: newUser });
+  
+      const token = jwt.sign({ id: newUser._id, role: 'expert' }, JWT_SECRET, { expiresIn: '1h' });
+  
+      return res.status(201).json({
+        success: true,
+        token,
+        message: "Signup successful",
+        redirectPath: "/employerprofilecreation",
+      });
     } catch (err) {
       console.error("Error during signup:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
 
   //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
@@ -458,28 +491,29 @@
     try {
       const userId = req.user.id;
       const role = req.user.role; // Extract role from the token
-
+  
       const userModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
       const user = await userModel.findById(userId).select('role profileDetails createdAt googleSignup');
-
-      if (user) {
-        return res.status(200).json({
-          success: true,
-          profile: {
-            role: user.role,
-            profileDetails: user.profileDetails,
-            createdAt: user.createdAt,
-            googleSignup: user.googleSignup,
-          },
-        });
+  
+      if (!user) {
+        return res.status(404).json({ success: false, profile: 'User not Found' });
       }
-
-      res.status(404).json({ success: false, profile: 'User not Found' });
+  
+      // Return profile details tailored to the role
+      const profile = {
+        role: user.role,
+        profileDetails: user.profileDetails,
+        createdAt: user.createdAt,
+        googleSignup: user.googleSignup,
+      };
+  
+      res.status(200).json({ success: true, profile });
     } catch (error) {
       console.error('Error fetching profile:', error);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
+  
 
 
 

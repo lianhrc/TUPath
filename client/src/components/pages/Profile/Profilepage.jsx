@@ -110,7 +110,10 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
-                <div className='profile-section'><h3>Preferred Skills</h3><p>{profileData.preferredSkills?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'>
+                <h3>Preferred Skills</h3>
+                <p>{Array.isArray(profileData.preferredSkills) ? profileData.preferredSkills.join(', ') : 'Not Available'}</p>
+              </div>
               </>
             )}
 

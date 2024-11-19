@@ -23,6 +23,7 @@ const TupathUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
+  role: { type: String, default: 'student' },
   profileDetails: { // New section for profile details
     firstName: String,
     lastName: String,
@@ -74,6 +75,7 @@ const ExpertUserSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  role: { type: String, default: 'expert' },
   profileDetails: {
     firstName: String,
     lastName: String,
@@ -90,9 +92,10 @@ const ExpertUserSchema = new mongoose.Schema({
     position: String,
     email: String,
     phoneNumber: String,
-    preferredRoles: [String],
+    preferredRoles:{ type: [String], default: [] }, // Always an array
     internshipOpportunities: { type: Boolean, default: false },
-    preferredSkills: { String },
+    preferredSkills: { type: [String], default: [] }, // Always an array
+
   },
   memberSince: { 
     type: Date,
