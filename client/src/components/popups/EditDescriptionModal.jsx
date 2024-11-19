@@ -1,36 +1,184 @@
-import React, { useState } from 'react';
-import './EditDescriptionModal.css';
+import React, { useState } from "react";
+import { format } from "date-fns";
+import "./EditDescriptionModal.css";
 
-const EditDescriptionModal = ({ show, onClose, currentDescription, onSave }) => {
-  const [description, setDescription] = useState(currentDescription);
+function EditDescriptionModal({ show, onClose, profileData, onSave }) {
+  const [formData, setFormData] = useState(profileData);
+  const [editMode, setEditMode] = useState({});
+  const [imagePreview, setImagePreview] = useState(""); // For live preview of new image
 
-  const handleSave = () => {
-    onSave(description);
-    onClose();
+  const handleEditToggle = (field) => {
+    setEditMode((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
-  if (!show) return null; // Don't render anything if the modal isn't shown
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL for the selected file
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result); // Set live preview
+      };
+      reader.readAsDataURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        profileImg: file, // Update the profileImg with the uploaded file
+      }));
+    }
+  };
+
+  const handleSave = async () => {
+    const endpoint =
+      userRole === "student"
+        ? "/api/updateStudentProfile"
+        : "/api/updateEmployerProfile";
+
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach((key) => {
+      formDataToSend.append(key, formData[key]);
+    });
+
+    try {
+      const response = await axiosInstance.put(endpoint, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.data.success) {
+        onSave(formData);
+        onClose();
+      } else {
+        console.error("Failed to save profile data");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  const excludedFields = [
+    "createdAt",
+    "myProjects",
+    "myCertificates",
+    "projectFiles",
+    "certificatePhotos",
+  ];
+
+  if (!show) return null;
 
   return (
-    <div className="editdes-modal-overlay">
-      <div className="editdes-modal-content">
-        <div className="topeditdes-container">
-          <h6>Edit Description</h6>
-          <button className='editdesclose-btn' onClick={onClose}>X</button>
+    <div className="modal-overlay">
+      <div className="EditDescriptionModal-content">
+        <h6>Edit Profile Details</h6>
+
+        {/* Profile Image Display */}
+        <div className="profile-field">
+          <label>Profile Image</label>
+          <div className="profile-img-container">
+            {imagePreview || formData.profileImg ? (
+              <img
+                src={imagePreview || formData.profileImg}  // Use preview if available, otherwise use the uploaded image
+                alt="Profile"
+                className="profile-img-preview"
+              />
+            ) : (
+              <p>No image available</p>  // Fallback when there's no image
+            )}
+          </div>
+          {editMode.profileImg ? (
+            <>
+              <input
+                type="file"
+                name="profileImg"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <button
+                className="edit-button"
+                onClick={() => handleEditToggle("profileImg")}
+              >
+                Save
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="profimgshown">Current image shown.</p>
+              <button
+                className="edit-button"
+                onClick={() => handleEditToggle("profileImg")}
+              >
+                Edit
+              </button>
+            </>
+          )}
         </div>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows="5"
-          placeholder="Enter your description..."
-          className="description-textarea"
-        />
-        <div className="editdes-modal-buttons">
-          <button className="save-button" onClick={handleSave}>Save</button>
+
+        {/* Render the rest of the fields */}
+        <div className="profile-fields">
+          {Object.keys(profileData).map((key) => {
+            if (excludedFields.includes(key) || key === "profileImg") {
+              return null;
+            }
+
+            return (
+              <div key={key} className="profile-field">
+                <label>{key.replace(/([A-Z])/g, " $1")}</label>
+                {key === "dob" ? (
+                  editMode[key] ? (
+                    <input
+                      type="date"
+                      name={key}
+                      value={formData[key] || ""}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    <p>
+                      {formData[key]
+                        ? format(new Date(formData[key]), "MMMM dd, yyyy")
+                        : "Not Available"}
+                    </p>
+                  )
+                ) : (
+                  editMode[key] ? (
+                    <input
+                      type="text"
+                      name={key}
+                      value={formData[key] || ""}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    <p>{formData[key] || "Not Available"}</p>
+                  )
+                )}
+                <button
+                  className="edit-button"
+                  onClick={() => handleEditToggle(key)}
+                >
+                  {editMode[key] ? "Save" : "Edit"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="modal-actions">
+          <button onClick={handleSave}>Save All</button>
+          <button onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default EditDescriptionModal;

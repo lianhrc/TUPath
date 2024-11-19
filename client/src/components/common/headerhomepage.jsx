@@ -105,7 +105,7 @@ function HeaderHomepage() {
                 <img src={profileicon} alt="Profile" className="nav-icon" />
                 {isProfileOpen && (
                   <div className="dropdown-menu profile-menu">
-                    <Link to="/StudentProfile">Profile</Link>
+                    <Link to="/Profile">Profile</Link>
                     {/*<Link to="/Settings">Settings</Link>*/}
                     <Link onClick={handleLogout}>Logout</Link>
                   </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
+import imageCompression from 'browser-image-compression';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
+import { format } from 'date-fns';
 import StudentProfileImageUploadModal from '../../popups/StudentProfileImageUploadModal';
 
 function StudentProfileCreation() {
@@ -15,50 +17,94 @@ function StudentProfileCreation() {
         lastName: '',
         middleName: '',
         department: 'Information Technology',
-        yearLevel: '',
+        yearLevel: '1st Year',
         dob: '',
-        gender: '',
+        gender: 'Male',
         address: '',
         techSkills: [],
         softSkills: [],
         contact: '',
         email: '',
+        
     });
-    const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+
+     // Handle image file selection and display preview
+    const handleImageSelect = (event) => {
+        const file = event.target.files[0]; // Get the selected file
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                setImagePreview(reader.result); // Set the preview as a data URL
+            };
+
+            reader.readAsDataURL(file); // Convert the selected file to a data URL for preview
+        }
+    };
+
+    // Handle image upload after preview
     const handleImageUpload = async (file) => {
-        const formData = new FormData();
-        formData.append("profileImg", file);
+        const options = {
+            maxSizeMB: 1, // Max image size in MB
+            maxWidthOrHeight: 800, // Max width or height
+            useWebWorker: true,
+        };
 
         try {
-            const response = await axiosInstance.post("/api/uploadProfileImage", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+            // Compress the image
+            const compressedFile = await imageCompression(file, options);
+            const imageData = new FormData();
+            imageData.append("profileImg", compressedFile);
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setMessage("Authentication token not found. Please log in again.");
+                return;
+            }
+
+            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg);
+                setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
+                setImagePreview(''); // Clear the preview once uploaded
+                setMessage("Image uploaded successfully!");
+                setIsModalOpen(false); // Close modal after successful upload
             } else {
                 setMessage("Image upload failed. Please try again.");
             }
         } catch (error) {
+            console.error("Image upload error:", error);
             setMessage("Error uploading image. Please try again.");
         }
     };
+    
 
+    
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-
+    
+        const currentDate = new Date().toISOString(); // Set the current date as createdAt for new profiles
+        
         try {
-            const response = await axiosInstance.post('/api/updateProfile', {
+            const response = await axiosInstance.post('/api/updateStudentProfile', {
                 ...formData,
+                createdAt: formData.createdAt || currentDate, // Set createdAt if not already present
+                dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
-
+    
             if (response.data.success) {
-                navigate('/StudentProfile', { replace: true });
+                navigate('/Profile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }
@@ -68,6 +114,8 @@ function StudentProfileCreation() {
             setLoading(false);
         }
     };
+    
+    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -93,28 +141,38 @@ function StudentProfileCreation() {
 
 
     const renderFormFields = () => {
+
+        const formattedDob = formData.dob
+        ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
+        : '';
+
+
         switch (activeSection) {
             case 'Personal Information':
                 return (
                     <>
                         <div className="pi-container">
                             <input type="text" name="studentId" placeholder="Student ID" value={formData.studentId} onChange={handleInputChange} required />      
-                            <select name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
-                                <option value="">Year Level</option>
+                            <select placeholder="year level" name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
                                 <option value="1st Year">1st Year</option>
                                 <option value="2nd Year">2nd Year</option>
                                 <option value="3rd Year">3rd Year</option>
                                 <option value="4th Year">4th Year</option>
                              </select>
+
+                             <select name="department" value={formData.department} onChange={handleInputChange}>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information System">Informaction System</option>
+                             </select>
+                            
                             <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                             <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
                             <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
-                            <input type="date" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleInputChange} />
+                            <input type="date" name="dob" placeholder="Date of Birth" value={formattedDob} onChange={handleInputChange} />
                             <select name="gender" value={formData.gender} onChange={handleInputChange}>
-                                <option value="">Gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
-                                <option value="Prefer not to say">Prefer not to say</option>
                             </select>
                             <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
                            
@@ -155,22 +213,29 @@ function StudentProfileCreation() {
                         <button onClick={() => setActiveSection('Skills')}>Skills</button>
                         <button onClick={() => setActiveSection('Contact')}>Contact</button>
                     </div>
+
                     <div className="form-section">
-                        {activeSection === 'Personal Information' && (
-                            <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
-                                {uploadedImage ? (
-                                    <img src={uploadedImage} alt="Profile" />
-                                ) : (
-                                    <div>+</div>
+
+                    <div className="profile_formcontainer">
+                            <div className="profile_container">
+                            {activeSection === 'Personal Information' && (
+                                <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
+                                    {uploadedImage ? (
+                                        <img src={uploadedImage} alt="Profile" />  // This will update once uploadedImage changes
+                                    ) : (
+                                        <div>+</div>  // Show a placeholder or icon if no image is uploaded
+                                    )}
+                                </div>
+
                                 )}
-                                <input type="file" onChange={(e) => handleImageUpload(e.target.files[0])} />
-                            </div>
-                        )}
+                        </div> 
+                    </div>
+                       
                         <form className="profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
-                        {message && <p className="error-message">{message}</p>}
                     </div>
+
                 </div>
             )}
             <StudentProfileImageUploadModal

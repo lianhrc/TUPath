@@ -13,218 +13,127 @@ import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import Loader from '../../common/Loader';
 
-function Profilepage() {
-    const [profileData, setProfileData] = useState({
-        studentId: '',
-        firstName: '',
-        lastName: '',
-        middleName: '',
-        department: 'Information Technology',
-        yearLevel: '',
-        dob: '',
-        gender: '',
-        address: '',
-        techSkills: [],
-        softSkills: [],
-        contact: '',
-        email: '',
-    });
-    const [description, setDescription] = useState('');
-    const [loading, setLoading] = useState(true);
+function ProfilePage() {
+  const [profileData, setProfileData] = useState({});
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState('');
 
-    const [showUploadModal, setShowUploadModal] = useState(false);
-    const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
-    const [showPreviewModal, setShowPreviewModal] = useState(false);
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [skillsModalOpen, setSkillsModalOpen] = useState(false);
-    const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
+  // Modals
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
+  const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            try {
-                const response = await axiosInstance.get('/api/profile');
-                if (response.data.success) {
-                    setProfileData(response.data.profile.profileDetails || {});
-                    setDescription(response.data.profile.profileDetails?.bio || '');
-                }
-            } catch (error) {
-                console.error('Error fetching profile data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfileData();
-    }, []);
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await axiosInstance.get('/api/profile');
+        if (response.data.success) {
+          const { profileDetails, role, createdAt } = response.data.profile;
+          setProfileData(profileDetails || {});
+          setUserRole(role);
+          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfileData();
+  }, []);
 
-    if (loading) {
-        return <Loader />;
-    }
+  if (loading) {
+    return <Loader />;
+  }
 
-    const profileImageUrl = profileData.profileImg ? `http://localhost:3001${profileData.profileImg}` : avatar;
+  const profileImageUrl = profileData.profileImg
+    ? `http://localhost:3001${profileData.profileImg}`
+    : avatar;
 
-    return (
-        <div className='Profilepage-container'>
-            <HeaderHomepage />
-            <div className='main-content'>
-                <div className="profile-card">
-                    <div className="profile-header">
-                        <img src={profileImageUrl} alt="User Profile" className="avatar" />
-                        <h2>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Name Not Available'}</h2>
-                        <p>{profileData.studentId || 'Student ID Not Available'}</p>
-                        <hr />
-                        <div className='subheader'>
-                            <div className='profile-header-left'>
-                                <p><img src={location} alt="Location" />From</p>
-                                <p><img src={since} alt="Since" />Member since</p>
-                            </div>
-                            <div className='profile-header-right'>
-                                <p>{profileData.address || 'Address Not Available'}</p>
-                                <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className='profile-main'>
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Description</h3>
-                                <a href="#" onClick={() => setShowEditDescriptionModal(true)}>Edit</a>
-                            </div>
-                            <p>{description || 'No description available'}</p>
-                        </div>
-
-                        {/* Added Profile Fields */}
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Student ID</h3>
-                            </div>
-                            <p>{profileData.studentId || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Name</h3>
-                            </div>
-                            <p>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim() || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Date of Birth</h3>
-                            </div>
-                            <p>{profileData.dob || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Gender</h3>
-                            </div>
-                            <p>{profileData.gender || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Department</h3>
-                            </div>
-                            <p>{profileData.department}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Year Level</h3>
-                            </div>
-                            <p>{profileData.yearLevel || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Address</h3>
-                            </div>
-                            <p>{profileData.address || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Technical Skills</h3>
-                            </div>
-                            <p>{profileData.techSkills.length > 0 ? profileData.techSkills.join(', ') : 'N/A'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Soft Skills</h3>
-                            </div>
-                            <p>{profileData.softSkills.length > 0 ? profileData.softSkills.join(', ') : 'N/A'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Contact</h3>
-                            </div>
-                            <p>{profileData.contact || 'Not Available'}</p>
-                        </div>
-
-                        <div className="profile-section">
-                            <div className='profilesectiontop'>
-                                <h3>Email</h3>
-                            </div>
-                            <p>{profileData.email || 'Not Available'}</p>
-                        </div>
-                    </div>
-
-                    {/* Project and Certificate Sections */}
-                    </div>
-                    <div className="project-section">
-                        <div className="projectscontainer">
-                            <h3>My Projects</h3>
-                            <hr />
-                            <div className="projects-grid">
-                                <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
-                                    <p>+</p>
-                                    <p>Add a Project</p>
-                                </div>
-                            </div>
-                        </div>
-                       
-                        <div className="achievementscontainer">
-                            <h3>My Certificates</h3>
-                            <hr />
-                            <div className="projects-grid">
-                                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
-                                    <p>+</p>
-                                    <p>Add a Certificate</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                {/* Modals */}
-                <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
-                <EditDescriptionModal 
-                    show={showEditDescriptionModal} 
-                    onClose={() => setShowEditDescriptionModal(false)} 
-                    currentDescription={description} 
-                    onSave={setDescription} 
-                />
-                <ProjectPreviewModal 
-                    show={showPreviewModal} 
-                    onClose={() => setShowPreviewModal(false)} 
-                    project={selectedProject} 
-                />
-                <GenericModal 
-                    show={skillsModalOpen} 
-                    onClose={() => setSkillsModalOpen(false)} 
-                    title="Add New Skill" 
-                    onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...prev.techSkills, newSkill] }))} 
-                />
-                <CertUpModal 
-                    show={certificatesModalOpen} 
-                    onClose={() => setCertificatesModalOpen(false)} 
-                />
-                <MessagePop />
+  return (
+    <div className='Profilepage-container'>
+      <HeaderHomepage />
+      <div className='main-content'>
+        <div className='profile-card'>
+          <div className='profile-header'>
+            <img src={profileImageUrl} alt='User Profile' className='avatar' />
+            <h2>{`${profileData.firstName || ''} ${profileData.middleName || ''} ${profileData.lastName || ''}`.trim()}</h2>
+            <p>{userRole === 'student' ? profileData.studentId || 'Student ID Not Available' : profileData.companyName || 'Company Name Not Available'}</p>
+            <hr />
+            <div className='subheader'>
+              <div className='profile-header-left'>
+                <p><img src={location} alt='Location' />From</p>
+                <p><img src={since} alt='Since' />Member since</p>
+              </div>
+              <div className='profile-header-right'>
+                <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
+                <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
+              </div>
             </div>
+          </div>
+
+          {/* Profile Main Section */}
+          <div className='profile-main'>
+            <div className='profile-section'>
+              <h3>Description</h3>
+              <p>{description || 'No description available'}</p>
+              <a href='#' onClick={() => setShowEditDescriptionModal(true)}>Edit</a>
+            </div>
+
+            {/* Student Profile Details */}
+            {userRole === 'student' && (
+              <>
+                <div className='profile-section'><h3>Student ID</h3><p>{profileData.studentId || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Department</h3><p>{profileData.department || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Year Level</h3><p>{profileData.yearLevel || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Technical Skills</h3><p>{profileData.techSkills?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Soft Skills</h3><p>{profileData.softSkills?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Projects</h3><p>{profileData.projectFiles?.join(', ') || 'No Projects Available'}</p></div>
+                <div className='profile-section'><h3>Certificates</h3><p>{profileData.certificatePhotos?.join(', ') || 'No Certificates Available'}</p></div>
+              </>
+            )}
+
+            {/* Expert Profile Details */}
+            {userRole === 'expert' && (
+              <>
+                <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>About Company</h3><p>{profileData.aboutCompany || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
+                <div className='profile-section'>
+                <h3>Preferred Skills</h3>
+                <p>{Array.isArray(profileData.preferredSkills) ? profileData.preferredSkills.join(', ') : 'Not Available'}</p>
+              </div>
+              </>
+            )}
+
+            {/* Common Profile Details */}
+            <div className='profile-section'><h3>Gender</h3><p>{profileData.gender || 'Not Available'}</p></div>
+            <div className='profile-section'><h3>Contact</h3><p>{profileData.contact || profileData.phoneNumber || 'Not Available'}</p></div>
+            <div className='profile-section'><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
+          </div>
         </div>
-    );
+
+        {/* Modals */}
+        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
+        <EditDescriptionModal show={showEditDescriptionModal} onClose={() => setShowEditDescriptionModal(false)} currentDescription={description} onSave={setDescription} />
+        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} />
+        <GenericModal show={skillsModalOpen} onClose={() => setSkillsModalOpen(false)} title='Add New Skill' onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...(prev.techSkills || []), newSkill] }))} />
+        <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+        <MessagePop />
+      </div>
+    </div>
+  );
 }
 
-export default Profilepage;
+export default ProfilePage;

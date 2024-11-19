@@ -17,12 +17,13 @@
     display: flex;
     flex-direction: row;
     width: 70%;
-    max-width: 1200px;
     margin: 0 auto;
     background-color: white;
     border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    height: calc(100vh - 40px); /* Allow room for padding */
+    height: auto;
+    padding: 20px;
+
 }
 
 .divh6 {
@@ -35,15 +36,12 @@
 
 .divh6 h6{
     color: white;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;
 }
 
 
 
-.profile-content:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
 
 /* Sidebar styling */
 .sidebar2 {
@@ -59,7 +57,7 @@
     background: transparent;
     border: none;
     color: #9D0E0F;  /* Default text color */
-    font-size: 14px;
+    font-size: 12px;
     width: 100%;
     padding: 12px 20px;
     cursor: pointer;
@@ -91,11 +89,18 @@
 
 /* Form section styling with fixed width */
 .form-section {
-    width: 500px;
     display: flex;
+    width: 100%;
     flex-direction: column;
     justify-content: center;
-    padding-left: 20px;  /* Optional: adds space on the left */
+    align-items: center;
+    height: auto;
+}
+
+.profile_formcontainer{
+    width: 100%;
+    flex-direction: column;
+    
 }
 
 
@@ -105,7 +110,7 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-color: #e9ecef;
+    background-color: #dbdbdb;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,6 +120,13 @@
     margin-left: 80px;  /* Remove any centering margin */
     margin-right: auto;  /* Align left within its container */
 }
+
+.profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
 
 .profile-picture:hover {
@@ -131,10 +143,20 @@
     cursor: pointer;
 }
 
-.profile-picture img {
+
+
+
+.profile_container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: auto;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+}
+
+.profile_container input{
+    width: 50%;
 }
 
 /* Profile form fields */
@@ -152,7 +174,7 @@
     margin: 8px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 12px;
     box-sizing: border-box;
 }
 
@@ -233,7 +255,7 @@
     .profile-form select,
     .profile-form textarea,
     .submit-button {
-        font-size: 14px;
+        font-size: 12px;
         padding: 8px;
     }
 }
