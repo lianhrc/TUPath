@@ -37,7 +37,7 @@ function ProfilePage() {
         const response = await axiosInstance.get('/api/profile');
         if (response.data.success) {
           const { profileDetails, role, createdAt } = response.data.profile;
-          setProfileData(profileDetails || {});
+          setProfileData({ ...profileDetails, createdAt }); // Include createdAt
           setUserRole(role);
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
         }
@@ -49,6 +49,7 @@ function ProfilePage() {
     };
     fetchProfileData();
   }, []);
+  
 
   if (loading) {
     return <Loader />;
@@ -75,7 +76,20 @@ function ProfilePage() {
               </div>
               <div className='profile-header-right'>
                 <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
-                <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
+                <p>
+  {profileData.createdAt
+    ? (() => {
+        const date = new Date(profileData.createdAt);
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}-${day}-${year}`;
+      })()
+    : 'Date Not Available'}
+</p>
+
+
+
               </div>
             </div>
           </div>
