@@ -103,8 +103,8 @@ function ProfilePage() {
               </>
             )}
 
-            {/* Expert Profile Details */}
-            {userRole === 'expert' && (
+            {/* Employer Profile Details */}
+            {userRole === 'employer' && (
               <>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
@@ -160,7 +160,7 @@ function ProfilePage() {
 
 
               {/* Project and Certificate Sections */}
-              {userRole === 'expert' && (
+              {userRole === 'employer' && (
                 <div className="project-section">
                   <div className="projectscontainer">
                     <h3>Comapany Projects</h3>

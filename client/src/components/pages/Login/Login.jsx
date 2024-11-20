@@ -18,7 +18,7 @@ function Login() {
 
     useEffect(() => {
         if (token) {
-            navigate(role === 'student' ? '/studenthomepage' : '/experthomepage', { replace: true });
+            navigate(role === 'student' ? '/studenthomepage' : '/employerhomepage', { replace: true });
         }
     }, [navigate, role, token]);
 
@@ -81,7 +81,7 @@ function Login() {
                     </div>
                     <div className="separator">or</div>
 
-                    {/* Role selection between student and expert */}
+                    {/* Role selection between student and employer */}
                     <div className='chooserolecontainer'>
                         <div className={`chosenrole ${role === 'student' ? 'active-role' : ''}`}>
                             <img src={student} alt="Student" />
@@ -95,17 +95,17 @@ function Login() {
                             </label>
                             Student
                         </div>
-                        <div className={`chosenrole ${role === 'expert' ? 'active-role' : ''}`}>
+                        <div className={`chosenrole ${role === 'employer' ? 'active-role' : ''}`}>
                             <img src={employer} alt="Employer" />
                             <label>
                                 <input
                                     type="radio"
-                                    value="expert"
-                                    checked={role === 'expert'}
-                                    onChange={() => setRole('expert')}
+                                    value="employer"
+                                    checked={role === 'employer'}
+                                    onChange={() => setRole('employer')}
                                 />
                             </label>
-                            Expert
+                            Employer
                         </div>
                     </div>
 

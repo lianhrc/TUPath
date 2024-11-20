@@ -6,7 +6,7 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Expert_usersModel } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -217,7 +217,7 @@ const Post = mongoose.model("Post", postSchema);
   app.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
     try {
-      const user = role === "student" ? await Tupath_usersModel.findOne({ email }) : await Expert_usersModel.findOne({ email });
+      const user = role === "student" ? await Tupath_usersModel.findOne({ email }) : await Employer_usersModel.findOne({ email });
   
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(400).json({ success: false, message: "Invalid email or password" });
@@ -226,7 +226,7 @@ const Post = mongoose.model("Post", postSchema);
       const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
   
       let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/studenthomepage";
-      if (role === "expert") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/employerhomepage";
+      if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/employerhomepage";
   
       user.isNewUser = false;
       await user.save();
@@ -246,7 +246,7 @@ const Post = mongoose.model("Post", postSchema);
     const { token, role } = req.body;
   
     // Validate role
-    if (!['student', 'expert'].includes(role)) {
+    if (!['student', 'employer'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role specified' });
     }
   
@@ -261,7 +261,7 @@ const Post = mongoose.model("Post", postSchema);
       const { email, sub: googleId, name } = googleResponse.data;
   
       // Select the correct model based on the role
-      const UserModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
+      const UserModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
   
       // Check if the user already exists
       const existingUser = await UserModel.findOne({ email });
@@ -311,7 +311,7 @@ const Post = mongoose.model("Post", postSchema);
       }
   
       const { email, sub: googleId, name } = googleResponse.data;
-      const UserModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
+      const UserModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
   
       // Check if the user exists
       const user = await UserModel.findOne({ email });
@@ -375,12 +375,12 @@ const Post = mongoose.model("Post", postSchema);
 
 
 
-  // Expert signup endpoint
-  app.post("/expertsignup", async (req, res) => {
+  // Employer signup endpoint
+  app.post("/employersignup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
   
     try {
-      const existingUser = await Expert_usersModel.findOne({ email });
+      const existingUser = await Employer_usersModel.findOne({ email });
   
       if (existingUser) {
         return res.status(400).json({ success: false, message: "User already exists." });
@@ -388,15 +388,15 @@ const Post = mongoose.model("Post", postSchema);
   
       const hashedPassword = await bcrypt.hash(password, 10);
   
-      const newUser = await Expert_usersModel.create({
+      const newUser = await Employer_usersModel.create({
         name: `${firstName} ${lastName}`,
         email,
         password: hashedPassword,
         isNewUser: true,
-        role: 'expert', // Explicitly set the role
+        role: 'employer', // Explicitly set the role
       });
   
-      const token = jwt.sign({ id: newUser._id, role: 'expert' }, JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: newUser._id, role: 'employer' }, JWT_SECRET, { expiresIn: '1h' });
   
       return res.status(201).json({
         success: true,
@@ -490,7 +490,7 @@ const Post = mongoose.model("Post", postSchema);
           internshipOpportunities,
           preferredSkills } = req.body;
 
-        const updatedUser = await Expert_usersModel.findByIdAndUpdate(
+        const updatedUser = await Employer_usersModel.findByIdAndUpdate(
             userId,
             {
                 $set: {
@@ -538,7 +538,7 @@ const Post = mongoose.model("Post", postSchema);
       const userId = req.user.id;
       const role = req.user.role; // Extract role from the token
   
-      const userModel = role === 'student' ? Tupath_usersModel : Expert_usersModel;
+      const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
       const user = await userModel.findById(userId).select('role profileDetails createdAt googleSignup');
   
       if (!user) {
@@ -569,20 +569,20 @@ const Post = mongoose.model("Post", postSchema);
         const userId = req.user.id;
         const profileImgPath = `/uploads/${req.file.filename}`;
 
-        // Update for both student and expert models
+        // Update for both student and employer models
         const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
             userId,
             { $set: { "profileDetails.profileImg": profileImgPath } },
             { new: true }
         );
 
-        const updatedExpert = await Expert_usersModel.findByIdAndUpdate(
+        const updatedEmployer = await Employer_usersModel.findByIdAndUpdate(
             userId,
             { $set: { "profileDetails.profileImg": profileImgPath } },
             { new: true }
         );
 
-        if (!updatedStudent && !updatedExpert) {
+        if (!updatedStudent && !updatedEmployer) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 

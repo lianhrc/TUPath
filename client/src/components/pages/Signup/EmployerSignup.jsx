@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
 
-function ExpertSignup() {
+function EmployerSignup() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -22,7 +22,7 @@ function ExpertSignup() {
         }
     
         try {
-            const response = await axiosInstance.post('/expertsignup', {
+            const response = await axiosInstance.post('/employersignup', {
                 firstName,
                 lastName,
                 email,
@@ -43,7 +43,7 @@ function ExpertSignup() {
 
     const handleGoogleSignup = async (response) => {
         const googleToken = response.credential;
-        const role = "expert"; // Define the role explicitly
+        const role = "employer"; // Define the role explicitly
     
         try {
             const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
@@ -147,4 +147,4 @@ function ExpertSignup() {
     );
 }
 
-export default ExpertSignup;
+export default EmployerSignup;

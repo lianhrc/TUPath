@@ -18,7 +18,7 @@ function LoginRoles() {
         if (role === 'student') {
             navigate('/StudentSignup'); // Navigate to StudentSignup
         } else {
-            navigate('/ExpertSignup'); // Navigate to ExpertSignup
+            navigate('/EmployerSignup'); // Navigate to EmployerSignup
         }
     };
 
@@ -56,28 +56,28 @@ function LoginRoles() {
                         </div>
                     </div>
                     <div 
-                        className={`card ${role === 'expert' ? 'selected' : ''}`} 
-                        onClick={() => handleRoleSelection('expert')}
+                        className={`card ${role === 'employer' ? 'selected' : ''}`} 
+                        onClick={() => handleRoleSelection('employer')}
                     >
                         <div className="topcard">
                             <img src={employer} alt="Employer Icon" />
                             <input 
                                 type="radio" 
                                 name="role" 
-                                id="expert" 
+                                id="employer" 
                                 className="custom-radio" 
-                                checked={role === 'expert'} 
-                                onChange={() => handleRoleSelection('expert')} 
+                                checked={role === 'employer'} 
+                                onChange={() => handleRoleSelection('employer')} 
                             />
-                            <label htmlFor="expert" className="custom-label"></label>
+                            <label htmlFor="employer" className="custom-label"></label>
                         </div>
                         <div className="card-body">
-                            <h5 className="card-title">I'm an expert, looking for potential students for work or a project</h5>
+                            <h5 className="card-title">I'm an employer, looking for potential students for work or a project</h5>
                         </div>
                     </div>
                 </div>
                 <button onClick={handleSignupRedirect} className="join-button">
-                    Sign up as {role === 'student' ? 'Student' : 'Expert'}
+                    Sign up as {role === 'student' ? 'Student' : 'Employer'}
                 </button>
             </div>
          </motion.div>

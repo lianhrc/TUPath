@@ -1,6 +1,6 @@
 import React from 'react'
 
-function EmployeeHomepage() {
+function EmployerHomepage() {
   return (
     <div>
       <h1>this is home page</h1>
@@ -8,4 +8,4 @@ function EmployeeHomepage() {
   )
 }
 
-export default EmployeeHomepage;
+export default EmployerHomepage;

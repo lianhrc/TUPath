@@ -1,5 +1,5 @@
 /* Profile container */
-.employee-profile-container {
+.employer-profile-container {
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -12,7 +12,7 @@
 }
 
 /* Profile content */
-.employee-profile-content {
+.employer-profile-content {
     display: flex;
     flex-direction: row;
     width: 70%;
@@ -42,7 +42,7 @@
 }
 
 /* Sidebar styling */
-.employee-sidebar {
+.employer-sidebar {
     display: flex;
     flex-direction: column;
     width: 250px;
@@ -52,7 +52,7 @@
 
 /* Sidebar button styles */
 /* Sidebar button styles with left border transition */
-.employee-sidebar button {
+.employer-sidebar button {
     background: transparent;
     border: none;
     color: #9D0E0F;
@@ -66,7 +66,7 @@
 }
 
 /* Hover effect with vertical line on the left */
-.employee-sidebar button:hover {
+.employer-sidebar button:hover {
     background-color: #f1f1f1;     /* Light background on hover */
     border-left: 4px solid #9D0E0F; /* Show left border line on hover */
     opacity: 1;                    /* Full opacity on hover */
@@ -74,7 +74,7 @@
 }
 
 /* Active button style with permanent left border */
-.employee-sidebar button.active {
+.employer-sidebar button.active {
     background-color: #f4f4f4;      /* Highlighted background color */
     border-left: 4px solid #9D0E0F; /* Left border color */
     font-weight: bold;
@@ -83,12 +83,12 @@
 }
 
 /* Inactive state to reduce opacity */
-.employee-sidebar button.inactive {
+.employer-sidebar button.inactive {
     opacity: 0.6;                   /* Dim the inactive buttons */
 }
 
 /* Optional pressed effect on click */
-.employee-sidebar button:active {
+.employer-sidebar button:active {
     transform: scale(0.98);
     transition: transform 0.2s ease;
 }
@@ -133,9 +133,9 @@
 }
 
 /* Form fields */
-.employee-profile-form input,
-.employee-profile-form select,
-.employee-profile-form textarea {
+.employer-profile-form input,
+.employer-profile-form select,
+.employer-profile-form textarea {
     width: 100%;
     padding: 8px;
     font-size: 14px;
@@ -144,7 +144,7 @@
     margin-bottom: 10px;
 }
 
-.employee-profile-form textarea {
+.employer-profile-form textarea {
     height: 80px;
     resize: vertical;
 }

@@ -3,7 +3,7 @@ import './EmployerProfileCreation.css';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
-import EmployeeProfileImageUploadModal from '../../popups/EmployerProfileImageUpload.jsx';
+import EmployerProfileImageUploadModal from '../../popups/EmployerProfileImageUpload.jsx';
 
 function EmployerProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
@@ -166,22 +166,22 @@ function EmployerProfileCreation() {
     };
 
     return (
-        <div className="employee-profile-container">
+        <div className="employer-profile-container">
             <div className="title-section">
                 <h6>Employer Profile Creation</h6>
             </div>
             {loading ? (
                 <Loader />
             ) : (
-                <div className="employee-profile-content">
-                    <div className="employee-sidebar">
+                <div className="employer-profile-content">
+                    <div className="employer-sidebar">
                         <button onClick={() => setActiveSection('Personal Information')}>Personal Information</button>
                         <button onClick={() => setActiveSection('Company Information')}>Company Information</button>
                         <button onClick={() => setActiveSection('Contact Information')}>Contact Information</button>
                         <button onClick={() => setActiveSection('Job Preferences')}>Job Preferences</button>
                     </div>
                     <div className="form-container">
-                        <form className="employee-profile-form" onSubmit={handleSubmit}>
+                        <form className="employer-profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                             <button type="submit" className="submit-btn">Submit</button>
                         </form>
@@ -189,7 +189,7 @@ function EmployerProfileCreation() {
                     </div>
                 </div>
             )}
-            <EmployeeProfileImageUploadModal
+            <EmployerProfileImageUploadModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onUpload={handleImageUpload}

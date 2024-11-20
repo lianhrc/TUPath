@@ -2,7 +2,7 @@ import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StudentSignup from './components/pages/Signup/StudentSignup.jsx';
-import ExpertSignup from './components/pages/Signup/ExpertSignup.jsx';
+import EmployerSignup from './components/pages/Signup/EmployerSignup.jsx';
 import Login from './components/pages/Login/Login';
 import EmployerProfileCreation from './components/pages/Profile/EmployerProfileCreation.jsx';
 import LoginRoles from './components/pages/Login/LoginRoles';
@@ -10,7 +10,7 @@ import Landingpage from './components/pages/Main/Landingpage';
 import Studentlandpage from './components/pages/Main/studentlandpage';
 import Employerlandpage from './components/pages/Main/employerlandpage';
 import StudentHomepage from './components/pages/Home/StudentHomepage';
-import EmployeeHomepage from './components/pages/Home/EmployeeHomepage';
+import EmployerHomepage from './components/pages/Home/EmployerHomepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
 import EmployerProfile from './components/pages/Profile/EmployerProfilePage';
@@ -37,10 +37,10 @@ function App() {
             } 
           />
           <Route 
-            path='/employeehomepage' 
+            path='/employerhomepage' 
             element={
               <ProtectedRoute>
-                <EmployeeHomepage />
+                <EmployerHomepage />
               </ProtectedRoute>
             } 
           />
@@ -77,7 +77,7 @@ function App() {
           <Route path='/employerlandpage' element={<Employerlandpage />} />
           <Route path='/studentlandpage' element={<Studentlandpage />} />
           <Route path='/studentsignup' element={<StudentSignup />} />
-          <Route path='/expertsignup' element={<ExpertSignup />} />
+          <Route path='/employersignup' element={<EmployerSignup />} />
           <Route path='/login' element={<Login />} />
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
