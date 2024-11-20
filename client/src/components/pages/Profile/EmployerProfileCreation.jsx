@@ -129,6 +129,10 @@ function EmployerProfileCreation() {
                         </select>
                         <input type="text" name="nationality" placeholder="Nationality" value={formData.nationality} onChange={handleInputChange} />
                         <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
+                        <div className="divnxtbtn">
+                                <button type="button" className="next-btn" onClick={() => setActiveSection('Company Information')}>Next</button>
+                                
+                        </div>
                     </div>
                 );
             case 'Company Information':
@@ -138,6 +142,7 @@ function EmployerProfileCreation() {
                         <input type="text" name="industry" placeholder="Industry" value={formData.industry} onChange={handleInputChange} />
                         <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleInputChange} />
                         <textarea name="aboutCompany" placeholder="About Company" value={formData.aboutCompany} onChange={handleInputChange}></textarea>
+                        <button type="button" className="next-btn" onClick={() => setActiveSection('Contact Information')}>Next</button>
                     </>
                 );
             case 'Contact Information':
@@ -147,6 +152,7 @@ function EmployerProfileCreation() {
                         <input type="text" name="position" placeholder="Position/Title" value={formData.position} onChange={handleInputChange} />
                         <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange} required />
                         <input type="text" name="phoneNumber" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleInputChange} />
+                        <button type="button" className="next-btn" onClick={() => setActiveSection('Job Preferences')}>Next</button>
                     </>
                 );
             case 'Job Preferences':
@@ -158,6 +164,7 @@ function EmployerProfileCreation() {
                             <input type="checkbox" name="internshipOpportunities" checked={formData.internshipOpportunities} onChange={(e) => setFormData({ ...formData, internshipOpportunities: e.target.checked })} />
                         </label>
                         <textarea name="preferredSkills" placeholder="Preferred Skills" value={formData.preferredSkills} onChange={handleInputChange}></textarea>
+                        <button type="submit" className="submit-btn">Submit</button>
                     </>
                 );
             default:
@@ -183,7 +190,6 @@ function EmployerProfileCreation() {
                     <div className="form-container">
                         <form className="employee-profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
-                            <button type="submit" className="submit-btn">Submit</button>
                         </form>
                         {message && <p className="error-msg">{message}</p>}
                     </div>

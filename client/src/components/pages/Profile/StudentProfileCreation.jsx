@@ -11,6 +11,8 @@ function StudentProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState('');
+    const [imagePreview, setImagePreview] = useState('');
+    const [message, setMessage] = useState('');
     const [formData, setFormData] = useState({
         studentId: '',
         firstName: '',
@@ -21,15 +23,24 @@ function StudentProfileCreation() {
         dob: '',
         gender: 'Male',
         address: '',
-        techSkills: [],
-        softSkills: [],
+        techSkills: '',
+        softSkills: '',
         contact: '',
         email: '',
-        
     });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Ordered list of sections
+    const sections = ['Personal Information', 'Skills', 'Contact'];
+
+    // Handle "Next" button functionality
+    const handleNext = () => {
+        const currentIndex = sections.indexOf(activeSection);
+        if (currentIndex < sections.length - 1) {
+            setActiveSection(sections[currentIndex + 1]);
+        }
+    };
 
     // Handle image file selection and display preview
     const handleImageSelect = (event) => {
@@ -58,17 +69,17 @@ function StudentProfileCreation() {
             // Compress the image
             const compressedFile = await imageCompression(file, options);
             const imageData = new FormData();
-            imageData.append("profileImg", compressedFile);
+            imageData.append('profileImg', compressedFile);
 
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem('token');
             if (!token) {
-                setMessage("Authentication token not found. Please log in again.");
+                setMessage('Authentication token not found. Please log in again.');
                 return;
             }
 
-            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+            const response = await axiosInstance.post('/api/uploadProfileImage', imageData, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
+                    'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,
                 },
             });
@@ -76,19 +87,17 @@ function StudentProfileCreation() {
             if (response.data.success) {
                 setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
                 setImagePreview(''); // Clear the preview once uploaded
-                setMessage("Image uploaded successfully!");
+                setMessage('Image uploaded successfully!');
                 setIsModalOpen(false); // Close modal after successful upload
             } else {
-                setMessage("Image upload failed. Please try again.");
+                setMessage('Image upload failed. Please try again.');
             }
         } catch (error) {
-            console.error("Image upload error:", error);
-            setMessage("Error uploading image. Please try again.");
+            console.error('Image upload error:', error);
+            setMessage('Error uploading image. Please try again.');
         }
     };
-    
 
-    
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
@@ -114,59 +123,34 @@ function StudentProfileCreation() {
             setLoading(false);
         }
     };
-    
-    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-
-    // JavaScript to toggle 'active' and 'inactive' classes on button click
-        const buttons = document.querySelectorAll('.sidebar2 button');
-
-        buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove 'active' class from all buttons
-            buttons.forEach(btn => {
-            btn.classList.remove('active');
-            btn.classList.add('inactive');  // Add 'inactive' to all buttons initially
-            });
-
-            // Add 'active' class to the clicked button and remove 'inactive'
-            button.classList.add('active');
-            button.classList.remove('inactive');
-        });
-        });
-
-
     const renderFormFields = () => {
-
         const formattedDob = formData.dob
-        ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
-        : '';
-
+            ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
+            : '';
 
         switch (activeSection) {
             case 'Personal Information':
                 return (
                     <>
                         <div className="pi-container">
-                            <input type="text" name="studentId" placeholder="Student ID" value={formData.studentId} onChange={handleInputChange} required />      
-                            <select placeholder="year level" name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
+                            <input type="text" name="studentId" placeholder="Student ID" value={formData.studentId} onChange={handleInputChange} required />
+                            <select name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
                                 <option value="1st Year">1st Year</option>
                                 <option value="2nd Year">2nd Year</option>
                                 <option value="3rd Year">3rd Year</option>
                                 <option value="4th Year">4th Year</option>
-                             </select>
-
-                             <select name="department" value={formData.department} onChange={handleInputChange}>
+                            </select>
+                            <select name="department" value={formData.department} onChange={handleInputChange}>
                                 <option value="Information Technology">Information Technology</option>
                                 <option value="Computer Science">Computer Science</option>
-                                <option value="Information System">Informaction System</option>
-                             </select>
-                            
+                                <option value="Information System">Information System</option>
+                            </select>
                             <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                             <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
                             <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
@@ -176,7 +160,6 @@ function StudentProfileCreation() {
                                 <option value="Female">Female</option>
                             </select>
                             <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
-                           
                         </div>
                     </>
                 );
@@ -210,33 +193,41 @@ function StudentProfileCreation() {
             ) : (
                 <div className="profile-content">
                     <div className="sidebar2">
-                        <button onClick={() => setActiveSection('Personal Information')}>Personal Information</button>
-                        <button onClick={() => setActiveSection('Skills')}>Skills</button>
-                        <button onClick={() => setActiveSection('Contact')}>Contact</button>
+                        {sections.map((section) => (
+                            <button
+                                key={section}
+                                onClick={() => setActiveSection(section)}
+                                className={section === activeSection ? 'active' : ''}
+                            >
+                                {section}
+                            </button>
+                        ))}
                     </div>
-
                     <div className="form-section">
-
-                    <div className="profile_formcontainer">
+                        <div className="profile_formcontainer">
                             <div className="profile_container">
-                            {activeSection === 'Personal Information' && (
-                                <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
-                                    {uploadedImage ? (
-                                        <img src={uploadedImage} alt="Profile" />  // This will update once uploadedImage changes
-                                    ) : (
-                                        <div>+</div>  // Show a placeholder or icon if no image is uploaded
-                                    )}
-                                </div>
-
+                                {activeSection === 'Personal Information' && (
+                                    <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
+                                        {uploadedImage ? (
+                                            <img src={uploadedImage} alt="Profile" />
+                                        ) : (
+                                            <div>+</div>
+                                        )}
+                                    </div>
                                 )}
-                        </div> 
-                    </div>
-                       
+                            </div>
+                        </div>
                         <form className="profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
+                        <div className="next-button-container">
+                            {sections.indexOf(activeSection) < sections.length - 1 && (
+                                <button className="next-button" onClick={handleNext}>
+                                    Next
+                                </button>
+                            )}
+                        </div>
                     </div>
-
                 </div>
             )}
             <StudentProfileImageUploadModal

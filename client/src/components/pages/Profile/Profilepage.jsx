@@ -177,7 +177,7 @@ function ProfilePage() {
               {userRole === 'expert' && (
                 <div className="project-section">
                   <div className="projectscontainer">
-                    <h3>Comapany Projects</h3>
+                    <h3>Company Projects</h3>
                     <hr />
                     <div className="projects-grid">
                       <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>

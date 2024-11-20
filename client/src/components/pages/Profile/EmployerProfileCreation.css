@@ -11,6 +11,24 @@
     height: 100vh; /* Full viewport height */
 }
 
+
+/* Submit button */
+.submit-btn {
+    width: 30%;
+    padding: 12px;
+    background-color: #9D0E0F;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.submit-btn:hover {
+    background-color: #671111;
+    transform: translateY(-2px);
+}
+
 /* Profile content */
 .employee-profile-content {
     display: flex;
@@ -154,4 +172,25 @@
     color: red;
     font-size: 12px;
     margin-top: 5px;
+}
+
+
+.divnxtbtn{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+}
+
+.next-btn {
+    background-color: #9D0E0F;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.next-btn:hover {
+    background-color: #671111;
 }
