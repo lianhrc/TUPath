@@ -31,7 +31,7 @@ function StudentProfileCreation() {
     const navigate = useNavigate();
 
 
-     // Handle image file selection and display preview
+    // Handle image file selection and display preview
     const handleImageSelect = (event) => {
         const file = event.target.files[0]; // Get the selected file
 
@@ -92,9 +92,9 @@ function StudentProfileCreation() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-    
+
         const currentDate = new Date().toISOString(); // Set the current date as createdAt for new profiles
-        
+
         try {
             const response = await axiosInstance.post('/api/updateStudentProfile', {
                 ...formData,
@@ -102,7 +102,7 @@ function StudentProfileCreation() {
                 dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
-    
+
             if (response.data.success) {
                 navigate('/Profile', { replace: true });
             } else {
@@ -121,6 +121,7 @@ function StudentProfileCreation() {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
+
 
     // JavaScript to toggle 'active' and 'inactive' classes on button click
         const buttons = document.querySelectorAll('.sidebar2 button');
