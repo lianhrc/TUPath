@@ -11,6 +11,8 @@ function StudentProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState('');
+    const [imagePreview, setImagePreview] = useState('');
+    const [message, setMessage] = useState('');
     const [formData, setFormData] = useState({
         studentId: '',
         firstName: '',
@@ -21,8 +23,8 @@ function StudentProfileCreation() {
         dob: '',
         gender: 'Male',
         address: '',
-        techSkills: [],
-        softSkills: [],
+        techSkills: '',
+        softSkills: '',
         contact: '',
         email: '',
     });
@@ -30,6 +32,18 @@ function StudentProfileCreation() {
     const [message, setMessage] = useState(''); // Added message state
     const navigate = useNavigate();
 
+    // Ordered list of sections
+    const sections = ['Personal Information', 'Skills', 'Contact'];
+
+    // Handle "Next" button functionality
+    const handleNext = () => {
+        const currentIndex = sections.indexOf(activeSection);
+        if (currentIndex < sections.length - 1) {
+            setActiveSection(sections[currentIndex + 1]);
+        }
+    };
+
+    // Handle image file selection and display preview
     const handleImageSelect = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -67,9 +81,10 @@ function StudentProfileCreation() {
             });
 
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg);
+                setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
+                setImagePreview(''); // Clear the preview once uploaded
                 setMessage('Image uploaded successfully!');
-                setIsModalOpen(false);
+                setIsModalOpen(false); // Close modal after successful upload
             } else {
                 setMessage('Image upload failed. Please try again.');
             }
@@ -83,7 +98,7 @@ function StudentProfileCreation() {
         event.preventDefault();
         setLoading(true);
 
-        const currentDate = new Date().toISOString();
+        const currentDate = new Date().toISOString(); // Set the current date as createdAt for new profiles
 
         try {
             const response = await axiosInstance.post('/api/updateStudentProfile', {
@@ -92,6 +107,7 @@ function StudentProfileCreation() {
                 dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
+
 
             if (response.data.success) {
                 navigate('/Profile', { replace: true });
@@ -113,8 +129,8 @@ function StudentProfileCreation() {
 
     const renderFormFields = () => {
         const formattedDob = formData.dob
-            ? format(new Date(formData.dob), 'yyyy-MM-dd')
-            : '';
+        ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
+        : '';
 
         switch (activeSection) {
             case 'Personal Information':
@@ -240,20 +256,21 @@ function StudentProfileCreation() {
             ) : (
                 <div className="profile-content">
                     <div className="sidebar2">
-                        <button onClick={() => setActiveSection('Personal Information')}>
-                            Personal Information
-                        </button>
-                        <button onClick={() => setActiveSection('Skills')}>Skills</button>
-                        <button onClick={() => setActiveSection('Contact')}>Contact</button>
+                        {sections.map((section) => (
+                            <button
+                                key={section}
+                                onClick={() => setActiveSection(section)}
+                                className={section === activeSection ? 'active' : ''}
+                            >
+                                {section}
+                            </button>
+                        ))}
                     </div>
                     <div className="form-section">
                         <div className="profile_formcontainer">
                             <div className="profile_container">
                                 {activeSection === 'Personal Information' && (
-                                    <div
-                                        className="profile-picture"
-                                        onClick={() => setIsModalOpen(true)}
-                                    >
+                                    <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
                                         {uploadedImage ? (
                                             <img src={uploadedImage} alt="Profile" />
                                         ) : (
@@ -266,6 +283,13 @@ function StudentProfileCreation() {
                         <form className="profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
+                        <div className="next-button-container">
+                            {sections.indexOf(activeSection) < sections.length - 1 && (
+                                <button className="next-button" onClick={handleNext}>
+                                    Next
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

@@ -106,6 +106,7 @@
 
 /* Profile picture upload area */
 .profile-picture {
+ 
     position: relative;
     width: 120px;
     height: 120px;
@@ -259,5 +260,26 @@
         padding: 8px;
     }
 }
+
+
+.next-button-container {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.next-button {
+    background-color: #9D0E0F;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.next-button:hover {
+    background-color: #671111;
+}
+
+
 
 

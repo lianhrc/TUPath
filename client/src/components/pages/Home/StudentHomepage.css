@@ -19,7 +19,6 @@
 /* Sidebar */
 .sidebar {
   width: 380px;
-  position: fixed;
   left: 0;
   top: 50px;
   height: calc(100vh - 60px);
@@ -39,7 +38,7 @@
   border-radius: 15px;
   background-color: white;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 320px;
 }
 
 .profile img {
@@ -98,8 +97,7 @@
 
 /* Feed */
 .feed {
-  margin-left: 350px; /* Sidebar width + spacing */
-  padding: 50px;
+  padding: 50px 20px;
   width: calc(100% - 400px);
   height: calc(100vh - 50px); /* Make the feed fill the height below the header */
 }
