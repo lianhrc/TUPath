@@ -12,7 +12,6 @@ function StudentProfileCreation() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState('');
     const [imagePreview, setImagePreview] = useState('');
-    const [message, setMessage] = useState('');
     const [formData, setFormData] = useState({
         studentId: '',
         firstName: '',
