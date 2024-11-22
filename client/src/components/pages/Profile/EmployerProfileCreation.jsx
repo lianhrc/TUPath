@@ -35,6 +35,12 @@ function EmployerProfileCreation() {
     const navigate = useNavigate();
 
     const handleImageUpload = async (file) => {
+        console.log("Selected file:", file); // Debugging log
+        if (!file) {
+            setMessage("No file selected. Please try again.");
+            return;
+        }
+    
         const imageData = new FormData();
         imageData.append("profileImg", file);
     
@@ -52,8 +58,11 @@ function EmployerProfileCreation() {
                 },
             });
     
+            console.log("Upload response:", response.data); // Debugging log
+    
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg);
+                const imageUrl = `http://localhost:3001${response.data.profileImg}`;
+                setUploadedImage(imageUrl);
                 setMessage("Image uploaded successfully!");
             } else {
                 setMessage("Image upload failed. Please try again.");
@@ -64,10 +73,11 @@ function EmployerProfileCreation() {
         }
     };
     
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-    
+
         try {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -75,7 +85,7 @@ function EmployerProfileCreation() {
                 setLoading(false);
                 return;
             }
-    
+
             const response = await axiosInstance.post('/api/updateEmployerProfile', {
                 ...formData,
                 profileImg: uploadedImage,
@@ -84,20 +94,20 @@ function EmployerProfileCreation() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
+            console.log('Profile update response:', response.data);
             if (response.data.success) {
-                navigate('/employerprofile', { replace: true });
+                navigate('/Profile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }
-            setLoading(false);
         } catch (error) {
             console.error('Profile update error:', error);
             setMessage('An error occurred while updating the profile. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
-    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -109,13 +119,18 @@ function EmployerProfileCreation() {
             case 'Personal Information':
                 return (
                     <div className="personal-information-container">
-                        <div className="profile-img-container" onClick={() => setIsModalOpen(true)}>
-                            {uploadedImage ? (
-                                <img src={uploadedImage} alt="Profile" />
-                            ) : (
-                                <div>+</div>
-                            )}
-                            <input type="file" onChange={(e) => handleImageUpload(e.target.files[0])} />
+                        <div className="profile-img-container">
+                            <img
+                                src={uploadedImage || 'default-avatar-url'}
+                                alt="Profile"
+                                onClick={() => document.getElementById('profileImageInput').click()}
+                            />
+                            <input
+                                type="file"
+                                id="profileImageInput"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleImageUpload(e.target.files[0])}
+                            />
                         </div>
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />

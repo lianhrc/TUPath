@@ -567,7 +567,14 @@ const Post = mongoose.model("Post", postSchema);
   app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
         const userId = req.user.id;
+
+        // Validate if file exists
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file uploaded" });
+        }
+
         const profileImgPath = `/uploads/${req.file.filename}`;
+        console.log("Uploaded file path:", profileImgPath); // Debugging
 
         // Update for both student and employer models
         const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
@@ -582,11 +589,17 @@ const Post = mongoose.model("Post", postSchema);
             { new: true }
         );
 
+        // If no user was updated, return an error
         if (!updatedStudent && !updatedEmployer) {
+            console.log("User not found for ID:", userId); // Debugging
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        res.status(200).json({ success: true, message: "Profile image uploaded successfully", profileImg: profileImgPath });
+        res.status(200).json({
+            success: true,
+            message: "Profile image uploaded successfully",
+            profileImg: profileImgPath,
+        });
     } catch (error) {
         console.error("Error uploading profile image:", error);
         res.status(500).json({ success: false, message: "Internal server error" });

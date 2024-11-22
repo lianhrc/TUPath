@@ -54,9 +54,10 @@ function ProfilePage() {
     return <Loader />;
   }
 
-  const profileImageUrl = profileData.profileImg
-    ? `http://localhost:3001${profileData.profileImg}`
-    : avatar;
+  const profileImageUrl = profileData.profileImg?.startsWith('/')
+  ? `http://localhost:3001${profileData.profileImg}`
+  : profileData.profileImg || avatar;
+
 
   return (
     <div className='Profilepage-container'>

@@ -92,6 +92,7 @@ const EmployerUserSchema = new mongoose.Schema({
     position: String,
     email: String,
     phoneNumber: String,
+    profileImg: String, // Add this line for the employer profile image
     preferredRoles:{ type: [String], default: [] }, // Always an array
     internshipOpportunities: { type: Boolean, default: false },
     preferredSkills: { type: [String], default: [] }, // Always an array
