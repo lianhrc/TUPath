@@ -119,19 +119,33 @@ function EmployerProfileCreation() {
             case 'Personal Information':
                 return (
                     <div className="personal-information-container">
-                        <div className="profile-img-container">
-                            <img
-                                src={uploadedImage || 'default-avatar-url'}
-                                alt="Profile"
-                                onClick={() => document.getElementById('profileImageInput').click()}
-                            />
+                            <div 
+                            className="profile-img-container" 
+                            onClick={() => document.getElementById('profileImageInput').click()}
+                        >
+                            {/* Display uploaded image or default placeholder */}
+                            {uploadedImage ? (
+                                <img
+                                    src={uploadedImage}
+                                    alt="Profile"
+                                    className="uploaded-profile-img"
+                                />
+                            ) : (
+                                <div className="default-avatar">Upload Image</div>
+                            )}
+                        
+                            {/* Hidden file input */}
                             <input
                                 type="file"
                                 id="profileImageInput"
                                 style={{ display: 'none' }}
                                 onChange={(e) => handleImageUpload(e.target.files[0])}
                             />
-                        </div>
+                            </div>
+                       
+                            {message && <p className="error-msg">{message}</p>}
+                            
+                
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
                         <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
@@ -206,7 +220,6 @@ function EmployerProfileCreation() {
                         <form className="employer-profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
-                        {message && <p className="error-msg">{message}</p>}
                     </div>
                 </div>
             )}

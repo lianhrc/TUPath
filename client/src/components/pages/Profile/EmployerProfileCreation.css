@@ -74,7 +74,7 @@
     background: transparent;
     border: none;
     color: #9D0E0F;
-    font-size: 14px;
+    font-size: 12px;
     width: 100%;
     padding: 12px 20px;
     cursor: pointer;
@@ -119,23 +119,36 @@
     flex-direction: column;
     justify-content: center;
     padding-left: 20px;
+    margin-bottom: 20px;
 }
+
+
 
 /* Profile picture upload area */
 .profile-img-container {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background-color: #e9ecef;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    width: 120px; /* Adjust as needed */
+    height: 120px; /* Adjust as needed */
+    border-radius: 50%;
+    background-color: #f0f0f0; /* Optional placeholder background */
     cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    margin-top: 20px;
     margin-bottom: 20px;
-    margin-left: 80px;
-    margin-right: auto;
+}
+.uploaded-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.default-avatar {
+    font-size: 12px;
+    text-align: center;
 }
 
 
@@ -156,7 +169,7 @@
 .employer-profile-form textarea {
     width: 100%;
     padding: 8px;
-    font-size: 14px;
+    font-size: 12px;
     border: 1px solid #e5e5e5;
     border-radius: 5px;
     margin-bottom: 10px;

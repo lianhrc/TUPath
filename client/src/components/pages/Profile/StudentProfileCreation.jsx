@@ -290,7 +290,7 @@ function StudentProfileCreation() {
                             )}
                         </div>
                     </div>
-                </div>
+            </div>
             )}
             <StudentProfileImageUploadModal
                 isOpen={isModalOpen}
