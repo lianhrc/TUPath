@@ -20,7 +20,7 @@ function Login() {
         if (token) {
             navigate(role === 'student' ? '/studenthomepage' : '/employerhomepage', { replace: true });
         }
-    }, [navigate, role, token]);
+    }, [navigate, role, token]); 
 
     const handleGoogleLogin = async (response) => {
         try {
