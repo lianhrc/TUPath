@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './StudentHomepage.css';
+import './Homepage.css';
 import Headerhomepage from '../../common/headerhomepage';
 import profileicon from '../../../assets/profileicon.png';
 import mediaupload from '../../../assets/mediaupload.png';
@@ -14,7 +14,7 @@ import axiosInstance from '../../../services/axiosInstance';
 
 const socket = io('http://localhost:3001');
 
-const StudentHomepage = () => {
+const Homepage = () => {
   const [postsData, setPostsData] = useState([]);
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -183,7 +183,7 @@ const StudentHomepage = () => {
   };
 
   return (
-    <div className="StudentHomepage-container">
+    <div className="Homepage-container">
       <Headerhomepage />
       <div className="content-container">
         <aside className="sidebar">
@@ -224,4 +224,4 @@ const StudentHomepage = () => {
   );
 };
 
-export default StudentHomepage;
+export default Homepage;

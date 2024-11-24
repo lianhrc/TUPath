@@ -9,8 +9,7 @@ import LoginRoles from './components/pages/Login/LoginRoles';
 import Landingpage from './components/pages/Main/Landingpage';
 import Studentlandpage from './components/pages/Main/studentlandpage';
 import Employerlandpage from './components/pages/Main/employerlandpage';
-import StudentHomepage from './components/pages/Home/StudentHomepage';
-import EmployerHomepage from './components/pages/Home/EmployerHomepage';
+import Homepage from './components/pages/Home/Homepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
@@ -28,18 +27,10 @@ function App() {
           {/* Protected Routes */}
        
           <Route 
-            path='/studenthomepage' 
+            path='/homepage' 
             element={
               <ProtectedRoute>
-                <StudentHomepage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path='/employerhomepage' 
-            element={
-              <ProtectedRoute>
-                <EmployerHomepage />
+                <Homepage />
               </ProtectedRoute>
             } 
           />

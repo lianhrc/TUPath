@@ -18,7 +18,7 @@ function Login() {
 
     useEffect(() => {
         if (token) {
-            navigate(role === 'student' ? '/studenthomepage' : '/employerhomepage', { replace: true });
+            navigate(role === 'student' ? '/homepage' : '/homepage', { replace: true });
         }
     }, [navigate, role, token]); 
 
@@ -28,7 +28,7 @@ function Login() {
             const res = await axiosInstance.post('/google-login', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
-                const redirectPath = res.data.redirectPath || '/studenthomepage';
+                const redirectPath = res.data.redirectPath || '/homepage';
                 navigate(redirectPath, { replace: true });
             } else {
                 setMessage('Google login failed. Please try again.');
@@ -48,7 +48,7 @@ function Login() {
             const response = await axiosInstance.post('/login', { email, password, role });
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
-                const redirectPath = response.data.redirectPath || '/studenthomepage';
+                const redirectPath = response.data.redirectPath || '/homepage';
                 navigate(redirectPath, { replace: true });
             } else {
                 setMessage(response.data.message || 'Login failed. Invalid credentials.');
