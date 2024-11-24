@@ -11,6 +11,7 @@ function StudentProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState('');
+    const [imagePreview, setImagePreview] = useState('');
     const [formData, setFormData] = useState({
         studentId: '',
         firstName: '',
@@ -21,54 +22,59 @@ function StudentProfileCreation() {
         dob: '',
         gender: 'Male',
         address: '',
-        techSkills: [],
-        softSkills: [],
+        techSkills: '',
+        softSkills: '',
         contact: '',
         email: '',
-        
     });
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState(''); // Added message state
     const navigate = useNavigate();
 
+    // Ordered list of sections
+    const sections = ['Personal Information', 'Skills', 'Contact'];
 
-    // Handle image file selection and display preview
-    const handleImageSelect = (event) => {
-        const file = event.target.files[0]; // Get the selected file
-
-        if (file) {
-            const reader = new FileReader();
-
-            reader.onloadend = () => {
-                setImagePreview(reader.result); // Set the preview as a data URL
-            };
-
-            reader.readAsDataURL(file); // Convert the selected file to a data URL for preview
+    // Handle "Next" button functionality
+    const handleNext = () => {
+        const currentIndex = sections.indexOf(activeSection);
+        if (currentIndex < sections.length - 1) {
+            setActiveSection(sections[currentIndex + 1]);
         }
     };
 
-    // Handle image upload after preview
+    // Handle image file selection and display preview
+    const handleImageSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUploadedImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleImageUpload = async (file) => {
         const options = {
-            maxSizeMB: 1, // Max image size in MB
-            maxWidthOrHeight: 800, // Max width or height
+            maxSizeMB: 1,
+            maxWidthOrHeight: 800,
             useWebWorker: true,
         };
 
         try {
-            // Compress the image
             const compressedFile = await imageCompression(file, options);
             const imageData = new FormData();
-            imageData.append("profileImg", compressedFile);
+            imageData.append('profileImg', compressedFile);
 
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem('token');
             if (!token) {
-                setMessage("Authentication token not found. Please log in again.");
+                setMessage('Authentication token not found. Please log in again.');
                 return;
             }
 
-            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+            const response = await axiosInstance.post('/api/uploadProfileImage', imageData, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
+                    'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,
                 },
             });
@@ -76,19 +82,17 @@ function StudentProfileCreation() {
             if (response.data.success) {
                 setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
                 setImagePreview(''); // Clear the preview once uploaded
-                setMessage("Image uploaded successfully!");
+                setMessage('Image uploaded successfully!');
                 setIsModalOpen(false); // Close modal after successful upload
             } else {
-                setMessage("Image upload failed. Please try again.");
+                setMessage('Image upload failed. Please try again.');
             }
         } catch (error) {
-            console.error("Image upload error:", error);
-            setMessage("Error uploading image. Please try again.");
+            console.error('Image upload error:', error);
+            setMessage('Error uploading image. Please try again.');
         }
     };
-    
 
-    
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
@@ -98,10 +102,11 @@ function StudentProfileCreation() {
         try {
             const response = await axiosInstance.post('/api/updateStudentProfile', {
                 ...formData,
-                createdAt: formData.createdAt || currentDate, // Set createdAt if not already present
+                createdAt: formData.createdAt || currentDate,
                 dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
+
 
             if (response.data.success) {
                 navigate('/Profile', { replace: true });
@@ -110,89 +115,128 @@ function StudentProfileCreation() {
             }
             setLoading(false);
         } catch (error) {
+            console.error('Profile update error:', error);
             setMessage('An error occurred while updating profile. Please try again.');
             setLoading(false);
         }
     };
-    
-    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-
-    // JavaScript to toggle 'active' and 'inactive' classes on button click
-        const buttons = document.querySelectorAll('.sidebar2 button');
-
-        buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove 'active' class from all buttons
-            buttons.forEach(btn => {
-            btn.classList.remove('active');
-            btn.classList.add('inactive');  // Add 'inactive' to all buttons initially
-            });
-
-            // Add 'active' class to the clicked button and remove 'inactive'
-            button.classList.add('active');
-            button.classList.remove('inactive');
-        });
-        });
-
-
     const renderFormFields = () => {
-
         const formattedDob = formData.dob
         ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
         : '';
 
-
         switch (activeSection) {
             case 'Personal Information':
                 return (
-                    <>
-                        <div className="pi-container">
-                            <input type="text" name="studentId" placeholder="Student ID" value={formData.studentId} onChange={handleInputChange} required />      
-                            <select placeholder="year level" name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
-                                <option value="3rd Year">3rd Year</option>
-                                <option value="4th Year">4th Year</option>
-                             </select>
-
-                             <select name="department" value={formData.department} onChange={handleInputChange}>
-                                <option value="Information Technology">Information Technology</option>
-                                <option value="Computer Science">Computer Science</option>
-                                <option value="Information System">Informaction System</option>
-                             </select>
-                            
-                            <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
-                            <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
-                            <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
-                            <input type="date" name="dob" placeholder="Date of Birth" value={formattedDob} onChange={handleInputChange} />
-                            <select name="gender" value={formData.gender} onChange={handleInputChange}>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                            <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
-                           
-                        </div>
-                    </>
+                    <div className="pi-container">
+                        <input
+                            type="text"
+                            name="studentId"
+                            placeholder="Student ID"
+                            value={formData.studentId}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <select name="yearLevel" value={formData.yearLevel} onChange={handleInputChange}>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                        <select name="department" value={formData.department} onChange={handleInputChange}>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Information System">Information System</option>
+                        </select>
+                        <input
+                            type="text"
+                            name="firstName"
+                            placeholder="First Name"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="lastName"
+                            placeholder="Last Name"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="middleName"
+                            placeholder="Middle Name"
+                            value={formData.middleName}
+                            onChange={handleInputChange}
+                        />
+                        <input
+                            type="date"
+                            name="dob"
+                            placeholder="Date of Birth"
+                            value={formattedDob}
+                            onChange={handleInputChange}
+                        />
+                        <select name="gender" value={formData.gender} onChange={handleInputChange}>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <textarea
+                            name="address"
+                            placeholder="Address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                        ></textarea>
+                    </div>
                 );
             case 'Skills':
                 return (
                     <>
-                        <input type="text" name="techSkills" placeholder="Technical Skills (e.g., HTML, CSS)" value={formData.techSkills} onChange={handleInputChange} />
-                        <input type="text" name="softSkills" placeholder="Soft Skills (e.g., Leadership)" value={formData.softSkills} onChange={handleInputChange} />
+                        <input
+                            type="text"
+                            name="techSkills"
+                            placeholder="Technical Skills (e.g., HTML, CSS)"
+                            value={formData.techSkills}
+                            onChange={handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            name="softSkills"
+                            placeholder="Soft Skills (e.g., Leadership)"
+                            value={formData.softSkills}
+                            onChange={handleInputChange}
+                        />
                     </>
                 );
             case 'Contact':
                 return (
                     <>
-                        <input type="text" name="contact" placeholder="Contact Number" value={formData.contact} onChange={handleInputChange} required />
-                        <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange} required />
-                        <button type="submit" className="submit-button">Submit</button>
+                        <input
+                            type="text"
+                            name="contact"
+                            placeholder="Contact Number"
+                            value={formData.contact}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email Address"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <button type="submit" className="submit-button">
+                            Submit
+                        </button>
                     </>
                 );
             default:
@@ -205,38 +249,47 @@ function StudentProfileCreation() {
             <div className="divh6">
                 <h6>Student Profile Creation</h6>
             </div>
+            {message && <div className="message">{message}</div>} {/* Added message display */}
             {loading ? (
                 <Loader />
             ) : (
                 <div className="profile-content">
                     <div className="sidebar2">
-                        <button onClick={() => setActiveSection('Personal Information')}>Personal Information</button>
-                        <button onClick={() => setActiveSection('Skills')}>Skills</button>
-                        <button onClick={() => setActiveSection('Contact')}>Contact</button>
+                        {sections.map((section) => (
+                            <button
+                                key={section}
+                                onClick={() => setActiveSection(section)}
+                                className={section === activeSection ? 'active' : ''}
+                            >
+                                {section}
+                            </button>
+                        ))}
                     </div>
-
                     <div className="form-section">
-
-                    <div className="profile_formcontainer">
+                        <div className="profile_formcontainer">
                             <div className="profile_container">
-                            {activeSection === 'Personal Information' && (
-                                <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
-                                    {uploadedImage ? (
-                                        <img src={uploadedImage} alt="Profile" />  // This will update once uploadedImage changes
-                                    ) : (
-                                        <div>+</div>  // Show a placeholder or icon if no image is uploaded
-                                    )}
-                                </div>
-
+                                {activeSection === 'Personal Information' && (
+                                    <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
+                                        {uploadedImage ? (
+                                            <img src={uploadedImage} alt="Profile" />
+                                        ) : (
+                                            <div>+</div>
+                                        )}
+                                    </div>
                                 )}
-                        </div> 
-                    </div>
-                       
+                            </div>
+                        </div>
                         <form className="profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
                         </form>
+                        <div className="next-button-container">
+                            {sections.indexOf(activeSection) < sections.length - 1 && (
+                                <button className="next-button" onClick={handleNext}>
+                                    Next
+                                </button>
+                            )}
+                        </div>
                     </div>
-
                 </div>
             )}
             <StudentProfileImageUploadModal

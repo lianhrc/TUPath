@@ -3,7 +3,7 @@ import './EmployerProfileCreation.css';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
-import EmployeeProfileImageUploadModal from '../../popups/EmployerProfileImageUpload.jsx';
+import EmployerProfileImageUploadModal from '../../popups/EmployerProfileImageUpload.jsx';
 
 function EmployerProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
@@ -35,6 +35,12 @@ function EmployerProfileCreation() {
     const navigate = useNavigate();
 
     const handleImageUpload = async (file) => {
+        console.log("Selected file:", file); // Debugging log
+        if (!file) {
+            setMessage("No file selected. Please try again.");
+            return;
+        }
+    
         const imageData = new FormData();
         imageData.append("profileImg", file);
     
@@ -52,8 +58,11 @@ function EmployerProfileCreation() {
                 },
             });
     
+            console.log("Upload response:", response.data); // Debugging log
+    
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg);
+                const imageUrl = `http://localhost:3001${response.data.profileImg}`;
+                setUploadedImage(imageUrl);
                 setMessage("Image uploaded successfully!");
             } else {
                 setMessage("Image upload failed. Please try again.");
@@ -64,10 +73,11 @@ function EmployerProfileCreation() {
         }
     };
     
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-    
+
         try {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -75,7 +85,7 @@ function EmployerProfileCreation() {
                 setLoading(false);
                 return;
             }
-    
+
             const response = await axiosInstance.post('/api/updateEmployerProfile', {
                 ...formData,
                 profileImg: uploadedImage,
@@ -84,20 +94,20 @@ function EmployerProfileCreation() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
+
+            console.log('Profile update response:', response.data);
             if (response.data.success) {
-                navigate('/employerprofile', { replace: true });
+                navigate('/Profile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
             }
-            setLoading(false);
         } catch (error) {
             console.error('Profile update error:', error);
             setMessage('An error occurred while updating the profile. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
-    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -109,13 +119,18 @@ function EmployerProfileCreation() {
             case 'Personal Information':
                 return (
                     <div className="personal-information-container">
-                        <div className="profile-img-container" onClick={() => setIsModalOpen(true)}>
-                            {uploadedImage ? (
-                                <img src={uploadedImage} alt="Profile" />
-                            ) : (
-                                <div>+</div>
-                            )}
-                            <input type="file" onChange={(e) => handleImageUpload(e.target.files[0])} />
+                        <div className="profile-img-container">
+                            <img
+                                src={uploadedImage || 'default-avatar-url'}
+                                alt="Profile"
+                                onClick={() => document.getElementById('profileImageInput').click()}
+                            />
+                            <input
+                                type="file"
+                                id="profileImageInput"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleImageUpload(e.target.files[0])}
+                            />
                         </div>
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
@@ -129,6 +144,10 @@ function EmployerProfileCreation() {
                         </select>
                         <input type="text" name="nationality" placeholder="Nationality" value={formData.nationality} onChange={handleInputChange} />
                         <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
+                        <div className="divnxtbtn">
+                                <button type="button" className="next-btn" onClick={() => setActiveSection('Company Information')}>Next</button>
+                                
+                        </div>
                     </div>
                 );
             case 'Company Information':
@@ -138,6 +157,7 @@ function EmployerProfileCreation() {
                         <input type="text" name="industry" placeholder="Industry" value={formData.industry} onChange={handleInputChange} />
                         <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleInputChange} />
                         <textarea name="aboutCompany" placeholder="About Company" value={formData.aboutCompany} onChange={handleInputChange}></textarea>
+                        <button type="button" className="next-btn" onClick={() => setActiveSection('Contact Information')}>Next</button>
                     </>
                 );
             case 'Contact Information':
@@ -147,6 +167,7 @@ function EmployerProfileCreation() {
                         <input type="text" name="position" placeholder="Position/Title" value={formData.position} onChange={handleInputChange} />
                         <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange} required />
                         <input type="text" name="phoneNumber" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleInputChange} />
+                        <button type="button" className="next-btn" onClick={() => setActiveSection('Job Preferences')}>Next</button>
                     </>
                 );
             case 'Job Preferences':
@@ -158,6 +179,7 @@ function EmployerProfileCreation() {
                             <input type="checkbox" name="internshipOpportunities" checked={formData.internshipOpportunities} onChange={(e) => setFormData({ ...formData, internshipOpportunities: e.target.checked })} />
                         </label>
                         <textarea name="preferredSkills" placeholder="Preferred Skills" value={formData.preferredSkills} onChange={handleInputChange}></textarea>
+                        <button type="submit" className="submit-btn">Submit</button>
                     </>
                 );
             default:
@@ -166,30 +188,29 @@ function EmployerProfileCreation() {
     };
 
     return (
-        <div className="employee-profile-container">
+        <div className="employer-profile-container">
             <div className="title-section">
                 <h6>Employer Profile Creation</h6>
             </div>
             {loading ? (
                 <Loader />
             ) : (
-                <div className="employee-profile-content">
-                    <div className="employee-sidebar">
+                <div className="employer-profile-content">
+                    <div className="employer-sidebar">
                         <button onClick={() => setActiveSection('Personal Information')}>Personal Information</button>
                         <button onClick={() => setActiveSection('Company Information')}>Company Information</button>
                         <button onClick={() => setActiveSection('Contact Information')}>Contact Information</button>
                         <button onClick={() => setActiveSection('Job Preferences')}>Job Preferences</button>
                     </div>
                     <div className="form-container">
-                        <form className="employee-profile-form" onSubmit={handleSubmit}>
+                        <form className="employer-profile-form" onSubmit={handleSubmit}>
                             {renderFormFields()}
-                            <button type="submit" className="submit-btn">Submit</button>
                         </form>
                         {message && <p className="error-msg">{message}</p>}
                     </div>
                 </div>
             )}
-            <EmployeeProfileImageUploadModal
+            <EmployerProfileImageUploadModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onUpload={handleImageUpload}

@@ -48,8 +48,8 @@ const TupathUserSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // This will add createdAt and updatedAt automatically
 
-// Schema for TUPATH experts
-const ExpertUserSchema = new mongoose.Schema({
+// Schema for TUPATH employers
+const EmployerUserSchema = new mongoose.Schema({
   name: {
     type: String, 
     required: true,
@@ -71,11 +71,11 @@ const ExpertUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
-  isExpert: {
+  isEmployer: {
     type: Boolean,
     default: true,
   },
-  role: { type: String, default: 'expert' },
+  role: { type: String, default: 'employer' },
   profileDetails: {
     firstName: String,
     lastName: String,
@@ -92,6 +92,7 @@ const ExpertUserSchema = new mongoose.Schema({
     position: String,
     email: String,
     phoneNumber: String,
+    profileImg: String, // Add this line for the employer profile image
     preferredRoles:{ type: [String], default: [] }, // Always an array
     internshipOpportunities: { type: Boolean, default: false },
     preferredSkills: { type: [String], default: [] }, // Always an array
@@ -99,15 +100,15 @@ const ExpertUserSchema = new mongoose.Schema({
   },
   memberSince: { 
     type: Date,
-    default: Date.now, // Defaults to current date when an expert user is created
+    default: Date.now, // Defaults to current date when an employer user is created
   }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 // Models
 const Tupath_usersModel = mongoose.model("Tupath_users", TupathUserSchema);
-const Expert_usersModel = mongoose.model("Expert_users", ExpertUserSchema);
+const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 
 module.exports = {
   Tupath_usersModel,
-  Expert_usersModel,
+  Employer_usersModel,
 };

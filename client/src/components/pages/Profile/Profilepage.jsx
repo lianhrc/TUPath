@@ -37,7 +37,7 @@ function ProfilePage() {
         const response = await axiosInstance.get('/api/profile');
         if (response.data.success) {
           const { profileDetails, role, createdAt } = response.data.profile;
-          setProfileData(profileDetails || {});
+          setProfileData({ ...profileDetails, createdAt }); // Include createdAt
           setUserRole(role);
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
         }
@@ -49,14 +49,16 @@ function ProfilePage() {
     };
     fetchProfileData();
   }, []);
+  
 
   if (loading) {
     return <Loader />;
   }
 
-  const profileImageUrl = profileData.profileImg
-    ? `http://localhost:3001${profileData.profileImg}`
-    : avatar;
+  const profileImageUrl = profileData.profileImg?.startsWith('/')
+  ? `http://localhost:3001${profileData.profileImg}`
+  : profileData.profileImg || avatar;
+
 
   return (
     <div className='Profilepage-container'>
@@ -75,7 +77,20 @@ function ProfilePage() {
               </div>
               <div className='profile-header-right'>
                 <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
-                <p>{profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : 'Date Not Available'}</p>
+                <p>
+  {profileData.createdAt
+    ? (() => {
+        const date = new Date(profileData.createdAt);
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}-${day}-${year}`;
+      })()
+    : 'Date Not Available'}
+</p>
+
+
+
               </div>
             </div>
           </div>
@@ -103,8 +118,8 @@ function ProfilePage() {
               </>
             )}
 
-            {/* Expert Profile Details */}
-            {userRole === 'expert' && (
+            {/* Employer Profile Details */}
+            {userRole === 'employer' && (
               <>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
@@ -160,10 +175,10 @@ function ProfilePage() {
 
 
               {/* Project and Certificate Sections */}
-              {userRole === 'expert' && (
+              {userRole === 'employer' && (
                 <div className="project-section">
                   <div className="projectscontainer">
-                    <h3>Comapany Projects</h3>
+                    <h3>Company Projects</h3>
                     <hr />
                     <div className="projects-grid">
                       <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
