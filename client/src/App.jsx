@@ -9,11 +9,9 @@ import LoginRoles from './components/pages/Login/LoginRoles';
 import Landingpage from './components/pages/Main/Landingpage';
 import Studentlandpage from './components/pages/Main/studentlandpage';
 import Employerlandpage from './components/pages/Main/employerlandpage';
-import StudentHomepage from './components/pages/Home/StudentHomepage';
-import EmployerHomepage from './components/pages/Home/EmployerHomepage';
+import Homepage from './components/pages/Home/Homepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
-import EmployerProfile from './components/pages/Profile/EmployerProfilePage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
@@ -29,18 +27,10 @@ function App() {
           {/* Protected Routes */}
        
           <Route 
-            path='/studenthomepage' 
+            path='/homepage' 
             element={
               <ProtectedRoute>
-                <StudentHomepage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path='/employerhomepage' 
-            element={
-              <ProtectedRoute>
-                <EmployerHomepage />
+                <Homepage />
               </ProtectedRoute>
             } 
           />
@@ -82,7 +72,6 @@ function App() {
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
-          <Route path='/employerprofile' element={<EmployerProfile />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>

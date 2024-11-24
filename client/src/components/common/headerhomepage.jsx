@@ -68,7 +68,7 @@ function HeaderHomepage() {
         <Loader /> // Show Loader component when loading
       ) : (
         <header className="homepagenavbar">
-          <Link className="lefticon" to="/StudentHomepage">
+          <Link className="lefticon" to="/Homepage">
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
           <div className="search-container">
@@ -76,7 +76,7 @@ function HeaderHomepage() {
           </div>
           <div className="icon-buttons">
             <nav className="homepagenav-links">
-              <Link to="/StudentHomepage">
+              <Link to="/Homepage">
                 <img src={homeicon} alt="Home" className="nav-icon" />
               </Link>
               <Link to="/Inboxpage">
