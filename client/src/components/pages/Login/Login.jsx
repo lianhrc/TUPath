@@ -65,12 +65,16 @@ function Login() {
     return (
         <div className="Login" >
             <Header />
-            <motion.div className='logincontent'
-                        initial={{ opacity: 0, y: 100 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ type: "spring", stiffness: 100, damping: 10 }}
-                        viewport={{ once: true, amount: 0.2 }}  
-                    >
+            <motion.div
+                className="logincontent"
+                initial={{ opacity: 0, translateY: 30 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{
+                    duration: 0.6, // Smooth animation duration
+                    ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+                }}
+                viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
+                >
                 <div className="Login-container">
                  <h5>Make the most of your career</h5>
                     <div className="googlelogincontainer">

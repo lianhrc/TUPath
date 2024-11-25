@@ -86,17 +86,17 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
         <div className="profile-field">
           <label>Profile Image</label>
           <div className="profile-img-container">
-            {imagePreview || formData.profileImg ? (
-              <img
-                src={imagePreview || (formData.profileImg ? `http://localhost:3001${formData.profileImg}` : avatar)}
-                alt="Profile"
-                className="profile-img-preview"
-              />
-
-            ) : (
-              <p>No image available</p>  // Fallback when there's no image
-            )}
+            <img
+              src={
+                imagePreview || // Live preview if a new image is uploaded
+                (formData.profileImg?.startsWith('/') ? `http://localhost:3001${formData.profileImg}` : formData.profileImg) || // Correct profile image URL
+                avatar // Fallback to default avatar
+              }
+              alt="Profile"
+              className="profile-img-preview"
+            />
           </div>
+
           {editMode.profileImg ? (
             <>
               <input
