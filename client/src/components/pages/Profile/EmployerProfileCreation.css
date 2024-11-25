@@ -7,8 +7,9 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    width: 100%; /* Ensure it takes up full width of the parent */
-    height: 100vh; /* Full viewport height */
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
 }
 
 
@@ -34,13 +35,12 @@
     display: flex;
     flex-direction: row;
     width: 70%;
-    max-width: 1200px;
     margin: 0 auto;
     background-color: white;
     border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    overflow-y: auto;
-    height: calc(100vh - 40px); /* Allow room for padding */
+    height: auto;
+    padding: 20px;
 }
 
 
@@ -55,7 +55,8 @@
 .title-section h6 {
     color: white;
     font-size: 12px;
-    margin-bottom: 30px;
+    margin-top: 30px;
+    margin-bottom: 20px;
     font-weight: normal;
 }
 
@@ -73,41 +74,33 @@
 .employer-sidebar button {
     background: transparent;
     border: none;
-    color: #9D0E0F;
+    color: #9D0E0F; /* Default text color */
     font-size: 12px;
     width: 100%;
     padding: 12px 20px;
     cursor: pointer;
     text-align: left;
-    transition: background-color 0.3s ease, border-left 0.3s ease, opacity 0.3s ease;
-    opacity: 0.6; /* Default lower opacity for all buttons */
+    transition: background-color 0.3s ease, border-left 0.3s ease, opacity 0.3s ease; /* Smooth transition */
 }
 
-/* Hover effect with vertical line on the left */
-.employer-sidebar button:hover {
-    background-color: #f1f1f1;     /* Light background on hover */
-    border-left: 4px solid #9D0E0F; /* Show left border line on hover */
-    opacity: 1;                    /* Full opacity on hover */
-    font-weight: 600;              /* Optional: slightly bold text */
-}
 
-/* Active button style with permanent left border */
+/* Active state (current section) */
 .employer-sidebar button.active {
-    background-color: #f4f4f4;      /* Highlighted background color */
+    background-color: #f4f4f4; /* Highlighted background */
     border-left: 4px solid #9D0E0F; /* Left border color */
-    font-weight: bold;
-    color: #9D0E0F;
-    opacity: 1;                     /* Full opacity for active button */
-}
-
-/* Inactive state to reduce opacity */
-.employer-sidebar button.inactive {
-    opacity: 0.6;                   /* Dim the inactive buttons */
+    color: #9D0E0F; /* Text color stays the same */
+    font-weight: bold; /* Optional: make text bold for emphasis */
 }
 
 /* Optional pressed effect on click */
 .employer-sidebar button:active {
-    transform: scale(0.98);
+    transform: scale(0.98); /* Slightly scale down when clicked for a visual effect */
+    transition: transform 0.2s ease;
+}
+
+/* Optional pressed effect on click */
+.employer-sidebar button:active {
+    transform: scale(0.98); /* Slightly scale down when clicked for a visual effect */
     transition: transform 0.2s ease;
 }
 
@@ -148,6 +141,7 @@
 
 .default-avatar {
     font-size: 12px;
+    opacity: 0.5;
     text-align: center;
 }
 

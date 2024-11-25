@@ -34,6 +34,14 @@ function EmployerProfileCreation() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const sections = [
+        'Personal Information',
+        'Company Information',
+        'Contact Information',
+        'Job Preferences',
+    ];
+    
+
     const handleImageUpload = async (file) => {
         console.log("Selected file:", file); // Debugging log
         if (!file) {
@@ -122,7 +130,7 @@ function EmployerProfileCreation() {
                             <div 
                             className="profile-img-container" 
                             onClick={() => document.getElementById('profileImageInput').click()}
-                        >
+                                >
                             {/* Display uploaded image or default placeholder */}
                             {uploadedImage ? (
                                 <img
@@ -151,10 +159,8 @@ function EmployerProfileCreation() {
                         <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleInputChange} />
                         <input type="date" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleInputChange} />
                         <select name="gender" value={formData.gender} onChange={handleInputChange}>
-                            <option value="">Gender</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
-                            <option value="Prefer not to say">Prefer not to say</option>
                         </select>
                         <input type="text" name="nationality" placeholder="Nationality" value={formData.nationality} onChange={handleInputChange} />
                         <textarea name="address" placeholder="Address" value={formData.address} onChange={handleInputChange}></textarea>
@@ -188,11 +194,17 @@ function EmployerProfileCreation() {
                 return (
                     <>
                         <textarea name="preferredRoles" placeholder="Preferred Roles" value={formData.preferredRoles} onChange={handleInputChange}></textarea>
-                        <label>
-                            Internship Opportunities
-                            <input type="checkbox" name="internshipOpportunities" checked={formData.internshipOpportunities} onChange={(e) => setFormData({ ...formData, internshipOpportunities: e.target.checked })} />
-                        </label>
                         <textarea name="preferredSkills" placeholder="Preferred Skills" value={formData.preferredSkills} onChange={handleInputChange}></textarea>
+                         
+                        <div className="checkbox_intern">
+                                    <input
+                                    type="checkbox"
+                                    name="internshipOpportunities"
+                                    checked={formData.internshipOpportunities}
+                                    onChange={(e) => setFormData({ ...formData, internshipOpportunities: e.target.checked })}
+                                    />
+                                    <p>Internship Opportunities</p>
+                           </div>
                         <button type="submit" className="submit-btn">Submit</button>
                     </>
                 );
@@ -211,10 +223,15 @@ function EmployerProfileCreation() {
             ) : (
                 <div className="employer-profile-content">
                     <div className="employer-sidebar">
-                        <button onClick={() => setActiveSection('Personal Information')}>Personal Information</button>
-                        <button onClick={() => setActiveSection('Company Information')}>Company Information</button>
-                        <button onClick={() => setActiveSection('Contact Information')}>Contact Information</button>
-                        <button onClick={() => setActiveSection('Job Preferences')}>Job Preferences</button>
+                        {sections.map((section) => (
+                            <button
+                                key={section}
+                                onClick={() => setActiveSection(section)}
+                                className={section === activeSection ? 'active' : ''}
+                            >
+                                {section}
+                            </button>
+                        ))}
                     </div>
                     <div className="form-container">
                         <form className="employer-profile-form" onSubmit={handleSubmit}>
@@ -230,6 +247,7 @@ function EmployerProfileCreation() {
             />
         </div>
     );
+    
 }
 
 export default EmployerProfileCreation;

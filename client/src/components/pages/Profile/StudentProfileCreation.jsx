@@ -112,14 +112,32 @@ function StudentProfileCreation() {
             case 'Personal Information':
                 return (
                     <div className="pi-container">
-                        <div className="profile-img-container">
-                            <img
-                                src={uploadedImage || 'default-avatar-url'} // Replace with actual placeholder image URL if needed
-                                alt="Profile"
-                                className="profile-img"
-                                onClick={() => setIsModalOpen(true)}
-                            />
-                        </div>
+                    <div
+                    className="profile-img-container" 
+                    onClick={() => document.getElementById('profileImageInput').click()}
+                        >
+                    {/* Display uploaded image or default placeholder */}
+                    {uploadedImage ? (
+                        <img
+                            src={uploadedImage}
+                            alt="Profile"
+                            className="uploaded-profile-img"
+                        />
+                    ) : (
+                        <div className="default-avatar">Upload Image</div>
+                    )}
+                
+                    {/* Hidden file input */}
+                    <input
+                        type="file"
+                        id="profileImageInput"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleImageUpload(e.target.files[0])}
+                    />
+                    </div>
+                    {message && <p className="error-msg">{message}</p>}
+
+
                         <input
                             type="text"
                             name="studentId"
@@ -244,7 +262,6 @@ function StudentProfileCreation() {
             <div className="divh6">
                 <h6>Student Profile Creation</h6>
             </div>
-            {message && <div className="message">{message}</div>}
             {loading ? (
                 <Loader />
             ) : (
@@ -257,12 +274,13 @@ function StudentProfileCreation() {
                                 className={section === activeSection ? 'active' : ''}
                             >
                                 {section}
+
                             </button>
                         ))}
                     </div>
                     <div className="form-section">
-                        <form className="profile-form" onSubmit={handleSubmit}>
-                            {renderFormFields()}
+                        <form className="profile-form" onSubmit={handleSubmit}>            
+                        {renderFormFields()}
                         </form>
                     </div>
             </div>
