@@ -42,7 +42,7 @@
 }
 
 .profile img {
-  width: 60px;
+  width: 50px;
   border-radius: 50%;
 }
 
@@ -127,8 +127,10 @@
   margin-bottom: 20px;
 }
 
+
 .post-input img {
   width: 50px;
+  border-radius: 50%;
 }
 
 /* Subpost Input */

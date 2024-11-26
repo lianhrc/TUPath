@@ -85,9 +85,15 @@ const Homepage = () => {
         console.error('Error fetching profile data:', error);
       }
     };
-
+  
     fetchProfileData();
   }, []);
+  
+
+  const profileImageUrl = profileData.profileImg?.startsWith('/')
+  ? `http://localhost:3001${profileData.profileImg}`
+  : profileData.profileImg || profileicon;
+
 
   // Toggle comments for a specific post
   const toggleComments = (postId) => {
@@ -119,30 +125,29 @@ const Homepage = () => {
     setNewPostImage(null);
   };
 
-  const handleAddPost = () => {
+  const handleAddPost = async () => {
     if (newPostContent.trim()) {
-      const newPost = {
-        profileImg: profileicon,
-        name: `${profileData.firstName} ${profileData.lastName}` || 'Student',
-        content: newPostContent,
-        postImg: newPostImage,
-      };
-      fetch('http://localhost:3001/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPost),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            // Rely on socket event to update the list
-          }
+      try {
+        const newPost = {
+          profileImg: profileData.profileImg || profileicon,
+          name: `${profileData.firstName} ${profileData.lastName}`.trim() || 'Student',
+          content: newPostContent,
+          postImg: newPostImage,
+        };
+  
+        const response = await axiosInstance.post('/api/posts', newPost);
+        if (response.data.success) {
+          // The new post will be automatically added via the 'new_post' socket event
           handleClosePopup();
-        })
-        .catch((err) => console.error('Error adding post:', err));
+        } else {
+          console.error('Failed to add post:', response.data.message);
+        }
+      } catch (err) {
+        console.error('Error adding post:', err);
+      }
     }
   };
-
+  
   const renderPost = (post, index) => {
     const userId = 'user_id_from_auth'; // Replace this with actual user ID from authentication
     const hasUpvoted = post.votedUsers.includes(userId); // Check if user has upvoted
@@ -188,7 +193,7 @@ const Homepage = () => {
       <div className="content-container">
         <aside className="sidebar">
           <div className="profile">
-            <img src={profileicon} alt="Profile Icon" />
+            <img src={profileImageUrl} alt="Profile Icon" />
             <h2>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim()}</h2>
             <p>Student at Technological University of the Philippines</p>
             <p>{profileData.address || 'Not Available'}</p>
@@ -196,8 +201,8 @@ const Homepage = () => {
         </aside>
         <main className="feed">
           <div className="post-input" onClick={() => setIsPopupOpen(true)}>
-            <div>
-              <img src={profileicon} alt="Profile Icon" />
+            <div className='postinputimg-container' >
+              <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
               <input type="text" placeholder="Start a post" readOnly />

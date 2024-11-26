@@ -5,6 +5,8 @@ import './header.css'; // Import CSS if needed
 
 
 const Header = () => {
+
+  
   return (
     <header className="navbar">
       <a className='lefticon' href="/">

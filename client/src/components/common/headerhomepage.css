@@ -130,6 +130,11 @@ cursor: pointer;
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+  
+}
+
+.nav-icon{
+  border-radius: 50%;
 }
 
 .notification-item p {
