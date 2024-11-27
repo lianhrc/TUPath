@@ -1,71 +1,114 @@
-import React, { useState, useRef } from 'react';
-import './ProjectUpModal.css';
-import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
-import ProjectAssessmentModal from './ProjectAssessmentModal';
+import React, { useState, useRef } from "react";
+import { motion } from 'framer-motion';
+import ProjectAssessmentModal from "./ProjectAssessmentModal"; // Import your modal component
+import "../popups/ProjectUpModal.css"; // Import the corresponding CSS file
+
+const predefinedTags = [
+  "React",
+  "Node.js",
+  "MongoDB",
+  "Machine Learning",
+  "AI",
+  "Data Science",
+  "Web Development",
+  "Mobile Development",
+  "Cybersecurity",
+  "UI/UX Design",
+];
 
 const ProjectUploadModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [tags, setTags] = useState([]); // State for selected tags
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const fileInputRef = useRef(null);
 
   if (!show) return null;
 
-  // Handle file selection
-  const handleFileChange = async (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
-
-    const formData = new FormData();
-    files.forEach(file => formData.append("projectFiles", file));
-
-    try {
-      const response = await axiosInstance.post('/api/uploadProject', formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (response.data.success) {
-        console.log("Project files uploaded successfully!");
-      } else {
-        console.error("Failed to upload project files");
-      }
-    } catch (error) {
-      console.error("Error uploading project files:", error);
-    }
+  // File selection handler
+  const handleFileChange = (e) => {
+    setSelectedFiles([...selectedFiles, ...Array.from(e.target.files)]);
   };
 
-
-
-  // Handle file removal
+  // File remove handler
   const handleFileRemove = (fileToRemove) => {
-    setSelectedFiles((prevFiles) =>
-      prevFiles.filter((file) => file !== fileToRemove)
-    );
+    setSelectedFiles(selectedFiles.filter((file) => file !== fileToRemove));
   };
 
-  // Open file dialog
+  // Open file picker
   const handleChooseFileClick = () => {
     fileInputRef.current.click();
   };
 
-  // Handle submit (open assessment modal)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setShowAssessmentModal(true);
+  // Handle tag selection
+  const handleTagSelect = (e) => {
+    const selectedTag = e.target.value;
+    if (selectedTag && !tags.includes(selectedTag)) {
+      setTags([...tags, selectedTag]);
+    }
   };
 
-  // Handle final submission after assessment
-  const handleFinalSubmit = () => {
-    console.log("Project submitted successfully!");
-    setShowAssessmentModal(false);
-    onClose();  // Close both modals
+  // Handle tag removal
+  const handleTagRemove = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Tags:", tags); // Log tags for debugging
+    console.log("Selected Files:", selectedFiles); // Log selected files
+    setShowAssessmentModal(true); // Open the assessment modal
+  };
+
+  // Handle final form submission from the assessment modal
+  const handleFinalSubmit = () => {
+    console.log("Final submission confirmed!");
+    // Add submission logic here
+    setShowAssessmentModal(false);
+    onClose();
+  };
+
+
+  const modalVariants = {
+    hidden: {
+      opacity: 0,
+      y: -30, // Start above the screen
+    },
+    visible: {
+      opacity: 1,
+      y: 0, // Position at its normal place
+      transition: {
+        duration: 0.2,
+        ease: 'easeOut',
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: 20, // Exit below the screen
+      transition: {
+        duration: 0.2,
+        ease: 'easeIn',
+      },
+    },
+  };
+
 
   return (
     <>
       <div className="ProjectUploadModal-overlay" onClick={onClose}>
-        <div className="ProjectUploadModal-content" onClick={(e) => e.stopPropagation()}>
+        <motion.div
+          className="ProjectUploadModal-content"
+          onClick={(e) => e.stopPropagation()}
+          variants={modalVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
           <div className="upheader">
             <h3>Upload Your Project</h3>
-            <button className="projectup-close-btn" onClick={onClose}>x</button>
+            <button className="projectup-close-btn" onClick={onClose}>
+              x
+            </button>
           </div>
 
           <form id="projup-form">
@@ -79,10 +122,31 @@ const ProjectUploadModal = ({ show, onClose }) => {
                 <textarea name="description"></textarea>
               </div>
               <div className="bottom">
-              <label>Tag:</label>
-              <div>
-                <button>What field is this project?</button>
-              </div>
+                <label>Tags:</label>
+                <div className="tags-input-container">
+                  <select onChange={handleTagSelect}>
+                    <option value="">Select a Tag</option>
+                    {predefinedTags.map((tag, index) => (
+                      <option key={index} value={tag}>
+                        {tag}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="tags-list">
+                    {tags.map((tag, index) => (
+                      <span key={index} className="tag">
+                        {tag}
+                        <button
+                          type="button"
+                          className="remove-tag-btn"
+                          onClick={() => handleTagRemove(tag)}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -114,13 +178,19 @@ const ProjectUploadModal = ({ show, onClose }) => {
                 ) : (
                   <div className="file-dropzone">
                     <p>Drag & drop your files here or</p>
-                    <button type="button" onClick={handleChooseFileClick} className="choose-file-btn">Upload files</button>
+                    <button
+                      type="button"
+                      onClick={handleChooseFileClick}
+                      className="choose-file-btn"
+                    >
+                      Upload files
+                    </button>
                     <input
                       type="file"
                       ref={fileInputRef}
                       multiple
-                      onChange={handleFileChange}  // Trigger upload on file selection
-                      style={{ display: 'none' }}
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
                     />
                   </div>
                 )}
@@ -129,9 +199,11 @@ const ProjectUploadModal = ({ show, onClose }) => {
           </form>
 
           <div className="submit-btn-container">
-            <button type="submit" onClick={handleSubmit}>Submit</button>
+            <button type="submit" onClick={handleSubmit}>
+              Submit
+            </button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Project Assessment Modal */}

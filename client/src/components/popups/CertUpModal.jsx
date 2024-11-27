@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import './CertUpModal.css';
 import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
 import ProjectAssessmentModal from './ProjectAssessmentModal';
@@ -59,10 +60,39 @@ const ProjectUploadModal = ({ show, onClose }) => {
     onClose();  // Close both modals
   };
 
+  const modalVariants = {
+    hidden: {
+      opacity: 0,
+      y: -30, // Start above the screen
+    },
+    visible: {
+      opacity: 1,
+      y: 0, // Position at its normal place
+      transition: {
+        duration: 0.2,
+        ease: 'easeOut',
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: 20, // Exit below the screen
+      transition: {
+        duration: 0.2,
+        ease: 'easeIn',
+      },
+    },
+  };
+
   return (
     <>
       <div className="ProjectUploadModal-overlay" onClick={onClose}>
-        <div className="ProjectUploadModal-content" onClick={(e) => e.stopPropagation()}>
+        <motion.div className="ProjectUploadModal-content" onClick={(e) => e.stopPropagation()}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+
+        >
           <div className="upheader">
             <h3>Upload Your Cetificate</h3>
             <button className="projectup-close-btn" onClick={onClose}>x</button>
@@ -125,7 +155,7 @@ const ProjectUploadModal = ({ show, onClose }) => {
           <div className="submit-btn-container">
             <button type="submit" onClick={handleSubmit}>Submit</button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Project Assessment Modal */}

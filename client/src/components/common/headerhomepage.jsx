@@ -4,6 +4,7 @@ import axiosInstance from '../../services/axiosInstance'; // Ensure you have an 
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
+import { motion } from 'framer-motion';
 import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import Loader from '../common/Loader'; // Import the Loader component
@@ -82,6 +83,32 @@ function HeaderHomepage() {
     ? `http://localhost:3001${profileData.profileImg}`
     : profileData.profileImg || profileicon;
 
+    const dropdownVariants = {
+      hidden: {
+        opacity: 0,
+        scale: 0.9,
+        y: -10,
+      },
+      visible: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: {
+          duration: 0.3,
+          ease: 'easeInOut',
+        },
+      },
+      exit: {
+        opacity: 0,
+        scale: 0.9,
+        y: -10,
+        transition: {
+          duration: 0.2,
+        },
+      },
+    };
+    
+
   return (
     <>
       {isLoading ? (
@@ -106,7 +133,12 @@ function HeaderHomepage() {
               <div className="dropdown" onClick={toggleNotifDropdown}>
                 <img src={notificon} alt="Notifications" className="nav-icon" />
                 {isNotifOpen && (
-                  <div className="dropdown-menu notifications-menu">
+                  <motion.div className="dropdown-menu notifications-menu"
+                  variants={dropdownVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  >
                     <h3>Notifications</h3>
                     {notifications.map((notif) => (
                       <Link to="/Inboxpage" key={notif.id} className="notification-item">
@@ -117,17 +149,22 @@ function HeaderHomepage() {
                         </div>
                       </Link>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
               <div className="dropdown" onClick={toggleProfileDropdown}>
                 <img src={profileImageUrl} alt="Profile" className="nav-icon" />
                 {isProfileOpen && (
-                  <div className="dropdown-menu profile-menu">
+                  <motion.div className="dropdown-menu profile-menu"
+                    variants={dropdownVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
                     <Link to="/Profile">Profile</Link>
                     <Link onClick={handleLogout}>Logout</Link>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </nav>
