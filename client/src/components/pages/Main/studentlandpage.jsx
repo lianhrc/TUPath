@@ -11,10 +11,13 @@ function studentlandpage() {
         <Header />
         <section className='welcome-section'>
          <motion.div className="div"
-          initial={{ opacity: 0, y: 100 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 10 }}
-          viewport={{ once: true, amount: 0.2 }}  
+            initial={{ opacity: 0, translateY: 30 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{
+                duration: 0.6, // Smooth animation duration
+                ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+            }}
+            viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
          >
          <h1>Welcome to TUPath</h1>
          <p>Start your journey towards a successful career by building a standout academic portfolio.</p>
@@ -22,10 +25,13 @@ function studentlandpage() {
         </section>
 
         <motion.section className="academic-pathway-container"
-          initial={{ opacity: 0, y: 100 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 10 }}
-          viewport={{ once: true, amount: 0.2 }}  
+        initial={{ opacity: 0, translateY: 30 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{
+            duration: 0.6, // Smooth animation duration
+            ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+        }}
+        viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
         >
           <div className='subsec'>
               <div className='subsubsec'>

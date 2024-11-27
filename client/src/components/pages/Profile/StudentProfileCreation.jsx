@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
-import imageCompression from 'browser-image-compression';
 import axiosInstance from '../../../services/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
@@ -11,7 +10,6 @@ function StudentProfileCreation() {
     const [activeSection, setActiveSection] = useState('Personal Information');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState('');
-    const [imagePreview, setImagePreview] = useState('');
     const [formData, setFormData] = useState({
         studentId: '',
         firstName: '',
@@ -28,68 +26,48 @@ function StudentProfileCreation() {
         email: '',
     });
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(''); // Added message state
+    const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
-    // Ordered list of sections
     const sections = ['Personal Information', 'Skills', 'Contact'];
 
-    // Handle "Next" button functionality
-    const handleNext = () => {
-        const currentIndex = sections.indexOf(activeSection);
-        if (currentIndex < sections.length - 1) {
-            setActiveSection(sections[currentIndex + 1]);
-        }
-    };
-
-    // Handle image file selection and display preview
-    const handleImageSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setUploadedImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const handleImageUpload = async (file) => {
-        const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 800,
-            useWebWorker: true,
-        };
+        console.log("Selected file:", file); // Debugging log
+        if (!file) {
+            setMessage("No file selected. Please try again.");
+            return;
+        }
+
+        const imageData = new FormData();
+        imageData.append("profileImg", file);
 
         try {
-            const compressedFile = await imageCompression(file, options);
-            const imageData = new FormData();
-            imageData.append('profileImg', compressedFile);
-
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem("token");
             if (!token) {
-                setMessage('Authentication token not found. Please log in again.');
+                setMessage("Authentication token not found. Please log in again.");
                 return;
             }
 
-            const response = await axiosInstance.post('/api/uploadProfileImage', imageData, {
+            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${token}`,
                 },
             });
 
+            console.log("Upload response:", response.data); // Debugging log
+
             if (response.data.success) {
-                setUploadedImage(response.data.profileImg); // Save the URL of the uploaded image
-                setImagePreview(''); // Clear the preview once uploaded
-                setMessage('Image uploaded successfully!');
+                const imageUrl = `http://localhost:3001${response.data.profileImg}`;
+                setUploadedImage(imageUrl);
+                setMessage("Image uploaded successfully!");
                 setIsModalOpen(false); // Close modal after successful upload
             } else {
-                setMessage('Image upload failed. Please try again.');
+                setMessage("Image upload failed. Please try again.");
             }
         } catch (error) {
-            console.error('Image upload error:', error);
-            setMessage('Error uploading image. Please try again.');
+            console.error("Image upload error:", error);
+            setMessage("Error uploading image. Please try again.");
         }
     };
 
@@ -97,7 +75,7 @@ function StudentProfileCreation() {
         event.preventDefault();
         setLoading(true);
 
-        const currentDate = new Date().toISOString(); // Set the current date as createdAt for new profiles
+        const currentDate = new Date().toISOString();
 
         try {
             const response = await axiosInstance.post('/api/updateStudentProfile', {
@@ -106,7 +84,6 @@ function StudentProfileCreation() {
                 dob: formData.dob ? new Date(formData.dob).toISOString() : null,
                 profileImg: uploadedImage,
             });
-
 
             if (response.data.success) {
                 navigate('/Profile', { replace: true });
@@ -128,13 +105,39 @@ function StudentProfileCreation() {
 
     const renderFormFields = () => {
         const formattedDob = formData.dob
-        ? format(new Date(formData.dob), 'yyyy-MM-dd') // Format for display in the input
-        : '';
+            ? format(new Date(formData.dob), 'yyyy-MM-dd')
+            : '';
 
         switch (activeSection) {
             case 'Personal Information':
                 return (
                     <div className="pi-container">
+                    <div
+                    className="profile-img-container" 
+                    onClick={() => document.getElementById('profileImageInput').click()}
+                        >
+                    {/* Display uploaded image or default placeholder */}
+                    {uploadedImage ? (
+                        <img
+                            src={uploadedImage}
+                            alt="Profile"
+                            className="uploaded-profile-img"
+                        />
+                    ) : (
+                        <div className="default-avatar">Upload Image</div>
+                    )}
+                
+                    {/* Hidden file input */}
+                    <input
+                        type="file"
+                        id="profileImageInput"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handleImageUpload(e.target.files[0])}
+                    />
+                    </div>
+                    {message && <p className="error-msg">{message}</p>}
+
+
                         <input
                             type="text"
                             name="studentId"
@@ -194,6 +197,11 @@ function StudentProfileCreation() {
                             value={formData.address}
                             onChange={handleInputChange}
                         ></textarea>
+                        <div className="next-button-container">
+                            <button type="button" className="next-button" onClick={() => setActiveSection('Skills')}>
+                                Next
+                            </button>
+                        </div>
                     </div>
                 );
             case 'Skills':
@@ -213,6 +221,11 @@ function StudentProfileCreation() {
                             value={formData.softSkills}
                             onChange={handleInputChange}
                         />
+                        <div className="next-button-container">
+                            <button type="button" className="next-button" onClick={() => setActiveSection('Contact')}>
+                                Next
+                            </button>
+                        </div>
                     </>
                 );
             case 'Contact':
@@ -249,7 +262,6 @@ function StudentProfileCreation() {
             <div className="divh6">
                 <h6>Student Profile Creation</h6>
             </div>
-            {message && <div className="message">{message}</div>} {/* Added message display */}
             {loading ? (
                 <Loader />
             ) : (
@@ -262,35 +274,16 @@ function StudentProfileCreation() {
                                 className={section === activeSection ? 'active' : ''}
                             >
                                 {section}
+
                             </button>
                         ))}
                     </div>
                     <div className="form-section">
-                        <div className="profile_formcontainer">
-                            <div className="profile_container">
-                                {activeSection === 'Personal Information' && (
-                                    <div className="profile-picture" onClick={() => setIsModalOpen(true)}>
-                                        {uploadedImage ? (
-                                            <img src={uploadedImage} alt="Profile" />
-                                        ) : (
-                                            <div>+</div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <form className="profile-form" onSubmit={handleSubmit}>
-                            {renderFormFields()}
+                        <form className="profile-form" onSubmit={handleSubmit}>            
+                        {renderFormFields()}
                         </form>
-                        <div className="next-button-container">
-                            {sections.indexOf(activeSection) < sections.length - 1 && (
-                                <button className="next-button" onClick={handleNext}>
-                                    Next
-                                </button>
-                            )}
-                        </div>
                     </div>
-                </div>
+            </div>
             )}
             <StudentProfileImageUploadModal
                 isOpen={isModalOpen}

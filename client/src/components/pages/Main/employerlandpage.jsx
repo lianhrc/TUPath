@@ -15,16 +15,28 @@ function employerlandpage() {
     <Header />
     
       <section className='employer-welcome-section' >
-         <div className='emplyer-welcome-subsection'>
+         <motion.div className='emplyer-welcome-subsection'
+
+            initial={{ opacity: 0, translateY: 30 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{
+                duration: 0.6, // Smooth animation duration
+                ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+            }}
+            viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
+         >
             <h1>Discover Top Talent with TUPath</h1>
             <p>Streamline your recruitment process by accessing accurated pool of highly skilled students.</p>
-         </div>
+         </motion.div>
 
          <motion.section className='discover-section'
-          initial={{ opacity: 0, y: 100 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 10 }}
-          viewport={{ once: true, amount: 0.2 }} 
+            initial={{ opacity: 0, translateY: 30 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{
+                duration: 0.6, // Smooth animation duration
+                ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+            }}
+            viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
          >
           <div className="discover-container">
               <div className="discover-sub-container">

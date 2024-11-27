@@ -28,10 +28,13 @@ const LandingPage = () => {
     <Header />
 
       <motion.section className="hero-section"
-      initial={{ opacity: 0, y: 100 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 100, damping: 10 }}
-      viewport={{ once: true, amount: 0.2 }}
+      initial={{ opacity: 0, translateY: 30 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{
+          duration: 0.6, // Smooth animation duration
+          ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+      }}
+      viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
       >
         <div className="hero-content">
           <p className='p1'>Empowering Students, Engaging Employers</p>

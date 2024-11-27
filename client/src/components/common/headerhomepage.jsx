@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../../services/axiosInstance'; // Ensure you have an axios instance
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
@@ -11,16 +12,31 @@ import './headerhomepage.css';
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Loader state
+  const [isLoading, setIsLoading] = useState(false);
+  const [profileData, setProfileData] = useState({}); // State for profile data
 
   const handleLogout = () => {
-    setIsLoading(true); // Show loader
-
+    setIsLoading(true);
     setTimeout(() => {
-      localStorage.clear(); // Clear localStorage
-      window.location.replace('/login'); // Redirect to login page
-    },3000); // Delay for loader visibility (1 second)
+      localStorage.clear();
+      window.location.replace('/login');
+    }, 3000); // Delay for loader visibility
   };
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await axiosInstance.get('/api/profile'); // Replace with your endpoint
+        if (response.data.success) {
+          setProfileData(response.data.profile.profileDetails || {});
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -62,13 +78,17 @@ function HeaderHomepage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const profileImageUrl = profileData.profileImg?.startsWith('/')
+    ? `http://localhost:3001${profileData.profileImg}`
+    : profileData.profileImg || profileicon;
+
   return (
     <>
       {isLoading ? (
-        <Loader /> // Show Loader component when loading
+        <Loader />
       ) : (
         <header className="homepagenavbar">
-          <Link className="lefticon" to="/StudentHomepage">
+          <Link className="lefticon" to="/Homepage">
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
           <div className="search-container">
@@ -76,7 +96,7 @@ function HeaderHomepage() {
           </div>
           <div className="icon-buttons">
             <nav className="homepagenav-links">
-              <Link to="/StudentHomepage">
+              <Link to="/Homepage">
                 <img src={homeicon} alt="Home" className="nav-icon" />
               </Link>
               <Link to="/Inboxpage">
@@ -90,7 +110,7 @@ function HeaderHomepage() {
                     <h3>Notifications</h3>
                     {notifications.map((notif) => (
                       <Link to="/Inboxpage" key={notif.id} className="notification-item">
-                        <img src={profileicon} alt="Profile" className="notification-icon" />
+                        <img src={profileImageUrl} alt="Profile" className="notification-icon" />
                         <div>
                           <p><strong>{notif.name}</strong></p>
                           <p>{notif.message}</p>
@@ -102,11 +122,10 @@ function HeaderHomepage() {
               </div>
 
               <div className="dropdown" onClick={toggleProfileDropdown}>
-                <img src={profileicon} alt="Profile" className="nav-icon" />
+                <img src={profileImageUrl} alt="Profile" className="nav-icon" />
                 {isProfileOpen && (
                   <div className="dropdown-menu profile-menu">
                     <Link to="/Profile">Profile</Link>
-                    {/*<Link to="/Settings">Settings</Link>*/}
                     <Link onClick={handleLogout}>Logout</Link>
                   </div>
                 )}

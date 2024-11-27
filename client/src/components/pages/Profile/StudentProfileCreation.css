@@ -31,12 +31,13 @@
     align-items: center;
     justify-content: center;
     width: 45%;
-    margin-bottom: 30px;
 }
 
 .divh6 h6{
     color: white;
     font-size: 12px;
+    margin-top: 30px;
+    margin-bottom: 20px;
     font-weight: normal;
 }
 
@@ -280,6 +281,9 @@
     background-color: #671111;
 }
 
-
-
-
+.checkbox_intern{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}

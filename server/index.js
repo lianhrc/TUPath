@@ -225,8 +225,8 @@ const Post = mongoose.model("Post", postSchema);
   
       const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
   
-      let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/studenthomepage";
-      if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/employerhomepage";
+      let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/homepage";
+      if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/homepage";
   
       user.isNewUser = false;
       await user.save();
@@ -326,7 +326,7 @@ const Post = mongoose.model("Post", postSchema);
         { expiresIn: '1h' }
       );
   
-      const redirectPath = role === 'student' ? '/studenthomepage' : '/employerhomepage';
+      const redirectPath = role === 'student' ? '/homepage' : '/homepage';
   
       res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {

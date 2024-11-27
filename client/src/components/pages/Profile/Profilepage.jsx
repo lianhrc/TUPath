@@ -123,7 +123,6 @@ function ProfilePage() {
               <>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>About Company</h3><p>{profileData.aboutCompany || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
@@ -178,26 +177,13 @@ function ProfilePage() {
               {userRole === 'employer' && (
                 <div className="project-section">
                   <div className="projectscontainer">
-                    <h3>Company Projects</h3>
+                    <h3>About Company</h3>
                     <hr />
-                    <div className="projects-grid">
-                      <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
-                        <p>+</p>
-                        <p>Add a Project</p>
-                      </div>
-                    </div>
+                    <div className='profile-section'><p>{profileData.aboutCompany || 'Not Available'}</p></div>
+
                   </div>
 
-                  <div className="achievementscontainer">
-                    <h3>My Certificates</h3>
-                    <hr />
-                    <div className="projects-grid">
-                      <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
-                        <p>+</p>
-                        <p>Add a Certificate</p>
-                      </div>
-                    </div>
-                  </div>
+                  
                 </div>
               )}
 

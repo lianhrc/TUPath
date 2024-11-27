@@ -26,12 +26,17 @@ function LoginRoles() {
         <div className="LoginRoles">
             <Header />
             
-            <motion.div className="loginroles-container"
-                initial={{ opacity: 0, y: 100 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 100, damping: 10 }}
-                viewport={{ once: true, amount: 0.2 }}  
-            >
+            <motion.div
+                className="loginroles-container"
+                initial={{ opacity: 0, translateY: 30 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{
+                    duration: 0.6, // Smooth animation duration
+                    ease: [0.25, 0.1, 0.25, 1], // Cubic-bezier for a polished feel
+                }}
+                viewport={{ once: true, amount: 0.1 }} // Trigger animation when slightly in view
+                >
+
                     <div className="div">
                 <h3 className="title">Sign up as a student or employer</h3>
                 <div className="card-choice boxchoice">
