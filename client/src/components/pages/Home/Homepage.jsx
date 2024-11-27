@@ -47,6 +47,37 @@ const Homepage = () => {
     });
   };
 
+
+  const handleUpvote = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/posts/${postId}/upvote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to toggle upvote");
+      }
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        setPostsData((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId ? { ...post, upvotes: data.post.upvotes } : post
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling upvote:", err);
+    }
+  };
+
+
+
   // Fetch posts and initialize `showComments`
   const fetchPostsData = async () => {
     try {
@@ -181,10 +212,8 @@ const Homepage = () => {
           {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
         </div>
         <div className="downpostcontent">
-          <button
-            onClick={() => toggleComments(post._id)}
-            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}
-          >
+          <button onClick={() => handleUpvote(post._id)}
+            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}>
             <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
           </button>
           <button onClick={() => toggleComments(post._id)}>
