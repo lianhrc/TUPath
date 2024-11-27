@@ -8,7 +8,6 @@ import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
-import GenericModal from '../../popups/GenericModal';
 import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 
