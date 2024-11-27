@@ -135,6 +135,8 @@ cursor: pointer;
 
 .nav-icon{
   border-radius: 50%;
+  width: 20px;
+  height: 20px;
 }
 
 .notification-item p {

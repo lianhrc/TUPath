@@ -75,6 +75,13 @@
     flex-direction: column;
 }
 
+.leftprojup-container .bottom {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+}
+
 .leftprojup-container input,
 .leftprojup-container textarea {
     width: 100%;
@@ -85,7 +92,7 @@
 
 .leftprojup-container textarea {
     flex: 1;
-    resize: none;
+    resize:none;
 }
 
 .rightprojup-container {

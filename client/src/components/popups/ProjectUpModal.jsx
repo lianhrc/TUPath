@@ -78,6 +78,12 @@ const ProjectUploadModal = ({ show, onClose }) => {
                 <label>Description:</label>
                 <textarea name="description"></textarea>
               </div>
+              <div className="bottom">
+              <label>Tag:</label>
+              <div>
+                <button>What field is this project?</button>
+              </div>
+              </div>
             </div>
 
             <div className="rightprojup-container">
