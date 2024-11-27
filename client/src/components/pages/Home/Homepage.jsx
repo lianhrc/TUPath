@@ -26,10 +26,57 @@ const Homepage = () => {
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  const [skillsModalOpen, setSkillsModalOpen] = useState(false);
-  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
-  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
-  const [achievementModalOpen, setAchievementModalOpen] = useState(false);
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diffInMs = now - postDate;
+    const diffInMinutes = Math.floor(diffInMs / 60000);
+  
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  
+    // Format the date for posts older than 2 days
+    return postDate.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+
+  const handleUpvote = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/posts/${postId}/upvote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to toggle upvote");
+      }
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        setPostsData((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === postId ? { ...post, upvotes: data.post.upvotes } : post
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling upvote:", err);
+    }
+  };
+
+
 
   // Fetch posts and initialize `showComments`
   const fetchPostsData = async () => {
@@ -157,7 +204,7 @@ const Homepage = () => {
           <img src={post.profileImg || profileicon} alt={post.name} />
           <div className="frompost">
             <h5>{post.name}</h5>
-            <p>{post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Just now'}</p>
+            <p>{formatTimeAgo(post.timestamp)}</p>
           </div>
         </div>
         <div className="postcontent">
@@ -165,10 +212,8 @@ const Homepage = () => {
           {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
         </div>
         <div className="downpostcontent">
-          <button
-            onClick={() => toggleComments(post._id)}
-            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}
-          >
+          <button onClick={() => handleUpvote(post._id)}
+            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}>
             <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
           </button>
           <button onClick={() => toggleComments(post._id)}>
