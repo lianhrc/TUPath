@@ -23,6 +23,16 @@
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation: fadeIn 0.3s ease-in-out;
+    overflow-y: scroll; /* Enable vertical scrolling */
+}
+
+.EditDescriptionModal-content::-webkit-scrollbar{
+    width: 0;
+}
+
+.EditDescriptionModal-content{
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
 }
 
 /* Modal Title */
