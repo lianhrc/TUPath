@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import "./EditDescriptionModal.css";
+import axiosInstance from "../../services/axiosInstance";
 
 function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   const [formData, setFormData] = useState(profileData);
@@ -39,33 +40,46 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   };
 
   const handleSave = async () => {
-    const endpoint =
-      userRole === "student"
-        ? "/api/updateStudentProfile"
-        : "/api/updateEmployerProfile";
+    // Retrieve token from storage
+    const token = localStorage.getItem('token'); // Or sessionStorage, or your authentication context
+
+    if (!token) {
+        console.error('Token not found. Please log in again.');
+        return;
+    }
 
     const formDataToSend = new FormData();
+
+    // Append form data
     Object.keys(formData).forEach((key) => {
-      formDataToSend.append(key, formData[key]);
+        formDataToSend.append(key, formData[key]);
     });
 
-    try {
-      const response = await axiosInstance.put(endpoint, formDataToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      if (response.data.success) {
-        onSave(formData);
-        onClose();
-      } else {
-        console.error("Failed to save profile data");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    // Append profile image if it's a file
+    if (formData.profileImg && typeof formData.profileImg !== 'string') {
+        formDataToSend.append('profileImg', formData.profileImg);
     }
-  };
+
+    try {
+        const response = await axiosInstance.put('/api/updateProfile', formDataToSend, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        if (response.data.success) {
+            onSave(formData);
+            onClose();
+        } else {
+            console.error('Failed to save profile data');
+        }
+    } catch (error) {
+        console.error('Error updating profile:', error);
+    }
+};
+
+
 
   const excludedFields = [
     "createdAt",
@@ -87,11 +101,13 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
           <label>Profile Image</label>
           <div className="profile-img-container">
             <img
-              src={
-                imagePreview || // Live preview if a new image is uploaded
-                (formData.profileImg?.startsWith('/') ? `http://localhost:3001${formData.profileImg}` : formData.profileImg) || // Correct profile image URL
-                avatar // Fallback to default avatar
-              }
+                src={
+                    imagePreview || 
+                    (formData.profileImg?.startsWith('/') 
+                        ? `http://localhost:3001${formData.profileImg}` 
+                        : formData.profileImg) || 
+                    avatar
+            }
               alt="Profile"
               className="profile-img-preview"
             />

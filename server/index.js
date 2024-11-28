@@ -654,6 +654,39 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 
+  app.put('/api/updateProfile', verifyToken, upload.single('profileImg'), async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { role } = req.user; // Extract role from token
+        const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
+
+        // Extract profile details from the request body
+        const profileData = req.body;
+
+        // Check for file upload
+        if (req.file) {
+            profileData.profileImg = `/uploads/${req.file.filename}`;
+        }
+
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userId,
+            { $set: { profileDetails: profileData } },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'Profile updated successfully', updatedUser });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+
+
 
 
 
