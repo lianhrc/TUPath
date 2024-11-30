@@ -236,12 +236,16 @@ const Homepage = () => {
       <Headerhomepage />
       <div className="content-container">
         <aside className="sidebar">
-          <div className="profile">
-            <img src={profileImageUrl} alt="Profile Icon" />
-            <h2>{`${profileData.firstName} ${profileData.middleName || ''} ${profileData.lastName}`.trim()}</h2>
+        <div className="profile">
+          <img src={profileImageUrl} alt="Profile Icon" />
+          <h2>
+            {`${profileData.firstName} ${
+              profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''
+            } ${profileData.lastName}`.trim()}
+          </h2>
             <p>Student at Technological University of the Philippines</p>
-            <p>{profileData.address || 'Not Available'}</p>
-          </div>
+          <p>{profileData.address || 'Not Available'}</p>
+        </div>
         </aside>
         <main className="feed">
           <div className="post-input" onClick={() => setIsPopupOpen(true)}>
