@@ -155,3 +155,37 @@ cursor: pointer;
 .profile-menu a:hover {
   background-color: #f0f0f0;
 }
+
+/* profile search   */
+.search-results {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  width: 90%; /* Adjust width to occupy less space */
+  max-width: 400px; /* Maximum width for better control */
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  left: 50%; /* Center the dropdown */
+  transform: translateX(-50%); /* Adjust for centering */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
+  border-radius: 5px; /* Rounded corners for modern UI */
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.search-result-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.search-result-item:hover {
+  background: #f0f0f0;
+}
