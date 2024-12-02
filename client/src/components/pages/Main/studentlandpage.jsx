@@ -40,13 +40,11 @@ function studentlandpage() {
                 <div className="text-container">
                   <h6>Unlock Your Academic Potential</h6>
                   <h2>Your Pathway to Academic Excellence</h2>
-                  <p>TUPATH empowers students to craft compelling academic 
-                  profiles that highlight their unique skills and achievements.
-                  Our platform simplifies the process of document management, 
-                  enabling students to effortlessly upload and organize their 
-                  academic accomplishments. Through AI-generated questionnaires, 
-                  students can gain insights into their strengths and areas for 
-                  improvement, enhancing their employability
+                  <p>TUPath empowers students to create standout academic profiles that showcase their unique skills and achievements. 
+                    Simplify the process of uploading and organizing your accomplishments, while leveraging AI-driven insights to identify 
+                    strengths and areas for growth. Through AI-generated questionnaires, 
+                    students can gain insights into their strengths and areas for 
+                    improvement, enhancing their employability
                   </p>
                 </div>
               </div>
@@ -57,11 +55,9 @@ function studentlandpage() {
                 <div className="text-container">
                 <h6>Showcase Your Academic Journey</h6>
                 <h2>Empowering Students for Future Success</h2>
-                <p>Utilize TUPATH to effectively manage and present your academic 
-                achievements in a professional manner. Create a comprehensive 
-                profile that highlights your skills and experiences, making you 
-                stand out to potential employers. Take advantage of AI-generated 
-                questionnaires to reflect on your strengths and areas for growth.
+                <p>Use TUPath to effectively present your academic achievements in a professional and engaging way. Build a comprehensive profile 
+                  that reflects your skills and experience, making a strong impression on potential employers. Gain valuable insights through 
+                  AI-generated tools to refine your strengths and prepare for career opportunities.
                 </p>
               </div>
            </div>
