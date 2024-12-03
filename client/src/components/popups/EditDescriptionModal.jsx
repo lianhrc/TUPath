@@ -82,7 +82,7 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }
   };
 
-  const excludedFields = ["createdAt", "myProjects", "myCertificates"];
+  const excludedFields = ["createdAt", "projectFiles", "certificatePhotos"];
 
   if (!show) return null;
   
