@@ -4,9 +4,6 @@ import ProjectAssessmentModal from "./ProjectAssessmentModal"; // Import your mo
 import "../popups/ProjectUpModal.css"; // Import the corresponding CSS file
 
 const predefinedTags = [
-  "React",
-  "Node.js",
-  "MongoDB",
   "Machine Learning",
   "AI",
   "Data Science",
@@ -16,9 +13,26 @@ const predefinedTags = [
   "UI/UX Design",
 ];
 
+const predefinedTools = [
+  "React",
+  "Node.js",
+  "MongoDB",
+  "VS Code",
+  "Git",
+  "Figma",
+  "Postman",
+  "Webpack",
+  "Firebase",
+  "PHP",
+
+];
+
+
+
 const ProjectUploadModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [tags, setTags] = useState([]); // State for selected tags
+  const [tools, setTools] = useState([]); // State for tools used
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -50,6 +64,19 @@ const ProjectUploadModal = ({ show, onClose }) => {
   // Handle tag removal
   const handleTagRemove = (tagToRemove) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  // Tool selection handler
+  const handleToolSelect = (e) => {
+    const selectedTool = e.target.value;
+    if (selectedTool && !tools.includes(selectedTool)) {
+      setTools([...tools, selectedTool]);
+    }
+  };
+
+  // Tool removal handler
+  const handleToolRemove = (toolToRemove) => {
+    setTools(tools.filter((tool) => tool !== toolToRemove));
   };
 
   // Handle form submission
@@ -146,6 +173,33 @@ const ProjectUploadModal = ({ show, onClose }) => {
                       </span>
                     ))}
                   </div>
+
+                  <div className="tools-input-container">
+                  <label>Tools Used:</label>
+                    <select onChange={handleToolSelect}>
+                      <option value="">Select a Tool</option>
+                      {predefinedTools.map((tool, index) => (
+                        <option key={index} value={tool}>
+                          {tool}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="tools-list">
+                      {tools.map((tool, index) => (
+                        <span key={index} className="tool">
+                          {tool}
+                          <button
+                            type="button"
+                            className="remove-tool-btn"
+                            onClick={() => handleToolRemove(tool)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>

@@ -184,11 +184,16 @@
 }
 
 /* Styling for Tags Input */
-.tags-input-container {
+.tags-input-container{
     margin-top: 10px;
   }
 
-  .tags-input-container select{
+.tools-input-container {
+    margin-top: 30px;
+  }
+
+
+  .tags-input-container select, .tool-input-container select{
     width: 100%;
     padding: 8px;
     border-radius: 4px;
@@ -201,13 +206,13 @@
 
   }
   
-  .tags-list {
+  .tags-list, .tools-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
   
-  .tag {
+  .tag, .tool {
     background-color: #9D0E0F;
     border-radius: 15px;
     padding: 5px 10px;
@@ -217,7 +222,7 @@
     color: white;
   }
   
-  .remove-tag-btn {
+  .remove-tag-btn, .remove-tool-btn {
     background: none;
     border: none;
     margin-left: 8px;
