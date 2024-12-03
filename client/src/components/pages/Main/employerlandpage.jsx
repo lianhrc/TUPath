@@ -46,7 +46,7 @@ function employerlandpage() {
               <div className='subbox'>
                 <h3>Advanced Search</h3>
                 <p>
-                   Utilize our powerful search tools to find candidates that match your specific needs.
+                  Find the perfect candidates using tailored search tools that match your hiring criteria.
                 </p>
               </div>
               </div>
@@ -59,7 +59,7 @@ function employerlandpage() {
                 </div>
                 <div className='subbox'>
                   <h3>Dynamic Rankings</h3>
-                  <p>View candidates ranked by skills and experience to make informed hiring decisions.</p>
+                  <p>Access ranked candidate profiles based on skills, experience, and suitability.</p>
                 </div>
                 
               </div>
@@ -71,7 +71,7 @@ function employerlandpage() {
                 <div className='subbox'>
                 <h3>AI Insights</h3>
                 <p>
-                   Leverage AI-generated insights to understand candidate potential and fit.
+                  Utilize AI-generated analytics to evaluate candidate potential and make informed decisions.
                 </p>
                 </div>
               </div>
@@ -93,28 +93,28 @@ function employerlandpage() {
                   <i className="fas fa-id-badge"></i> {/* Icon can be from FontAwesome */}
                 </div>
                 <h3>Comprehensive Profiles</h3>
-                <p>Access detailed profiles showcasing academic achievements and skills.</p>
+                <p>Explore detailed academic achievements, skills, and experience.</p>
               </div>
               <div className="talent-card">
                 <div className="icon">
                   <i className="fas fa-filter"></i>
                 </div>
                 <h3>Customizable Filters</h3>
-                <p>Filter candidates by various criteria to find the perfect match.</p>
+                <p>Refine your search using advanced filters to identify the ideal candidates.</p>
               </div>
               <div className="talent-card">
                 <div className="icon">
                   <i className="fas fa-bell"></i>
                 </div>
                 <h3>Real-Time Updates</h3>
-                <p>Receive instant notifications on new candidate matches.</p>
+                <p>Stay informed with instant notifications about candidate matches.</p>
               </div>
               <div className="talent-card">
                 <div className="icon">
                   <i className="fas fa-sync-alt"></i>
                 </div>
                 <h3>Seamless Integration</h3>
-                <p>Integrate TUPATH with your existing HR systems for a smooth workflow.</p>
+                <p>Connect TUPATH with your existing HR systems for a smooth workflow.</p>
               </div>
             </div>
           </div>

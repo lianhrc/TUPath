@@ -688,6 +688,35 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
 
+// -----------------------------------api for dynamic search----------------------------------
+  app.get('/api/search', verifyToken, async (req, res) => {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ success: false, message: 'Query parameter is required' });
+    }
+    try {
+      const regex = new RegExp(query, 'i'); // Case-insensitive regex
+      const studentResults = await Tupath_usersModel.find({
+        $or: [
+          { name: regex },
+          { email: regex }
+        ]
+      }).select('name email profileDetails.profileImg');
+
+      const employerResults = await Employer_usersModel.find({
+        $or: [
+          { name: regex },
+          { email: regex }
+        ]
+      }).select('name email profileDetails.profileImg');
+
+      const results = [...studentResults, ...employerResults];
+      res.status(200).json({ success: true, results });
+    } catch (err) {
+      console.error('Error during search:', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
 
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
