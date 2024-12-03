@@ -8,24 +8,36 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
   }
-  
+
   .projprev-content {
     background-color: white;
     padding: 20px;
-    margin-top: 60px;
     border-radius: 10px;
-    max-width: 500px;
-    width: 90%;
+    max-width: 700px;
+    width: 100%;
+    height: 80vh;
+    overflow: auto;
     text-align: center;
+    position: relative;
+    /* Hide scrollbar */
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
+}
+
+  .projprev-content::-webkit-scrollbar {
+      display: none; /* For Chrome, Safari, and Opera */
   }
+
+
   .projprevheader {
     display: flex;
     
   }
   
   .project-image {
-    width: 100%;
+    width: 50%;
     height: auto;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -34,17 +46,34 @@
 .projprev-btn{
     margin-top: 50px;    
 }
-  .close-btn {
-    background-color: #9D0E0F;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 80px;
+  
+.close-btn,
+.delete-btn {
+  position: absolute; /* Positioning relative to the parent container */
+  bottom: 10px; /* Distance from the bottom of the parent container */
+  right: 10px; /* Distance from the right of the parent container */
+}
 
-  }
+.close-btn {
+  background-color: #9D0E0F;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 80px;
+}
+
+.delete-btn {
+  background-color: #9D0E0F;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 80px;
+  margin-right: 90px;
+}
   
   .close-btn:hover {
     background-color: darkred;
@@ -55,13 +84,6 @@
     padding: 20px;
     max-width: 500px;
     background-color: #fff;
-    border-radius: 8px;
-  }
-  
-  .project-image {
-    width: 100%;
-    height: auto;
-    margin-top: 10px;
     border-radius: 8px;
   }
   

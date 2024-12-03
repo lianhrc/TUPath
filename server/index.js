@@ -20,7 +20,6 @@
   app.use(express.json());
   app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-  app.use("/projects", express.static(path.join(__dirname, "projects")));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
 
@@ -646,24 +645,99 @@ const Post = mongoose.model("Post", postSchema);
   app.post("/api/uploadProject", verifyToken, upload.array("projectFiles", 5), async (req, res) => {
     try {
       const userId = req.user.id;
+      const { projectName, description, tags, tools } = req.body;
       const filePaths = req.files.map(file => `/projects/${file.filename}`);
-
+  
+      // Create the project object
+      const project = {
+        projectName,
+        description,
+        tags: tags.split(','),
+        tools: tools.split(','),
+        files: filePaths,
+      };
+  
+      // Update the user profile with the new project
       const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
         userId,
-        { $push: { "profileDetails.projectFiles": { $each: filePaths } } },
+        {
+          $push: {
+            "profileDetails.projects": project, // Push the new project to the array
+          }
+        },
         { new: true }
       );
-
+  
       if (!updatedUser) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-
-      res.status(200).json({ success: true, message: "Project files uploaded successfully", projectFiles: filePaths });
+  
+      res.status(200).json({
+        success: true,
+        message: "Project uploaded successfully",
+        project: project,
+      });
+  
     } catch (error) {
       console.error("Error uploading project files:", error);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+
+  app.get("/api/projects", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await Tupath_usersModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      console.log("User projects:", user.profileDetails.projects);
+      res.status(200).json({
+        success: true,
+        projects: user.profileDetails.projects,
+      });
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+  
+  
+  
+  app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { projectId } = req.params;
+  
+      // Find the user
+      const user = await Tupath_usersModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      // Find the project and remove it from the user's profile
+      const projectIndex = user.profileDetails.projects.findIndex(project => project._id.toString() === projectId);
+      if (projectIndex === -1) {
+        return res.status(404).json({ success: false, message: "Project not found" });
+      }
+  
+      // Remove the project from the user's profile
+      user.profileDetails.projects.splice(projectIndex, 1);
+      await user.save();
+  
+      res.status(200).json({
+        success: true,
+        message: "Project deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+  
+  
 
   // Endpoint for uploading certificate photos
   app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
