@@ -105,7 +105,7 @@ const EmployerUserSchema = new mongoose.Schema({
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 // Models
-const Tupath_usersModel = mongoose.model("Tupath_users", TupathUserSchema);
+const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 
 module.exports = {
