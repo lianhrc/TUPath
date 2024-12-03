@@ -564,7 +564,7 @@ const Post = mongoose.model("Post", postSchema);
 
 
 
-  app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+ /*app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -605,6 +605,41 @@ const Post = mongoose.model("Post", postSchema);
         res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  */
+
+  app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+    try {
+      const userId = req.user.id;
+  
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+  
+      const profileImgPath = `/uploads/${req.file.filename}`;
+  
+      const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
+  
+      const updatedUser = await userModel.findByIdAndUpdate(
+        userId,
+        { $set: { "profileDetails.profileImg": profileImgPath } },
+        { new: true }
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      res.status(200).json({
+        success: true,
+        message: "Profile image uploaded successfully",
+        profileImg: profileImgPath,
+      });
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
 
 
   // Endpoint for uploading project files
@@ -682,6 +717,39 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
+
+  app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { role } = req.user; // Extract role from token
+      const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
+  
+      const profileData = req.body;
+  
+      // Handle file upload
+      if (req.file) {
+        profileData.profileImg = `/uploads/${req.file.filename}`;
+      }
+  
+      const updatedUser = await userModel.findByIdAndUpdate(
+        userId,
+        { $set: { profileDetails: profileData } },
+        { new: true }
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+
+
 
 
 

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import "./EditDescriptionModal.css";
+import axiosInstance from "../../services/axiosInstance";
 
 function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   const [formData, setFormData] = useState(profileData);
   const [editMode, setEditMode] = useState({});
   const [imagePreview, setImagePreview] = useState(""); // For live preview of new image
+
+  const token = localStorage.getItem("token");
 
   const handleEditToggle = (field) => {
     setEditMode((prev) => ({
@@ -22,42 +25,54 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }));
   };
 
-  const handleFileChange = (e) => {
+
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Create a preview URL for the selected file
+      // Preview the selected image
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result); // Set live preview
+        setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        profileImg: file, // Update the profileImg with the uploaded file
-      }));
+
+      // Upload the image to the server
+      const formDataToSend = new FormData();
+      formDataToSend.append("profileImg", file);
+
+      try {
+        const response = await axiosInstance.post("/api/uploadProfileImage", formDataToSend, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.data.success) {
+          setFormData((prev) => ({
+            ...prev,
+            profileImg: response.data.profileImg, // Update with server path
+          }));
+        }
+      } catch (error) {
+        console.error("Error uploading profile image:", error);
+      }
     }
   };
 
   const handleSave = async () => {
-    const endpoint =
-      userRole === "student"
-        ? "/api/updateStudentProfile"
-        : "/api/updateEmployerProfile";
-
-    const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      formDataToSend.append(key, formData[key]);
-    });
+    const updatedData = { ...formData };
 
     try {
-      const response = await axiosInstance.put(endpoint, formDataToSend, {
+      const response = await axiosInstance.put("/api/updateProfile", updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
+
       if (response.data.success) {
-        onSave(formData);
+        onSave(updatedData);
         onClose();
       } else {
         console.error("Failed to save profile data");
@@ -67,16 +82,10 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }
   };
 
-  const excludedFields = [
-    "createdAt",
-    "myProjects",
-    "myCertificates",
-    "projectFiles",
-    "certificatePhotos",
-  ];
+  const excludedFields = ["createdAt", "projectFiles", "certificatePhotos"];
 
   if (!show) return null;
-
+  
   return (
     <div className="modal-overlay">
       <div className="EditDescriptionModal-content">
@@ -86,15 +95,18 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
         <div className="profile-field">
           <label>Profile Image</label>
           <div className="profile-img-container">
-            <img
+          <img
               src={
-                imagePreview || // Live preview if a new image is uploaded
-                (formData.profileImg?.startsWith('/') ? `http://localhost:3001${formData.profileImg}` : formData.profileImg) || // Correct profile image URL
-                avatar // Fallback to default avatar
+                imagePreview || 
+                (formData.profileImg?.startsWith("/")
+                  ? `http://localhost:3001${formData.profileImg}`
+                  : formData.profileImg) ||
+                "avatar.png"
               }
               alt="Profile"
               className="profile-img-preview"
             />
+
           </div>
 
           {editMode.profileImg ? (
