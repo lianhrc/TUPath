@@ -6,6 +6,7 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
+  const Project = require("./models/project");
   const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
 
   const JWT_SECRET = "your-secret-key";
@@ -39,16 +40,19 @@
 
 
     // Configure multer for file uploads
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/"); // Set upload directory
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname));
-    },
-  });
-
-  const upload = multer({ storage });
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Define where to store the files
+      },
+      filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname); // Define how files are named
+      }
+    });
+    
+    const upload = multer({ 
+      storage: storage,
+      limits: { fileSize: 10 * 1024 * 1024 }, // Set size limit (e.g., 10MB)
+    });
 
   // JWT verification middleware
   // JWT verification middleware with added debugging and error handling
@@ -641,20 +645,26 @@ const Post = mongoose.model("Post", postSchema);
   
 
 
-  // Endpoint for uploading project files
-  app.post("/api/uploadProject", verifyToken, upload.array("projectFiles", 5), async (req, res) => {
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },  // Handle the thumbnail upload field
+    { name: "projectFiles", maxCount: 5 }, // Handle other project files (e.g., .zip, .docx, etc.)
+  ]), async (req, res) => {
     try {
       const userId = req.user.id;
       const { projectName, description, tags, tools } = req.body;
-      const filePaths = req.files.map(file => `/projects/${file.filename}`);
+  
+      // Get the file paths for both thumbnail and project files
+      const thumbnailPath = req.files.thumbnail ? `/projects/${req.files.thumbnail[0].filename}` : null;
+      const filePaths = req.files.projectFiles ? req.files.projectFiles.map(file => `/projects/${file.filename}`) : [];
   
       // Create the project object
       const project = {
         projectName,
         description,
-        tags: tags.split(','),
-        tools: tools.split(','),
-        files: filePaths,
+        tags: tags.split(','), // Assuming tags are passed as a comma-separated string
+        tools: tools.split(','), // Assuming tools are passed as a comma-separated string
+        files: filePaths,  // Array of other project files
+        thumbnail: thumbnailPath,  // Path for the thumbnail image
       };
   
       // Update the user profile with the new project
@@ -662,7 +672,7 @@ const Post = mongoose.model("Post", postSchema);
         userId,
         {
           $push: {
-            "profileDetails.projects": project, // Push the new project to the array
+            "profileDetails.projects": project, // Push the new project to the projects array
           }
         },
         { new: true }
@@ -683,8 +693,10 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
 
-  app.get("/api/projects", verifyToken, async (req, res) => {
+  
+   app.get("/api/projects", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
       const user = await Tupath_usersModel.findById(userId);
@@ -701,7 +713,6 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
-  
   
   
   

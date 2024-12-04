@@ -20,7 +20,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
         <div className="projprevheader">
             <h6><strong>{project.projectName}</strong></h6>
         </div>
-       
+        
         <p><strong></strong> {project.description}</p>
         <p><strong></strong> {project.tags}</p>
         <p><strong></strong> {project.tools}</p>

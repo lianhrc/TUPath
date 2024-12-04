@@ -94,43 +94,44 @@ const ProjectUploadModal = ({ show, onClose }) => {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const formData = new FormData();
-    formData.append('projectName', projectName);  // Append project name
-    formData.append('description', description);  // Append project description
-    tags.forEach(tag => formData.append('tags', tag));  // Append each tag
-    tools.forEach(tool => formData.append('tools', tool));  // Append each tool
-    selectedFiles.forEach(file => formData.append('projectFiles', file));  // Append each file
-    if (thumbnail) {
-      formData.append('thumbnail', thumbnail); // Append the thumbnail image
-    }
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  const formData = new FormData();
+  formData.append('projectName', projectName);
+  formData.append('description', description);
+  tags.forEach(tag => formData.append('tags', tag));
+  tools.forEach(tool => formData.append('tools', tool));
 
-    try {
-      // Send the request to the server to upload the project
-      const response = await axiosInstance.post('/api/uploadProject', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',  // Ensure correct content type
-        },
-      });
-  
-      console.log('Response Data:', response.data);  // Log the response
-  
-      // Check if the project upload was successful
-      if (response.data.success) {
-        console.log('Project uploaded successfully:', response.data.project);
-        
-        // Close the modal on successful upload
-        onClose();  // This will close the modal
-      } else {
-        console.log('Project upload failed:', response.data.message);
-      }
-    } catch (error) {
-      console.error('Error uploading project:', error);  // Handle any errors
+  // Append selected files to the formData
+  selectedFiles.forEach(file => formData.append('projectFiles', file));
+
+  // If thumbnail is selected, append it to formData
+  if (thumbnail) {
+    formData.append('thumbnail', thumbnail);
+  }
+
+  try {
+    const response = await axiosInstance.post('http://localhost:3001/api/uploadProject', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data' ,
+      },
+    });
+
+    if (response.data.success) {
+      console.log('Project uploaded successfully:', response.data.project);
+      onClose();
+    } else {
+      console.log('Project upload failed:', response.data.message);
     }
-  };
+  } catch (error) {
+    console.error('Error uploading project:', error.response ? error.response.data : error);
+  }
+};
+
+  
+  
+  
   
   
   

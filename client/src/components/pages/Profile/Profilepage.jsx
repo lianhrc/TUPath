@@ -191,7 +191,13 @@ function ProfilePage() {
                   {/* Display Projects */}
                   {projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                      <h4>{project.title}</h4>
+                        <img 
+                        src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
+                          ? `http://localhost:3001${project.thumbnail}` 
+                          : project.thumbnail || avatar} 
+                        alt="Project Thumbnail" 
+                      />
+                    <h4>{project.title}</h4>
                       <p>{project.description}</p>
 
                     </div>
