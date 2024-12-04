@@ -12,10 +12,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
     }
   };
 
-   // Extract the first image from the project files array
-   const projectImage = project.files && project.files.length > 0
-   ? `http://localhost:3001${project.files[0]}` // Use the first file as the image
-   : "https://via.placeholder.com/150"; // Fallback placeholder image
+  
 
   return (
     <div className="projprev-overlay">
@@ -23,14 +20,11 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
         <div className="projprevheader">
             <h6><strong>{project.projectName}</strong></h6>
         </div>
-        <img
-        src={projectImage}
-        alt={`${project.projectName || "Project"} Thumbnail`}
-        className="project-image"
-      />
+       
         <p><strong></strong> {project.description}</p>
         <p><strong></strong> {project.tags}</p>
         <p><strong></strong> {project.tools}</p>
+        <p><strong></strong> {project.files}</p>
         <div className="div">
         <button className="delete-btn" onClick={handleDelete}>Delete</button>
           <button className="close-btn" onClick={onClose}>Close</button>
