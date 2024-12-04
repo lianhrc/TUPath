@@ -6,7 +6,6 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const Project = require("./models/project");
   const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
 
   const JWT_SECRET = "your-secret-key";
@@ -20,7 +19,7 @@
   // Middleware setup
   app.use(express.json());
   app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
-  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+  app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
 
@@ -654,7 +653,7 @@ const Post = mongoose.model("Post", postSchema);
       const { projectName, description, tags, tools } = req.body;
   
       // Get the file paths for both thumbnail and project files
-      const thumbnailPath = req.files.thumbnail ? `/projects/${req.files.thumbnail[0].filename}` : null;
+      const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
       const filePaths = req.files.projectFiles ? req.files.projectFiles.map(file => `/projects/${file.filename}`) : [];
   
       // Create the project object

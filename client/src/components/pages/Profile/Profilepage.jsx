@@ -193,9 +193,9 @@ function ProfilePage() {
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                         <img 
                         src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
-                          ? `http://localhost:3001${project.thumbnail}` 
-                          : project.thumbnail || avatar} 
-                        alt="Project Thumbnail" 
+                        ? `http://localhost:3001${project.thumbnail}` 
+                        : project.thumbnail || avatar}
+                      
                       />
                     <h4>{project.title}</h4>
                       <p>{project.description}</p>
