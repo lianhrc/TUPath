@@ -38,6 +38,8 @@ const ProjectUploadModal = ({ show, onClose }) => {
   const [tags, setTags] = useState([]); // State for selected tags
   const [tools, setTools] = useState([]); // State for tools used
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [thumbnail, setThumbnail] = useState(null); // State for the project thumbnail
+  const thumbnailInputRef = useRef(null); // Reference for the thumbnail input field
   const fileInputRef = useRef(null);
 
   if (!show) return null;
@@ -56,6 +58,14 @@ const ProjectUploadModal = ({ show, onClose }) => {
   const handleChooseFileClick = () => {
     fileInputRef.current.click();
   };
+
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnail(file); // Set the thumbnail state
+    }
+  };
+
 
   // Handle tag selection
   const handleTagSelect = (e) => {
@@ -93,7 +103,11 @@ const ProjectUploadModal = ({ show, onClose }) => {
     tags.forEach(tag => formData.append('tags', tag));  // Append each tag
     tools.forEach(tool => formData.append('tools', tool));  // Append each tool
     selectedFiles.forEach(file => formData.append('projectFiles', file));  // Append each file
-  
+    if (thumbnail) {
+      formData.append('thumbnail', thumbnail); // Append the thumbnail image
+    }
+
+
     try {
       // Send the request to the server to upload the project
       const response = await axiosInstance.post('/api/uploadProject', formData, {
@@ -243,6 +257,26 @@ const ProjectUploadModal = ({ show, onClose }) => {
             </div>
 
             <div className="rightprojup-container">
+            
+            
+            <label className="labelprojectthumb">Project Thumbnail:</label>
+                  {/* Thumbnail Upload Section */}
+                  <div className="thumbnail-container">
+                   {thumbnail && (
+                    <div className="thumbnail-preview">
+                      <img src={URL.createObjectURL(thumbnail)} alt="Thumbnail Preview" width={100} height={100} />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    ref={thumbnailInputRef}
+                    onChange={handleThumbnailChange}
+                  />
+                 
+                </div>
+
+
             <div className="attach-files-container">
             <label>Attach Files:</label>
             <input
@@ -282,6 +316,7 @@ const ProjectUploadModal = ({ show, onClose }) => {
             )}
           </div>
           
+
             </div>
           </form>
 
