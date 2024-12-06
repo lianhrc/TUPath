@@ -99,7 +99,7 @@ function ProfilePage() {
         <div className='profile-card'>
           <div className='profile-header'>
             <img src={profileImageUrl} alt='User Profile' className='avatar' />
-            <h2>{`${profileData.firstName || ''} ${profileData.middleName || ''} ${profileData.lastName || ''}`.trim()}</h2>
+            <h3>{`${profileData.firstName || ''} ${profileData.middleName || ''} ${profileData.lastName || ''}`.trim()}</h3>
             <p>{userRole === 'student' ? profileData.studentId || 'Student ID Not Available' : profileData.companyName || 'Company Name Not Available'}</p>
             <hr />
             <div className='subheader'>
@@ -201,11 +201,8 @@ function ProfilePage() {
                         src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
                         ? `http://localhost:3001${project.thumbnail}` 
                         : project.thumbnail || avatar}
-                      
                       />
-                    <h4>{project.title}</h4>
-                      <p>{project.description}</p>
-
+                      <p>{project.projectName}</p>
                     </div>
                   ))}
                 </div>
