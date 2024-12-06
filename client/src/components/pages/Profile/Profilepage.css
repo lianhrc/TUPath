@@ -27,8 +27,16 @@
 }
 
 
-.profile-header,
+
 .profile-main {
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  width: 100%;
+  padding: 0 0 20px 20px;
+}
+
+.profile-header{
   margin-bottom: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: white;
@@ -111,17 +119,15 @@
 }
 
 .profile-section .div {
- 
   display: flex;
-  width: 100%;
-  height: 40px;
+  width: auto;
   justify-content: end;
   align-items: center;
 }
 .profile-section .div img{
   width: 20px;
   height: 20px;
-  margin-right: 10px;
+  
 }
 
 .profile-section .div img:hover{
@@ -167,8 +173,12 @@
   overflow: hidden;
   border-radius: 5px;
   cursor: pointer;
-  height: 150px;
+  height: 200px;
   transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+}
+
+.project-card p{
+  margin-top: 5px;
 }
 
 .project-card:hover {

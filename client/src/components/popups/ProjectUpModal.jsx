@@ -2,11 +2,10 @@ import React, { useState, useRef } from "react";
 import { motion } from 'framer-motion';
 import ProjectAssessmentModal from "./ProjectAssessmentModal"; // Import your modal component
 import "../popups/ProjectUpModal.css"; // Import the corresponding CSS file
+import axiosInstance from '../../services/axiosInstance'; // Make sure the path is correct
+
 
 const predefinedTags = [
-  "React",
-  "Node.js",
-  "MongoDB",
   "Machine Learning",
   "AI",
   "Data Science",
@@ -16,10 +15,31 @@ const predefinedTags = [
   "UI/UX Design",
 ];
 
+const predefinedTools = [
+  "React",
+  "Node.js",
+  "MongoDB",
+  "VS Code",
+  "Git",
+  "Figma",
+  "Postman",
+  "Webpack",
+  "Firebase",
+  "PHP",
+
+];
+
+
+
 const ProjectUploadModal = ({ show, onClose }) => {
+  const [projectName, setProjectName] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [tags, setTags] = useState([]); // State for selected tags
+  const [tools, setTools] = useState([]); // State for tools used
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [thumbnail, setThumbnail] = useState(null); // State for the project thumbnail
+  const thumbnailInputRef = useRef(null); // Reference for the thumbnail input field
   const fileInputRef = useRef(null);
 
   if (!show) return null;
@@ -39,6 +59,14 @@ const ProjectUploadModal = ({ show, onClose }) => {
     fileInputRef.current.click();
   };
 
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnail(file); // Set the thumbnail state
+    }
+  };
+
+
   // Handle tag selection
   const handleTagSelect = (e) => {
     const selectedTag = e.target.value;
@@ -52,21 +80,55 @@ const ProjectUploadModal = ({ show, onClose }) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Tags:", tags); // Log tags for debugging
-    console.log("Selected Files:", selectedFiles); // Log selected files
-    setShowAssessmentModal(true); // Open the assessment modal
+  // Tool selection handler
+  const handleToolSelect = (e) => {
+    const selectedTool = e.target.value;
+    if (selectedTool && !tools.includes(selectedTool)) {
+      setTools([...tools, selectedTool]);
+    }
   };
 
-  // Handle final form submission from the assessment modal
-  const handleFinalSubmit = () => {
-    console.log("Final submission confirmed!");
-    // Add submission logic here
-    setShowAssessmentModal(false);
-    onClose();
+  // Tool removal handler
+  const handleToolRemove = (toolToRemove) => {
+    setTools(tools.filter((tool) => tool !== toolToRemove));
   };
+
+  // Handle form submission
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append('projectName', projectName);
+  formData.append('description', description);
+  tags.forEach(tag => formData.append('tags', tag));
+  tools.forEach(tool => formData.append('tools', tool));
+
+  // Append selected files to the formData
+  selectedFiles.forEach(file => formData.append('projectFiles', file));
+
+  // If thumbnail is selected, append it to formData
+  if (thumbnail) {
+    formData.append('thumbnail', thumbnail);
+  }
+
+  try {
+    const response = await axiosInstance.post('http://localhost:3001/api/uploadProject', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data' ,
+      },
+    });
+
+    if (response.data.success) {
+      console.log('Project uploaded successfully:', response.data.project);
+      onClose();
+    } else {
+      console.log('Project upload failed:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error uploading project:', error.response ? error.response.data : error);
+  }
+};
+
 
 
   const modalVariants = {
@@ -115,11 +177,22 @@ const ProjectUploadModal = ({ show, onClose }) => {
             <div className="leftprojup-container">
               <div className="top">
                 <label>Project Name:</label>
-                <input type="text" name="projectName" />
+                <input
+                  type="text"
+                  name="projectName"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)} // Update state on change
+                />
+
               </div>
               <div className="mid">
                 <label>Description:</label>
-                <textarea name="description"></textarea>
+                <textarea
+                  name="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)} // Update state on change
+                ></textarea>
+
               </div>
               <div className="bottom">
                 <label>Tags:</label>
@@ -146,55 +219,98 @@ const ProjectUploadModal = ({ show, onClose }) => {
                       </span>
                     ))}
                   </div>
+
+                  <div className="tools-input-container">
+                  <label>Tools Used:</label>
+                    <select onChange={handleToolSelect}>
+                      <option value="">Select a Tool</option>
+                      {predefinedTools.map((tool, index) => (
+                        <option key={index} value={tool}>
+                          {tool}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="tools-list">
+                      {tools.map((tool, index) => (
+                        <span key={index} className="tool">
+                          {tool}
+                          <button
+                            type="button"
+                            className="remove-tool-btn"
+                            onClick={() => handleToolRemove(tool)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
 
             <div className="rightprojup-container">
-              <div className="upload-area">
-                {selectedFiles.length > 0 ? (
-                  <div className="file-preview-container">
-                    {selectedFiles.map((file, index) => (
-                      <div key={index} className="file-preview">
-                        {file.type.startsWith("image/") ? (
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`Preview ${index + 1}`}
-                            className="preview-image"
-                          />
-                        ) : (
-                          <p>{file.name}</p>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleFileRemove(file)}
-                          className="remove-file-btn"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="file-dropzone">
-                    <p>Drag & drop your files here or</p>
-                    <button
-                      type="button"
-                      onClick={handleChooseFileClick}
-                      className="choose-file-btn"
-                    >
-                      Upload files
-                    </button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      multiple
-                      onChange={handleFileChange}
-                      style={{ display: "none" }}
-                    />
-                  </div>
-                )}
+            
+            
+            <label className="labelprojectthumb">Project Thumbnail:</label>
+                  {/* Thumbnail Upload Section */}
+                  <div className="thumbnail-container">
+                   {thumbnail && (
+                    <div className="thumbnail-preview">
+                      <img src={URL.createObjectURL(thumbnail)} alt="Thumbnail Preview" width={100} height={100} />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    ref={thumbnailInputRef}
+                    onChange={handleThumbnailChange}
+                  />
+                 
+                </div>
+
+
+            <div className="attach-files-container">
+            <label>Attach Files:</label>
+            <input
+              type="file"
+              multiple
+              accept=".zip,.rar,.pdf,.docx,.pptx,.xlsx,.jpg,.jpeg,.png"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }} // Hide the default input field
+            />
+            <button
+              type="button"
+              onClick={handleChooseFileClick}
+              className="choose-file-btn"
+            >
+              Add Files
+            </button>
+          
+            {selectedFiles.length > 0 && (
+              <div className="file-preview-list">
+                <p>Attached Files:</p>
+                <ul>
+                  {selectedFiles.map((file, index) => (
+                    <li key={index} className="file-preview-item">
+                      {file.name}
+                      <button
+                        type="button"
+                        onClick={() => handleFileRemove(file)}
+                        className="remove-file-btn"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
+            )}
+          </div>
+          
+
             </div>
           </form>
 
@@ -210,7 +326,6 @@ const ProjectUploadModal = ({ show, onClose }) => {
       <ProjectAssessmentModal
         show={showAssessmentModal}
         onClose={() => setShowAssessmentModal(false)}
-        onFinalSubmit={handleFinalSubmit}
       />
     </>
   );

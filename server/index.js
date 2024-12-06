@@ -19,8 +19,7 @@
   // Middleware setup
   app.use(express.json());
   app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
-  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-  app.use("/projects", express.static(path.join(__dirname, "projects")));
+  app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
 
@@ -40,16 +39,19 @@
 
 
     // Configure multer for file uploads
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/"); // Set upload directory
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname));
-    },
-  });
-
-  const upload = multer({ storage });
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Define where to store the files
+      },
+      filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname); // Define how files are named
+      }
+    });
+    
+    const upload = multer({ 
+      storage: storage,
+      limits: { fileSize: 10 * 1024 * 1024 }, // Set size limit (e.g., 10MB)
+    });
 
   // JWT verification middleware
   // JWT verification middleware with added debugging and error handling
@@ -642,28 +644,110 @@ const Post = mongoose.model("Post", postSchema);
   
 
 
-  // Endpoint for uploading project files
-  app.post("/api/uploadProject", verifyToken, upload.array("projectFiles", 5), async (req, res) => {
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },  // Handle the thumbnail upload field
+    { name: "projectFiles", maxCount: 5 }, // Handle other project files (e.g., .zip, .docx, etc.)
+  ]), async (req, res) => {
     try {
       const userId = req.user.id;
-      const filePaths = req.files.map(file => `/projects/${file.filename}`);
-
+      const { projectName, description, tags, tools } = req.body;
+  
+      // Get the file paths for both thumbnail and project files
+      const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
+      const filePaths = req.files.projectFiles ? req.files.projectFiles.map(file => `/projects/${file.filename}`) : [];
+  
+      // Create the project object
+      const project = {
+        projectName,
+        description,
+        tags: tags.split(','), // Assuming tags are passed as a comma-separated string
+        tools: tools.split(','), // Assuming tools are passed as a comma-separated string
+        files: filePaths,  // Array of other project files
+        thumbnail: thumbnailPath,  // Path for the thumbnail image
+      };
+  
+      // Update the user profile with the new project
       const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
         userId,
-        { $push: { "profileDetails.projectFiles": { $each: filePaths } } },
+        {
+          $push: {
+            "profileDetails.projects": project, // Push the new project to the projects array
+          }
+        },
         { new: true }
       );
-
+  
       if (!updatedUser) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-
-      res.status(200).json({ success: true, message: "Project files uploaded successfully", projectFiles: filePaths });
+  
+      res.status(200).json({
+        success: true,
+        message: "Project uploaded successfully",
+        project: project,
+      });
+  
     } catch (error) {
       console.error("Error uploading project files:", error);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
+
+  
+   app.get("/api/projects", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await Tupath_usersModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      console.log("User projects:", user.profileDetails.projects);
+      res.status(200).json({
+        success: true,
+        projects: user.profileDetails.projects,
+      });
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+  
+  
+  app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { projectId } = req.params;
+  
+      // Find the user
+      const user = await Tupath_usersModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      // Find the project and remove it from the user's profile
+      const projectIndex = user.profileDetails.projects.findIndex(project => project._id.toString() === projectId);
+      if (projectIndex === -1) {
+        return res.status(404).json({ success: false, message: "Project not found" });
+      }
+  
+      // Remove the project from the user's profile
+      user.profileDetails.projects.splice(projectIndex, 1);
+      await user.save();
+  
+      res.status(200).json({
+        success: true,
+        message: "Project deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+  
+  
 
   // Endpoint for uploading certificate photos
   app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
@@ -721,19 +805,33 @@ const Post = mongoose.model("Post", postSchema);
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;
-      const { role } = req.user; // Extract role from token
+      const { role } = req.user;
       const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
   
       const profileData = req.body;
   
-      // Handle file upload
+      // Handle file upload (if any)
       if (req.file) {
         profileData.profileImg = `/uploads/${req.file.filename}`;
       }
   
+      // Ensure we preserve the existing projects data
+      const existingUser = await userModel.findById(userId);
+      if (!existingUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      // Preserve projects in the profileData (if no projects are passed, keep the existing ones)
+      const updatedProfile = {
+        ...existingUser.profileDetails,
+        ...profileData,
+        projects: existingUser.profileDetails.projects || []  // Ensure existing projects are kept
+      };
+  
+      // Update the user's profile details
       const updatedUser = await userModel.findByIdAndUpdate(
         userId,
-        { $set: { profileDetails: profileData } },
+        { $set: { profileDetails: updatedProfile } },
         { new: true }
       );
   
@@ -748,18 +846,7 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   
-
-
-
-
-
-
-
-
-
-
-
-
+  
 
   // Server setup
   const PORT = process.env.PORT || 3001;

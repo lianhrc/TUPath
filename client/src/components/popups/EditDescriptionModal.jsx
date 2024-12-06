@@ -61,19 +61,26 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }
   };
 
+
   const handleSave = async () => {
     const updatedData = { ...formData };
-
+  
+    // Preserve the current projects (if they exist) in the updated data
+    const projects = profileData.projects || [];  // Use existing projects if no new ones are provided
+    updatedData.projects = projects;  // Include projects in the update data
+  
     try {
       const response = await axiosInstance.put("/api/updateProfile", updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (response.data.success) {
-        onSave(updatedData);
-        onClose();
+        // After successful update, pass the updated profile including projects
+        const updatedProfile = { ...updatedData, projects };
+        onSave(updatedProfile); // Pass the updated profile data with preserved projects
+        onClose(); // Close the modal
       } else {
         console.error("Failed to save profile data");
       }
@@ -81,6 +88,13 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
       console.error("Error updating profile:", error);
     }
   };
+  
+  
+  
+  
+
+  
+  
 
   const excludedFields = ["createdAt", "projectFiles", "certificatePhotos"];
 

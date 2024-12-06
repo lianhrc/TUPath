@@ -24,7 +24,7 @@ const TupathUserSchema = new mongoose.Schema({
     default: false, // Track if signed up via Google
   },
   role: { type: String, default: 'student' },
-  profileDetails: { // New section for profile details
+  profileDetails: {
     firstName: String,
     lastName: String,
     middleName: String,
@@ -35,14 +35,21 @@ const TupathUserSchema = new mongoose.Schema({
     address: String,
     contact: String,
     profileImg: String, // Add this line to store the image URL
-    projectFiles: [String], // New field for storing project file paths
     certificatePhotos: [String], // New field for storing certificate image paths
     techSkills: [String],
     softSkills: [String],
     email: String,
     dob: Date,
+    projects: [{ // New field for storing project details
+      projectName: String,
+      description: String,
+      tags: [String], // Array to store multiple tags
+      tools: [String], // Array to store tools used
+      files: [String], // Array of project file paths
+      thumbnail: String, // Add this line to store the thumbnail URL or path
+    }],
   },
-  memberSince: { 
+  memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when a user is created
   }
@@ -51,7 +58,7 @@ const TupathUserSchema = new mongoose.Schema({
 // Schema for TUPATH employers
 const EmployerUserSchema = new mongoose.Schema({
   name: {
-    type: String, 
+    type: String,
     required: true,
   },
   email: {
@@ -93,19 +100,18 @@ const EmployerUserSchema = new mongoose.Schema({
     email: String,
     phoneNumber: String,
     profileImg: String, // Add this line for the employer profile image
-    preferredRoles:{ type: [String], default: [] }, // Always an array
+    preferredRoles: { type: [String], default: [] }, // Always an array
     internshipOpportunities: { type: Boolean, default: false },
     preferredSkills: { type: [String], default: [] }, // Always an array
-
   },
-  memberSince: { 
+  memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when an employer user is created
   }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 // Models
-const Tupath_usersModel = mongoose.model("Tupath_users", TupathUserSchema);
+const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 
 module.exports = {

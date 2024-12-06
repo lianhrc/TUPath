@@ -16,9 +16,15 @@ import Loader from '../../common/Loader';
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
+  const [projects, setProjects] = useState([]); // State for projects
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
+
+  const addProjectToState = (newProject) => {
+    setProjects((prevProjects) => [...prevProjects, newProject]);
+  };
+  
 
   // Modals
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -31,24 +37,34 @@ function ProfilePage() {
   
 
   // Fetch profile data
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const response = await axiosInstance.get('/api/profile');
-        if (response.data.success) {
-          const { profileDetails, role, createdAt } = response.data.profile;
-          setProfileData({ ...profileDetails, createdAt }); // Include createdAt
-          setUserRole(role);
-          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+    useEffect(() => {
+      const fetchProfileData = async () => {
+        try {
+          const profileResponse = await axiosInstance.get('/api/profile');
+          if (profileResponse.data.success) {
+            const { profileDetails, role, createdAt } = profileResponse.data.profile;
+    
+            // Ensure both profileDetails and projects are set correctly
+            const { projects, ...profileWithoutProjects } = profileDetails;
+    
+            setProfileData({ ...profileWithoutProjects, createdAt });
+            setUserRole(role);
+            setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+    
+            // Ensure that projects are also set correctly
+            setProjects(profileDetails?.projects || []); // Set projects if available
+          }
+        } catch (error) {
+          console.error('Error fetching profile data:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfileData();
-  }, []);
+      };
+    
+      fetchProfileData();
+  }, [userRole]); // Re-fetch if userRole changes
+  
+  
   
 
   if (loading) {
@@ -59,6 +75,22 @@ function ProfilePage() {
   ? `http://localhost:3001${profileData.profileImg}`
   : profileData.profileImg || avatar;
 
+  
+    // delete function to handle project removal
+    const deleteProject = async (projectId) => {
+      try {
+        const response = await axiosInstance.delete(`/api/projects/${projectId}`);
+        if (response.data.success) {
+          // Remove the deleted project from state
+          setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
+        } else {
+          console.error("Error deleting project:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error deleting project:", error);
+      }
+    };
+
 
   return (
     <div className='Profilepage-container'>
@@ -67,7 +99,7 @@ function ProfilePage() {
         <div className='profile-card'>
           <div className='profile-header'>
             <img src={profileImageUrl} alt='User Profile' className='avatar' />
-            <h2>{`${profileData.firstName || ''} ${profileData.middleName || ''} ${profileData.lastName || ''}`.trim()}</h2>
+            <h3>{`${profileData.firstName || ''} ${profileData.middleName || ''} ${profileData.lastName || ''}`.trim()}</h3>
             <p>{userRole === 'student' ? profileData.studentId || 'Student ID Not Available' : profileData.companyName || 'Company Name Not Available'}</p>
             <hr />
             <div className='subheader'>
@@ -99,7 +131,12 @@ function ProfilePage() {
           <div className='profile-main'>
             <div className="profile-section">
               <div className="div">
-                  <a href="#" onClick={() => setShowEditDescriptionModal(true)}> <img src={edit} alt="" /> </a>
+              <a href="#" onClick={() => {
+                console.log('Opening edit modal');
+                setShowEditDescriptionModal(true);
+                
+              }} > <img src={edit} alt="" /> </a>
+                  
               </div>        
             
           </div>
@@ -145,19 +182,31 @@ function ProfilePage() {
           </div>
         </div>
 
-            {/* Project and Certificate Sections */}
-              {userRole === 'student' && (
-                <div className="project-section">
-                  <div className="projectscontainer">
-                    <h3>My Projects</h3>
-                    <hr />
-                    <div className="projects-grid">
-                      <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
-                        <p>+</p>
-                        <p>Add a Project</p>
-                      </div>
-                    </div>
+          {/* Project Section */}
+          {userRole === 'student' && (
+            <div className="project-section">
+              <div className="projectscontainer">
+                <h3>My Projects</h3>
+                <hr />
+                <div className="projects-grid">
+                  <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
+                    <p>+</p>
+                    <p>Add a Project</p>
                   </div>
+
+                  {/* Display Projects */}
+                  {projects.map((project) => (
+                    <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
+                        <img 
+                        src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
+                        ? `http://localhost:3001${project.thumbnail}` 
+                        : project.thumbnail || avatar}
+                      />
+                      <p>{project.projectName}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
                   <div className="achievementscontainer">
                     <h3>My Certificates</h3>
@@ -198,7 +247,7 @@ function ProfilePage() {
                     onSave={(updatedData) => setProfileData(updatedData)} 
                 />
         
-        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} />
+        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject}/>
         <GenericModal show={skillsModalOpen} onClose={() => setSkillsModalOpen(false)} title='Add New Skill' onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...(prev.techSkills || []), newSkill] }))} />
         <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
         <MessagePop />
