@@ -129,13 +129,6 @@ const ProjectUploadModal = ({ show, onClose }) => {
   }
 };
 
-  
-  
-  
-  
-  
-  
-  
 
 
   const modalVariants = {

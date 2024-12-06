@@ -43,16 +43,20 @@ function ProfilePage() {
         const profileResponse = await axiosInstance.get('/api/profile');
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt } = profileResponse.data.profile;
-          setProfileData({ ...profileDetails, createdAt });
+  
+          // Destructure and exclude the `projects` field
+          const { projects, ...profileWithoutProjects } = profileDetails;
+  
+          setProfileData({ ...profileWithoutProjects, createdAt });
           setUserRole(role);
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-        }
   
-        if (userRole === 'student') {
-          // Fetch projects for students
-          const projectResponse = await axiosInstance.get('/api/projects'); // Adjusted endpoint
-          if (projectResponse.data.success) {
-            setProjects(projectResponse.data.projects); // Assuming the response contains a 'projects' array
+          // Handle projects independently for students
+          if (role === 'student') {
+            const projectResponse = await axiosInstance.get('/api/projects'); // Adjust endpoint as needed
+            if (projectResponse.data.success) {
+              setProjects(projectResponse.data.projects || []); // Assuming the response contains a 'projects' array
+            }
           }
         }
       } catch (error) {
@@ -61,9 +65,10 @@ function ProfilePage() {
         setLoading(false);
       }
     };
-    
+  
     fetchProfileData();
   }, [userRole]); // Re-fetch if userRole changes
+  
   
 
   if (loading) {
@@ -130,7 +135,12 @@ function ProfilePage() {
           <div className='profile-main'>
             <div className="profile-section">
               <div className="div">
-                  <a href="#" onClick={() => setShowEditDescriptionModal(true)}> <img src={edit} alt="" /> </a>
+              <a href="#" onClick={() => {
+                console.log('Opening edit modal');
+                setShowEditDescriptionModal(true);
+                
+              }} > <img src={edit} alt="" /> </a>
+                  
               </div>        
             
           </div>
