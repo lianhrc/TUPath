@@ -805,19 +805,33 @@ const Post = mongoose.model("Post", postSchema);
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;
-      const { role } = req.user; // Extract role from token
+      const { role } = req.user;
       const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
   
       const profileData = req.body;
   
-      // Handle file upload
+      // Handle file upload (if any)
       if (req.file) {
         profileData.profileImg = `/uploads/${req.file.filename}`;
       }
   
+      // Ensure we preserve the existing projects data
+      const existingUser = await userModel.findById(userId);
+      if (!existingUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      // Preserve projects in the profileData (if no projects are passed, keep the existing ones)
+      const updatedProfile = {
+        ...existingUser.profileDetails,
+        ...profileData,
+        projects: existingUser.profileDetails.projects || []  // Ensure existing projects are kept
+      };
+  
+      // Update the user's profile details
       const updatedUser = await userModel.findByIdAndUpdate(
         userId,
-        { $set: { profileDetails: profileData } },
+        { $set: { profileDetails: updatedProfile } },
         { new: true }
       );
   
@@ -832,18 +846,7 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   
-
-
-
-
-
-
-
-
-
-
-
-
+  
 
   // Server setup
   const PORT = process.env.PORT || 3001;

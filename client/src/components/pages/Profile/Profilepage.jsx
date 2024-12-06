@@ -37,37 +37,33 @@ function ProfilePage() {
   
 
   // Fetch profile data
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const profileResponse = await axiosInstance.get('/api/profile');
-        if (profileResponse.data.success) {
-          const { profileDetails, role, createdAt } = profileResponse.data.profile;
-  
-          // Destructure and exclude the `projects` field
-          const { projects, ...profileWithoutProjects } = profileDetails;
-  
-          setProfileData({ ...profileWithoutProjects, createdAt });
-          setUserRole(role);
-          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-  
-          // Handle projects independently for students
-          if (role === 'student') {
-            const projectResponse = await axiosInstance.get('/api/projects'); // Adjust endpoint as needed
-            if (projectResponse.data.success) {
-              setProjects(projectResponse.data.projects || []); // Assuming the response contains a 'projects' array
-            }
+    useEffect(() => {
+      const fetchProfileData = async () => {
+        try {
+          const profileResponse = await axiosInstance.get('/api/profile');
+          if (profileResponse.data.success) {
+            const { profileDetails, role, createdAt } = profileResponse.data.profile;
+    
+            // Ensure both profileDetails and projects are set correctly
+            const { projects, ...profileWithoutProjects } = profileDetails;
+    
+            setProfileData({ ...profileWithoutProjects, createdAt });
+            setUserRole(role);
+            setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+    
+            // Ensure that projects are also set correctly
+            setProjects(profileDetails?.projects || []); // Set projects if available
           }
+        } catch (error) {
+          console.error('Error fetching profile data:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchProfileData();
+      };
+    
+      fetchProfileData();
   }, [userRole]); // Re-fetch if userRole changes
+  
   
   
 
