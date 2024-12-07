@@ -146,20 +146,24 @@ function HeaderHomepage() {
             {isSearching && <p>Searching...</p>}
             {searchResults.length > 0 && (
               <div className="search-results">
-                {searchResults.map((result, index) => (
-                  <div key={index} className="search-result-item">
-                    <img
-                      src={result.profileDetails?.profileImg || profileicon}
-                      alt={result.name}
-                      className="search-result-image"
-                    />
-                    <div>
-                      <p><strong>{result.name}</strong></p>
-                      <p>{result.email}</p>
-                    </div>
+              {searchResults.map((result, index) => (
+                <Link
+                  to={`/profile/${result._id}`} // Assuming `_id` is the unique identifier
+                  key={index}
+                  className="search-result-item"
+                >
+                  <img
+                    src={result.profileDetails?.profileImg || profileicon}
+                    alt={result.name}
+                    className="search-result-image"
+                  />
+                  <div>
+                    <p><strong>{result.name}</strong></p>
+                    <p>{result.email}</p>
                   </div>
-                ))}
-              </div>
+                </Link>
+              ))}
+            </div>
             )}
           </div>
           <div className="icon-buttons">

@@ -802,6 +802,21 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
 
+  app.get('/api/profile/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const user = await Tupath_usersModel.findById(id) || await Employer_usersModel.findById(id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, profile: user });
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
+  
+
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;

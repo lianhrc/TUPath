@@ -15,6 +15,8 @@ import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
+
 
 function App() {
   return (
@@ -22,7 +24,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Landingpage />} />  
-
+          <Route path="/profile/:id" element={<UserProfile />} />
           {/* Protected Routes */}
        
           <Route 
