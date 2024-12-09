@@ -158,20 +158,22 @@ cursor: pointer;
   background-color: #f0f0f0;
 }
 
-/* profile search   */
+/* profile search */
 .search-results {
   position: absolute;
   background: white;
   border: 1px solid #ddd;
-  width: 90%; /* Adjust width to occupy less space */
-  max-width: 400px; /* Maximum width for better control */
+  width: 90%;
+  max-width: 400px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 50%; /* Center the dropdown */
-  transform: translateX(-50%); /* Adjust for centering */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
-  border-radius: 5px; /* Rounded corners for modern UI */
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 10px; /* Adds space below the search input */
 }
 
 .search-result-item {
@@ -190,4 +192,58 @@ cursor: pointer;
 
 .search-result-item:hover {
   background: #f0f0f0;
+}
+
+/* recent search styling */
+.recent-searches {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  width: 90%;
+  max-width: 400px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 10px; /* Moves recent searches down */
+  transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
+}
+
+.recent-search-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.recent-search-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.recent-search-item:hover {
+  background: #f0f0f0;
+}
+
+.clear-recent-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  text-align: center;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.clear-recent-btn:hover {
+  background-color: #e53935;
 }
