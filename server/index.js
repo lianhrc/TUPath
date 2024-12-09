@@ -107,6 +107,44 @@
     }
   });
 
+  // Add a comment to a post
+app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
+  const postId = req.params.id;
+  const { id: userId, username, lastName } = req.user; // Extract user info from token
+  const { comment } = req.body; // Extract the comment from the request body
+
+  if (!comment || comment.trim() === "") {
+    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
+  }
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    // Add the new comment
+    const newComment = {
+      userId,
+      username,
+      lastName,
+      comment,
+      createdAt: new Date(),
+    };
+    post.comments.push(newComment);
+
+    await post.save();
+
+    res.status(200).json({ success: true, post });
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+  
+
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   const postId = req.params.id;
@@ -140,9 +178,6 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   }
 });
 
-
-
-
   // Define Post schema
   const postSchema = new mongoose.Schema({
     profileImg: String,
@@ -152,24 +187,24 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
     postImg: String,
     upvotes: { type: Number, default: 0 },
     votedUsers: [
-    {
-      userId: String,
-      username: String,
-      lastName: String,
-    },
-  ], // Array of users who upvoted
-  comments: [
       {
-        author: String,
+        userId: String,
+        username: String,
+        lastName: String,
+      },
+  ], // Array of users who upvoted
+    comments: [
+      {
+        userId: String,
+        username: String,
+        lastName: String,
         comment: String,
-        timestamp: { type: Date, default: Date.now },
+        createdAt: Date,
       },
     ],
   });
   
 const Post = mongoose.model("Post", postSchema);
-
-
 
   // Get all posts
   app.get("/api/posts", async (req, res) => {
