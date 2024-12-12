@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import Loader from '../common/Loader';
+import _debounce from 'lodash.debounce';
 import './headerhomepage.css';
 
 function HeaderHomepage() {
@@ -24,6 +25,19 @@ function HeaderHomepage() {
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
   const [filter, setFilter] = useState('all'); // New filter state
 
+  const debouncedSearch = _debounce(async (query, filter) => {
+    setIsSearching(true);
+    try {
+      const response = await axiosInstance.get(`/api/search`, { params: { query, filter } });
+      if (response.data.success) {
+        setSearchResults(response.data.results);
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, 500); // 500ms delay before firing the search request
 
   const handleLogout = () => {
     setIsLoading(true);
@@ -61,21 +75,11 @@ function HeaderHomepage() {
     };
   }, []);
 
-  const handleSearch = async (event) => {
+  const handleSearch = (event) => {
     const query = event.target.value;
     setSearchQuery(query);
     if (query.length > 2) {
-      setIsSearching(true);
-      try {
-        const response = await axiosInstance.get(`/api/search`, { params: { query, filter } });
-        if (response.data.success) {
-          setSearchResults(response.data.results);
-        }
-      } catch (error) {
-        console.error('Error during search:', error);
-      } finally {
-        setIsSearching(false);
-      }
+      debouncedSearch(query, filter); // Call debounced search function
     } else {
       setSearchResults([]);
     }
@@ -99,7 +103,6 @@ function HeaderHomepage() {
     setRecentSearches([]);
     localStorage.removeItem('recentSearches');
   };
-  
 
   const handleAddToRecentSearches = (profile) => {
     if (!recentSearches.some((search) => search._id === profile._id)) {
@@ -187,7 +190,6 @@ function HeaderHomepage() {
                     </div>
                   </Link>
                 ))}
-
               </div>
             )}
             {isSearchFieldClicked && recentSearches.length > 0 && (
