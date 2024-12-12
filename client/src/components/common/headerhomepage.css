@@ -247,3 +247,30 @@ cursor: pointer;
 .clear-recent-btn:hover {
   background-color: #e53935;
 }
+
+/* filter */
+.filter-dropdown {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.filter-btn {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-btn.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+.filter-btn:hover {
+  background-color: #e0e0e0;
+}
+

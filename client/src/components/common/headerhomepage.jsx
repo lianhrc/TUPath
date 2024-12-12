@@ -22,6 +22,8 @@ function HeaderHomepage() {
     JSON.parse(localStorage.getItem('recentSearches')) || []
   );
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+  const [filter, setFilter] = useState('all'); // New filter state
+
 
   const handleLogout = () => {
     setIsLoading(true);
@@ -65,7 +67,7 @@ function HeaderHomepage() {
     if (query.length > 2) {
       setIsSearching(true);
       try {
-        const response = await axiosInstance.get(`/api/search`, { params: { query } });
+        const response = await axiosInstance.get(`/api/search`, { params: { query, filter } });
         if (response.data.success) {
           setSearchResults(response.data.results);
         }
@@ -97,6 +99,7 @@ function HeaderHomepage() {
     setRecentSearches([]);
     localStorage.removeItem('recentSearches');
   };
+  
 
   const handleAddToRecentSearches = (profile) => {
     if (!recentSearches.some((search) => search._id === profile._id)) {
@@ -146,6 +149,16 @@ function HeaderHomepage() {
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
           <div className="search-container">
+            <select
+              className="search-filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="students">Students</option>
+              <option value="employers">Employers</option>
+            </select>
+
             <input
               type="text"
               className="search-input"
@@ -166,15 +179,15 @@ function HeaderHomepage() {
                   >
                     <img
                       src={result.profileDetails?.profileImg || profileicon}
-                      alt={result.name}
+                      alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
                       className="search-result-image"
                     />
                     <div>
-                      <p><strong>{result.name}</strong></p>
-                      <p>{result.email}</p>
+                      <p><strong>{`${result.profileDetails.firstName} ${result.profileDetails.middleName || ''} ${result.profileDetails.lastName}`.trim()}</strong></p>
                     </div>
                   </Link>
                 ))}
+
               </div>
             )}
             {isSearchFieldClicked && recentSearches.length > 0 && (
@@ -192,15 +205,15 @@ function HeaderHomepage() {
                   >
                     <img
                       src={profile.profileDetails?.profileImg || profileicon}
-                      alt={profile.name}
+                      alt={`${profile.profileDetails.firstName} ${profile.profileDetails.lastName}`}
                       className="recent-search-image"
                     />
                     <div>
-                      <p><strong>{profile.name}</strong></p>
-                      <p>{profile.email}</p>
+                      <p><strong>{`${profile.profileDetails.firstName} ${profile.profileDetails.middleName || ''} ${profile.profileDetails.lastName}`.trim()}</strong></p>
                     </div>
                   </Link>
                 ))}
+
                 <button className="clear-recent-btn" onClick={handleClearRecentSearches}>
                   Clear
                 </button>

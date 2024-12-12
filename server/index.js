@@ -806,36 +806,47 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
-
 // -----------------------------------api for dynamic search----------------------------------
   app.get('/api/search', verifyToken, async (req, res) => {
-    const { query } = req.query;
+    const { query, filter } = req.query;
     if (!query) {
       return res.status(400).json({ success: false, message: 'Query parameter is required' });
     }
+
     try {
       const regex = new RegExp(query, 'i'); // Case-insensitive regex
-      const studentResults = await Tupath_usersModel.find({
-        $or: [
-          { name: regex },
-          { email: regex }
-        ]
-      }).select('name email profileDetails.profileImg');
+      let results = [];
 
-      const employerResults = await Employer_usersModel.find({
-        $or: [
-          { name: regex },
-          { email: regex }
-        ]
-      }).select('name email profileDetails.profileImg');
+      if (filter === 'students' || filter === 'all') {
+        const studentResults = await Tupath_usersModel.find({
+          $or: [
+            { 'profileDetails.firstName': regex },
+            { 'profileDetails.middleName': regex },
+            { 'profileDetails.lastName': regex }
+          ]
+        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+        results = [...results, ...studentResults];
+      }
 
-      const results = [...studentResults, ...employerResults];
+      if (filter === 'employers' || filter === 'all') {
+        const employerResults = await Employer_usersModel.find({
+          $or: [
+            { 'profileDetails.firstName': regex },
+            { 'profileDetails.middleName': regex },
+            { 'profileDetails.lastName': regex }
+          ]
+        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+        results = [...results, ...employerResults];
+      }
+
       res.status(200).json({ success: true, results });
     } catch (err) {
       console.error('Error during search:', err);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
+
+
 
   app.get('/api/profile/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
@@ -850,6 +861,7 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
+
   
 
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
