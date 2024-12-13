@@ -176,9 +176,7 @@ const Homepage = () => {
       try {
         const newPost = {
           profileImg: profileData.profileImg || profileicon,
-          name: `${profileData.firstName} 
-          ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} 
-            ${profileData.lastName}  `.trim() || 'Student',
+          name: `${profileData.firstName} ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}  `.trim() || 'Student',
           content: newPostContent,
           postImg: newPostImage,
         };
@@ -195,7 +193,7 @@ const Homepage = () => {
       }
     }
   };
-  
+
   const renderPost = (post, index) => {
     const userId = 'user_id_from_auth'; // Replace this with actual user ID from authentication
     const hasUpvoted = post.votedUsers.includes(userId); // Check if user has upvoted
