@@ -33,12 +33,33 @@
   justify-content: center;
 }
 
+.search-filter{
+  margin-right: 10px;
+  border: lightgray 1px solid;
+  border-top-right-radius: 35px;
+  border-bottom-right-radius: 35px;
+  font-size: 10px;
+  width: 80px;
+  z-index: 10000;
+  color: darkgray;
+  text-align: center;
+}
+
+
+
 .search-input {
   height: 30px;
   width: 50%;
   padding: 10px;
+  z-index: 10000;
   border: 1px solid #ccc;
-  border-radius: 35px;
+  border-top-left-radius: 35px;
+  border-bottom-left-radius: 35px;
+  margin-right: -2px;
+}
+
+.search-input::placeholder {
+  color: lightgray;
 }
 
 /* Navigation links */
@@ -163,17 +184,26 @@ cursor: pointer;
   position: absolute;
   background: white;
   border: 1px solid #ddd;
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 568px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 50%;
+  left: 49.5%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  padding: 10px;
-  margin-top: 10px; /* Adds space below the search input */
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 30px 10px 10px 10px;
+  margin-top: 10px;
+  transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
+
+}
+
+.search-results h3, .recent-searches h3{
+  font-weight: normal;
+  font-size: 10px;
+  color: darkgray;
 }
 
 .search-result-item {
@@ -181,6 +211,7 @@ cursor: pointer;
   align-items: center;
   padding: 8px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .search-result-image {
@@ -199,17 +230,18 @@ cursor: pointer;
   position: absolute;
   background: white;
   border: 1px solid #ddd;
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 568px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 50%;
+  left: 49.5%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  padding: 10px;
-  margin-top: 10px; /* Moves recent searches down */
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 30px 10px 10px 10px;
+  margin-top: 10px;
   transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
 }
 
@@ -217,12 +249,23 @@ cursor: pointer;
   display: flex;
   align-items: center;
   padding: 8px;
+  text-decoration: none;
   cursor: pointer;
+  text-align: center;
 }
+
+.recent-search-item strong, .search-results strong{
+  font-weight: normal;
+  color: black;
+  font-size: 12px;
+
+}
+
 
 .recent-search-image {
   width: 40px;
   height: 40px;
+  object-fit: cover;
   border-radius: 50%;
   margin-right: 10px;
 }
@@ -232,20 +275,19 @@ cursor: pointer;
 }
 
 .clear-recent-btn {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  text-align: center;
-  background-color: #f44336;
-  color: white;
+  font-weight: normal;
+  font-size: 10px;
+  color: darkgray;
+  text-decoration: none;
   border: none;
-  cursor: pointer;
-  border-radius: 5px;
-  margin-top: 10px;
+  background: none;
+  position: relative;
+  float: right;
+  margin-right: 5px;
 }
 
 .clear-recent-btn:hover {
-  background-color: #e53935;
+  text-decoration: underline;
 }
 
 /* filter */

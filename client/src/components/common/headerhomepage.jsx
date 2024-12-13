@@ -78,12 +78,14 @@ function HeaderHomepage() {
   const handleSearch = (event) => {
     const query = event.target.value;
     setSearchQuery(query);
+    setIsSearchFieldClicked(false); // Close the "Recent Searches" section
     if (query.length > 2) {
       debouncedSearch(query, filter); // Call debounced search function
     } else {
       setSearchResults([]);
     }
   };
+
 
   const toggleNotifDropdown = () => {
     setNotifOpen(!isNotifOpen);
@@ -152,27 +154,29 @@ function HeaderHomepage() {
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
           <div className="search-container">
-            <select
-              className="search-filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="students">Students</option>
-              <option value="employers">Employers</option>
-            </select>
+        
 
             <input
               type="text"
               className="search-input"
-              placeholder="Search by name or email..."
+              placeholder="Search"
               value={searchQuery}
               onChange={handleSearch}
               onClick={handleSearchFieldClick}
+              
             />
-            {isSearching && <p>Searching...</p>}
+            <select
+            className="search-filter"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="students">Students</option>
+            <option value="employers">Employers</option>
+          </select>
+            {isSearching}
             {searchResults.length > 0 && (
               <div className="search-results">
+                <h3>Search Results</h3>
                 {searchResults.map((result, index) => (
                   <Link
                     to={`/profile/${result._id}`} // Assuming `_id` is the unique identifier
@@ -186,17 +190,19 @@ function HeaderHomepage() {
                       className="search-result-image"
                     />
                     <div>
-                      <p><strong>{`${result.profileDetails.firstName} ${result.profileDetails.middleName || ''} ${result.profileDetails.lastName}`.trim()}</strong></p>
+                      <p>
+                        <strong>{`${result.profileDetails.firstName} ${
+                          result.profileDetails.middleName || ''
+                        } ${result.profileDetails.lastName}`.trim()}</strong>
+                      </p>
                     </div>
                   </Link>
                 ))}
               </div>
             )}
-            {isSearchFieldClicked && recentSearches.length > 0 && (
-              <div 
-                className="recent-searches"
-                style={{ marginTop: searchResults.length > 0 ? '220px' : '10px' }} // Adjust margin top dynamically
-              >
+          
+            {!isSearching && isSearchFieldClicked && recentSearches.length > 0 && (
+              <div className="recent-searches">
                 <h3>Recent Searches</h3>
                 {recentSearches.map((profile, index) => (
                   <Link
@@ -211,16 +217,21 @@ function HeaderHomepage() {
                       className="recent-search-image"
                     />
                     <div>
-                      <p><strong>{`${profile.profileDetails.firstName} ${profile.profileDetails.middleName || ''} ${profile.profileDetails.lastName}`.trim()}</strong></p>
+                      <p>
+                        <strong>{`${profile.profileDetails.firstName} ${
+                          profile.profileDetails.middleName || ''
+                        } ${profile.profileDetails.lastName}`.trim()}</strong>
+                      </p>
                     </div>
                   </Link>
                 ))}
-
+          
                 <button className="clear-recent-btn" onClick={handleClearRecentSearches}>
                   Clear
                 </button>
               </div>
             )}
+          
           </div>
 
           <div className="icon-buttons">

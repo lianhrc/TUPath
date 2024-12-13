@@ -166,7 +166,7 @@
 }
 
 .subpost-input input::placeholder {
-  color: #888;
+  color: lightgray;
 }
 
 .subpost-input button {
