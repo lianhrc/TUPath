@@ -176,7 +176,9 @@ const Homepage = () => {
       try {
         const newPost = {
           profileImg: profileData.profileImg || profileicon,
-          name: `${profileData.firstName} ${profileData.lastName}`.trim() || 'Student',
+          name: `${profileData.firstName} 
+          ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} 
+            ${profileData.lastName}  `.trim() || 'Student',
           content: newPostContent,
           postImg: newPostImage,
         };
@@ -239,9 +241,9 @@ const Homepage = () => {
         <div className="profile">
           <img src={profileImageUrl} alt="Profile Icon" />
           <h2>
-            {`${profileData.firstName} ${
-              profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''
-            } ${profileData.lastName}`.trim()}
+            {`${profileData.firstName} 
+            ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} 
+            ${profileData.lastName}`.trim()}
           </h2>
             <p>Student at Technological University of the Philippines</p>
           <p>{profileData.address || 'Not Available'}</p>
