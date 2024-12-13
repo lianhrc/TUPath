@@ -202,9 +202,9 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   ], // Array of users who upvoted
     comments: [
       {
+        profileImg: String,
         userId: String,
         username: String,
-        lastName: String,
         comment: String,
         createdAt: Date,
       },

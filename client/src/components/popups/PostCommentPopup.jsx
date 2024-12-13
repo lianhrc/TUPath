@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios"; // For making API requests
 import { io } from "socket.io-client"; // Import Socket.IO client
 import profileicon from "../../assets/profileicon.png";
@@ -8,7 +8,7 @@ import "./PostCommentPopup.css";
 const socket = io("http://localhost:3001"); // Adjust the port if needed
 
 const PostCommentPopup = ({ post, toggleComments }) => {
-  const [comments, setComments] = useState(post.comments);
+  const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
   const [profileData, setProfileData] = useState({
     firstName: "",
@@ -16,6 +16,12 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     lastName: "",
     profileImg: profileicon,
   });
+  const handledComments = useRef(new Set()); // Track added comment IDs
+
+  // Debugging: Log initial post data
+  useEffect(() => {
+    console.log("Initial post data:", post);
+  }, [post]);
 
   useEffect(() => {
     // Fetch profile data
@@ -38,14 +44,9 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   useEffect(() => {
     // Listen for new comments from the server
     socket.on("new_comment", ({ postId, comment }) => {
-      if (postId === post._id) {
-        setComments((prevComments) => {
-          // Check if the comment already exists to avoid duplication
-          if (prevComments.some((c) => c._id === comment._id)) {
-            return prevComments;
-          }
-          return [...prevComments, comment];
-        });
+      if (postId === post._id && !handledComments.current.has(comment._id)) {
+        setComments((prevComments) => [...prevComments, comment]);
+        handledComments.current.add(comment._id); // Mark comment as handled
       }
     });
 
@@ -55,7 +56,10 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   }, [post._id]);
 
   const handleCommentSubmit = async () => {
-    if (commentText.trim() === "") return; // Prevent empty comments
+    if (commentText.trim() === "") {
+      console.warn("Cannot submit an empty comment");
+      return; // Prevent empty comments
+    }
 
     const newComment = {
       profileImg: profileData.profileImg || profileicon,
@@ -75,13 +79,11 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
       const addedComment = response.data.comment;
 
-      // Update the comments locally; skip emitting socket event here
-      setComments((prevComments) => {
-        if (prevComments.some((c) => c._id === addedComment._id)) {
-          return prevComments;
-        }
-        return [...prevComments, addedComment];
-      });
+      // Update the comments locally
+      if (!handledComments.current.has(addedComment._id)) {
+        setComments((prevComments) => [...prevComments, addedComment]);
+        handledComments.current.add(addedComment._id); // Mark comment as handled
+      }
 
       setCommentText(""); // Clear the input field
     } catch (error) {
@@ -120,10 +122,12 @@ const PostCommentPopup = ({ post, toggleComments }) => {
               className="comment-profile"
             />
             <div>
-              <p className="comment-user">{comment.username}</p>
+              <p className="comment-user">{comment.username || "Unknown User"}</p>
               <p>{comment.comment}</p>
               <p className="comment-timestamp">
-                {new Date(comment.createdAt).toLocaleString()}
+                {comment.createdAt
+                  ? new Date(comment.createdAt).toLocaleString()
+                  : "Unknown Date"}
               </p>
             </div>
           </div>
