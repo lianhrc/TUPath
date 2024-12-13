@@ -15,6 +15,8 @@ import Inboxpage from './components/pages/Inbox/Inboxpage';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ForgotPassword from './components/pages/Login/ForgotPassword.jsx';
+import ResetPassword from './components/pages/Login/ResetPassword.jsx';
 
 function App() {
   return (
@@ -63,6 +65,8 @@ function App() {
           } 
         />
 
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path='/employerlandpage' element={<Employerlandpage />} />
           <Route path='/studentlandpage' element={<Studentlandpage />} />
           <Route path='/studentsignup' element={<StudentSignup />} />

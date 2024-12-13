@@ -7,6 +7,8 @@
   const http = require("http");
   const { Server } = require("socket.io");
   const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
+  const nodemailer = require("nodemailer");
+  const crypto = require("crypto");
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -845,7 +847,83 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
-  
+
+  //----------------------------------------------------DECEMBER 13
+  // Step 1: Add a reset token field to the user schemas
+
+
+
+// Step 2: Endpoint to request password reset
+app.post("/api/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await Tupath_usersModel.findOne({ email }) || Employer_usersModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Generate a reset token
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // Token valid for 1 hour
+    await user.save();
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: "woojohnhenry2@gmail.com",
+        pass: "efqk hxyw jpeq sndo",
+      },
+    });
+
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const mailOptions = {
+      to: user.email,
+      from: "no-reply@yourdomain.com",
+      subject: "Password Reset Request",
+      text: `You are receiving this because you (or someone else) requested the reset of your account's password.\n\nPlease click on the following link, or paste it into your browser to complete the process within one hour of receiving it:\n\n${resetLink}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ success: true, message: "Reset link sent to email" });
+  } catch (error) {
+    console.error("Error in forgot password endpoint:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Step 3: Endpoint to reset password
+app.post("/api/reset-password/:token", async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const user = await Tupath_usersModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    }) || Employer_usersModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired token" });
+    }
+
+    // Update password and clear reset token
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Password reset successful" });
+  } catch (error) {
+    console.error("Error in reset password endpoint:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
   
 
   // Server setup
