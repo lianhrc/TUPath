@@ -7,6 +7,28 @@ import "./PostCommentPopup.css";
 // Initialize socket connection
 const socket = io("http://localhost:3001"); // Adjust the port if needed
 
+// Function to format timestamps
+const formatTimeAgo = (timestamp) => {
+  const now = new Date();
+  const postDate = new Date(timestamp);
+  const diffInMs = now - postDate;
+  const diffInMinutes = Math.floor(diffInMs / 60000);
+
+  if (diffInMinutes < 1) return "Just now";
+  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? "s" : ""} ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+
+  // Format the date for posts older than 2 days
+  return postDate.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const PostCommentPopup = ({ post, toggleComments }) => {
   const [comments, setComments] = useState(post.comments || []);
   const [commentText, setCommentText] = useState("");
@@ -18,13 +40,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   });
   const handledComments = useRef(new Set()); // Track added comment IDs
 
-  // Debugging: Log initial post data
   useEffect(() => {
-    console.log("Initial post data:", post);
-  }, [post]);
-
-  useEffect(() => {
-    // Fetch profile data
     const fetchProfileData = async () => {
       try {
         const response = await axios.get("http://localhost:3001/api/profile", {
@@ -42,24 +58,20 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   }, []);
 
   useEffect(() => {
-    // Listen for new comments from the server
     socket.on("new_comment", ({ postId, comment }) => {
       if (postId === post._id && !handledComments.current.has(comment._id)) {
         setComments((prevComments) => [...prevComments, comment]);
-        handledComments.current.add(comment._id); // Mark comment as handled
+        handledComments.current.add(comment._id);
       }
     });
 
     return () => {
-      socket.off("new_comment"); // Clean up listener on unmount
+      socket.off("new_comment");
     };
   }, [post._id]);
 
   const handleCommentSubmit = async () => {
-    if (commentText.trim() === "") {
-      console.warn("Cannot submit an empty comment");
-      return; // Prevent empty comments
-    }
+    if (commentText.trim() === "") return;
 
     const newComment = {
       profileImg: profileData.profileImg || profileicon,
@@ -70,7 +82,6 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     };
 
     try {
-      // Send the comment to the server via API
       const response = await axios.post(
         `http://localhost:3001/api/posts/${post._id}/comment`,
         newComment,
@@ -79,13 +90,12 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
       const addedComment = response.data.comment;
 
-      // Update the comments locally
       if (!handledComments.current.has(addedComment._id)) {
         setComments((prevComments) => [...prevComments, addedComment]);
-        handledComments.current.add(addedComment._id); // Mark comment as handled
+        handledComments.current.add(addedComment._id);
       }
 
-      setCommentText(""); // Clear the input field
+      setCommentText("");
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
@@ -124,11 +134,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
             <div>
               <p className="comment-user">{comment.username || "Unknown User"}</p>
               <p>{comment.comment}</p>
-              <p className="comment-timestamp">
-                {comment.createdAt
-                  ? new Date(comment.createdAt).toLocaleString()
-                  : "Unknown Date"}
-              </p>
+              <p className="comment-timestamp">{formatTimeAgo(comment.createdAt)}</p>
             </div>
           </div>
         ))}
