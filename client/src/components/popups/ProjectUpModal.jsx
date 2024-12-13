@@ -41,6 +41,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [thumbnail, setThumbnail] = useState(null); // State for the project thumbnail
   const thumbnailInputRef = useRef(null); // Reference for the thumbnail input field
   const fileInputRef = useRef(null);
+  const [projectUrl, setProjectUrl] = useState("");
 
   if (!show) return null;
 
@@ -101,6 +102,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   formData.append('projectName', projectName);
   formData.append('description', description);
   tags.forEach(tag => formData.append('tags', tag));
+  formData.append("projectUrl", projectUrl);
   tools.forEach(tool => formData.append('tools', tool));
 
   // Append selected files to the formData
@@ -310,6 +312,15 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                 </ul>
               </div>
             )}
+            <div className="bottom">
+              <label> Project Url:</label>
+              <input
+              type="url"
+              name="projectUrl"
+              value={projectUrl}
+              onChange={(e) => setProjectUrl(e.target.value)} // Update state on change
+            />
+            </div>
           </div>
           
 

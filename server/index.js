@@ -652,7 +652,7 @@ const Post = mongoose.model("Post", postSchema);
   ]), async (req, res) => {
     try {
       const userId = req.user.id;
-      const { projectName, description, tags, tools } = req.body;
+      const { projectName, description, tags, tools, projectUrl} = req.body;
   
       // Get the file paths for both thumbnail and project files
       const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
@@ -666,6 +666,7 @@ const Post = mongoose.model("Post", postSchema);
         tools: tools.split(','), // Assuming tools are passed as a comma-separated string
         files: filePaths,  // Array of other project files
         thumbnail: thumbnailPath,  // Path for the thumbnail image
+        projectUrl,
       };
   
       // Update the user profile with the new project

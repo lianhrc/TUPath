@@ -7,6 +7,7 @@ const projectSchema = new mongoose.Schema({
   tags: [{ type: String }],
   tools: [{ type: String }],
   thumbnail: { type: String }, // Add this line to store the thumbnail URL or path
+  projectUrl: String,
 });
 
 const Project = mongoose.model('Project', projectSchema);
