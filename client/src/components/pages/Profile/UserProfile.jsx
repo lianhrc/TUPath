@@ -82,9 +82,10 @@ function UserProfile() {
             </div>
           </div>
 
-          {/* Profile Details */}
+          {/* Profile Main Section */}
           <div className="profile-main">
-            {profile.role === 'student' ? (
+            {/* Student Profile Details */}
+            {profile.role === 'student' && (
               <>
                 <div className="profile-section">
                   <h3>Student ID</h3>
@@ -98,8 +99,23 @@ function UserProfile() {
                   <h3>Year Level</h3>
                   <p>{profile.profileDetails?.yearLevel || 'Not Available'}</p>
                 </div>
+                <div className="profile-section">
+                  <h3>Date of Birth</h3>
+                  <p>{profile.profileDetails?.dob ? new Date(profile.profileDetails.dob).toLocaleDateString() : 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Technical Skills</h3>
+                  <p>{profile.profileDetails?.techSkills?.join(', ') || 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Soft Skills</h3>
+                  <p>{profile.profileDetails?.softSkills?.join(', ') || 'Not Available'}</p>
+                </div>
               </>
-            ) : (
+            )}
+
+            {/* Employer Profile Details */}
+            {profile.role === 'employer' && (
               <>
                 <div className="profile-section">
                   <h3>Company Name</h3>
@@ -109,8 +125,42 @@ function UserProfile() {
                   <h3>Industry</h3>
                   <p>{profile.profileDetails?.industry || 'Not Available'}</p>
                 </div>
+                <div className="profile-section">
+                  <h3>Contact Person</h3>
+                  <p>{profile.profileDetails?.contactPersonName || 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Position</h3>
+                  <p>{profile.profileDetails?.position || 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Date of Birth</h3>
+                  <p>{profile.profileDetails?.dob ? new Date(profile.profileDetails.dob).toLocaleDateString() : 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Phone Number</h3>
+                  <p>{profile.profileDetails?.phoneNumber || 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Preferred Roles</h3>
+                  <p>{profile.profileDetails?.preferredRoles?.join(', ') || 'Not Available'}</p>
+                </div>
+                <div className="profile-section">
+                  <h3>Internship Opportunities</h3>
+                  <p>{profile.profileDetails?.internshipOpportunities ? 'Yes' : 'No'}</p>
+                </div>
               </>
             )}
+
+            {/* Common Profile Details */}
+            <div className="profile-section">
+              <h3>Gender</h3>
+              <p>{profile.profileDetails?.gender || 'Not Available'}</p>
+            </div>
+            <div className="profile-section">
+              <h3>Contact</h3>
+              <p>{profile.profileDetails?.contact || profile.profileDetails?.phoneNumber || 'Not Available'}</p>
+            </div>
             <div className="profile-section">
               <h3>Email</h3>
               <p>{profile.email || 'Not Available'}</p>
@@ -118,7 +168,7 @@ function UserProfile() {
           </div>
         </div>
 
-        {/* Project Section */}
+        {/* Project Section (for students only) */}
         {profile.role === 'student' && (
           <div className="project-section">
             <h3>My Projects</h3>
