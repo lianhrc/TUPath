@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Homepage.css';
 import Headerhomepage from '../../common/headerhomepage';
-import profileicon from '../../../assets/profileicon.png';
 import mediaupload from '../../../assets/mediaupload.png';
 import upvoteicon from '../../../assets/upvote.png';
 import commenticon from '../../../assets/comment.png';
@@ -138,7 +137,7 @@ const Homepage = () => {
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
   ? `http://localhost:3001${profileData.profileImg}`
-  : profileData.profileImg || profileicon;
+  : profileData.profileImg;
 
 
   // Toggle comments for a specific post
@@ -175,7 +174,7 @@ const Homepage = () => {
     if (newPostContent.trim()) {
       try {
         const newPost = {
-          profileImg: profileData.profileImg || profileicon,
+          profileImg: profileData.profileImg,
           name: `${profileData.firstName} ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}  `.trim() || 'Student',
           content: newPostContent,
           postImg: newPostImage,
@@ -201,7 +200,7 @@ const Homepage = () => {
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
-          <img src={post.profileImg || profileicon} alt={post.name} />
+          <img src={post.profileImg} alt={post.name} />
           <div className="frompost">
             <h5>{post.name}</h5>
             <p>{formatTimeAgo(post.timestamp)}</p>

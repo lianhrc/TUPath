@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios"; // For making API requests
 import { io } from "socket.io-client"; // Import Socket.IO client
-import profileicon from "../../assets/profileicon.png";
 import "./PostCommentPopup.css";
 
 // Initialize socket connection
@@ -36,7 +35,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     firstName: "",
     middleName: "",
     lastName: "",
-    profileImg: profileicon,
+    profileImg: "",
   });
   const handledComments = useRef(new Set()); // Track added comment IDs
 
@@ -74,7 +73,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     if (commentText.trim() === "") return;
 
     const newComment = {
-      profileImg: profileData.profileImg || profileicon,
+      profileImg: profileData.profileImg,
       name: `${profileData.firstName} ${
         profileData.middleName ? profileData.middleName.charAt(0) + "." : ""
       } ${profileData.lastName}`.trim() || "Student",
@@ -111,7 +110,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     <div className="comments-section">
       <div className="comment-input">
         <img
-          src={profileData.profileImg || profileicon}
+          src={profileData.profileImg}
           alt="Profile Icon"
           className="comment-profile"
         />
@@ -127,7 +126,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
         {comments.map((comment, index) => (
           <div className="comment" key={comment._id || index}>
             <img
-              src={comment.profileImg || profileicon}
+              src={comment.profileImg}
               alt={comment.username}
               className="comment-profile"
             />
