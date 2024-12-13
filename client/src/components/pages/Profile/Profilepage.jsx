@@ -239,7 +239,7 @@ function ProfilePage() {
 
 
         {/* Modals */}
-        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} />
+        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} onProjectUpload={addProjectToState} />
         <EditDescriptionModal 
                     show={showEditDescriptionModal} 
                     onClose={() => setShowEditDescriptionModal(false)} 
