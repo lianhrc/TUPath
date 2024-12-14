@@ -39,16 +39,14 @@ function HeaderHomepage() {
     }
   }, 500); // 500ms delay before firing the search request
 
-  // for session timeout, temporarily removed
-/*
+
   const handleLogout = () => {
     setIsLoading(true);
     setTimeout(() => {
         localStorage.clear();
         window.location.replace('/login');
-    }, 30 * 60 * 1000); // 30 minutes in milliseconds
-  };
-*/
+    }, 300); // 30 minutes in milliseconds
+  }
 
   useEffect(() => {
     const fetchProfileData = async () => {
