@@ -23,6 +23,8 @@ const TupathUserSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Track if signed up via Google
   },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   role: { type: String, default: 'student' },
   profileDetails: {
     firstName: String,
