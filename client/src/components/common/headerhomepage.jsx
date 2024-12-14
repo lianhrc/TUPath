@@ -82,7 +82,7 @@ function HeaderHomepage() {
     const query = event.target.value;
     setSearchQuery(query);
     setIsSearchFieldClicked(false); // Close the "Recent Searches" section
-    if (query.length > 2) {
+    if (query.length > 0) {
       debouncedSearch(query, filter); // Call debounced search function
     } else {
       setSearchResults([]);
