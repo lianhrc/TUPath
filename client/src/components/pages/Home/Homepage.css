@@ -166,7 +166,7 @@
 }
 
 .subpost-input input::placeholder {
-  color: #888;
+  color: lightgray;
 }
 
 .subpost-input button {
@@ -215,7 +215,14 @@
 
 /* Post Text */
 .postcontent {
-  overflow: hidden; /* Prevents the post from expanding */
+  word-wrap: break-word; /* Ensure long words wrap properly */
+  overflow-wrap: break-word; /* Modern alternative for word wrapping */
+  overflow: hidden; /* Prevent any visual overflow */
+  white-space: normal; /* Allow text wrapping */
+  max-width: 100%; /* Ensure it doesn't exceed parent container */
+  flex-shrink: 1; /* Allow shrinking to fit within the container */
+  display: inline-block; /* Ensure it's treated as a block of text */
+  word-break: break-word; /* Break long unbroken words properly */
 }
 
 .postcontent p {

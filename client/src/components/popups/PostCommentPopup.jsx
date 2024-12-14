@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // For making API requests
 import { io } from 'socket.io-client'; // Import Socket.IO client
 import profileicon from '../../assets/profileicon.png';
 import './PostCommentPopup.css';
@@ -6,47 +7,54 @@ import './PostCommentPopup.css';
 // Initialize socket connection
 const socket = io("http://localhost:3001"); // Adjust the port if needed
 
-const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
+const PostCommentPopup = ({ post, toggleComments }) => {
   const [comments, setComments] = useState(post.comments);
+  const [commentText, setCommentText] = useState("");
 
   useEffect(() => {
     // Listen for new comments from the server
     socket.on('receive_comment', (commentData) => {
-      if (commentData.postId === post.id) {
-        setComments((prevComments) => [
-          ...prevComments,
-          { text: commentData.comment, userId: commentData.userId },
-        ]);
+      if (commentData.postId === post._id) {
+        setComments((prevComments) => [...prevComments, commentData]);
       }
     });
 
     return () => {
       socket.off('receive_comment'); // Clean up listener on unmount
     };
-  }, [post.id]);
+  }, [post._id]);
+
+  const handleCommentSubmit = async () => {
+    if (commentText.trim() === "") return; // Prevent empty comments
+
+    const newComment = {
+      comment: commentText,
+    };
+
+    try {
+      // Send the comment to the server via API
+      const response = await axios.post(
+        `http://localhost:3001/api/posts/${post._id}/comment`,
+        newComment,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      // Update comments locally with the API response
+      const addedComment = response.data.post.comments.slice(-1)[0];
+      setComments((prevComments) => [...prevComments, addedComment]);
+
+      // Emit the new comment via socket
+      socket.emit('send_comment', { ...addedComment, postId: post._id });
+
+      setCommentText(""); // Clear the input field
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    }
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      const commentText = e.target.value;
-      if (commentText.trim()) {
-        const newComment = {
-          postId: post.id,
-          comment: commentText,
-          userId: "Name", // Replace this with the actual user's ID
-        };
-
-        // Emit comment to the server
-        socket.emit('send_comment', newComment);
-
-        // Optionally update the comments locally
-        setComments((prevComments) => [
-          ...prevComments,
-          { text: commentText, userId: newComment.userId },
-        ]);
-
-        // Clear input after submission
-        e.target.value = '';
-      }
+      handleCommentSubmit();
     }
   };
 
@@ -57,6 +65,8 @@ const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
         <input
           type="text"
           placeholder="Type your comment..."
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
           onKeyPress={handleKeyPress}
         />
       </div>
@@ -65,8 +75,8 @@ const PostCommentPopup = ({ post, handleCommentSubmit, toggleComments }) => {
           <div className="comment" key={index}>
             <img src={profileicon} alt="Comment Profile" className="comment-profile" />
             <div>
-              <p className="comment-user">User ID: {comment.userId}</p> {/* Display the user ID */}
-              <p>{comment.text}</p> {/* Display the comment text */}
+              <p className="comment-user">{comment.username}</p> {/* Display the username */}
+              <p>{comment.comment}</p> {/* Display the comment text */}
             </div>
           </div>
         ))}
