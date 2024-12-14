@@ -64,6 +64,15 @@
   flex: 1;
   padding: 20px;
   border-radius: 10px;
+  width: 50%;
+  overflow: hidden;  /* Ensure no overflow occurs */
+  word-wrap: break-word;  /* Ensure long words break and wrap properly */
+}
+
+.projprev-left p {
+  word-wrap: break-word;  /* Make sure long words break properly */
+  overflow-wrap: break-word;  /* Additional property for better compatibility */
+  margin: 0;  /* Remove any default margins */
 }
 
 .projprev-left h2{

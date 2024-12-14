@@ -33,12 +33,33 @@
   justify-content: center;
 }
 
+.search-filter{
+  margin-right: 10px;
+  border: lightgray 1px solid;
+  border-top-right-radius: 35px;
+  border-bottom-right-radius: 35px;
+  font-size: 10px;
+  width: 80px;
+  z-index: 10000;
+  color: darkgray;
+  text-align: center;
+}
+
+
+
 .search-input {
   height: 30px;
   width: 50%;
   padding: 10px;
+  z-index: 10000;
   border: 1px solid #ccc;
-  border-radius: 35px;
+  border-top-left-radius: 35px;
+  border-bottom-left-radius: 35px;
+  margin-right: -2px;
+}
+
+.search-input::placeholder {
+  color: lightgray;
 }
 
 /* Navigation links */
@@ -158,20 +179,31 @@ cursor: pointer;
   background-color: #f0f0f0;
 }
 
-/* profile search   */
+/* profile search */
 .search-results {
   position: absolute;
   background: white;
   border: 1px solid #ddd;
-  width: 90%; /* Adjust width to occupy less space */
-  max-width: 400px; /* Maximum width for better control */
+  width: 100%;
+  max-width: 568px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 50%; /* Center the dropdown */
-  transform: translateX(-50%); /* Adjust for centering */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
-  border-radius: 5px; /* Rounded corners for modern UI */
+  left: 49.5%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 30px 10px 10px 10px;
+  margin-top: 10px;
+  transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
+
+}
+
+.search-results h3, .recent-searches h3{
+  font-weight: normal;
+  font-size: 10px;
+  color: darkgray;
 }
 
 .search-result-item {
@@ -179,6 +211,7 @@ cursor: pointer;
   align-items: center;
   padding: 8px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .search-result-image {
@@ -191,3 +224,95 @@ cursor: pointer;
 .search-result-item:hover {
   background: #f0f0f0;
 }
+
+/* recent search styling */
+.recent-searches {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  width: 100%;
+  max-width: 568px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  left: 49.5%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 30px 10px 10px 10px;
+  margin-top: 10px;
+  transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
+}
+
+.recent-search-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.recent-search-item strong, .search-results strong{
+  font-weight: normal;
+  color: black;
+  font-size: 12px;
+
+}
+
+
+.recent-search-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.recent-search-item:hover {
+  background: #f0f0f0;
+}
+
+.clear-recent-btn {
+  font-weight: normal;
+  font-size: 10px;
+  color: darkgray;
+  text-decoration: none;
+  border: none;
+  background: none;
+  position: relative;
+  float: right;
+  margin-right: 5px;
+}
+
+.clear-recent-btn:hover {
+  text-decoration: underline;
+}
+
+/* filter */
+.filter-dropdown {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.filter-btn {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-btn.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+.filter-btn:hover {
+  background-color: #e0e0e0;
+}
+

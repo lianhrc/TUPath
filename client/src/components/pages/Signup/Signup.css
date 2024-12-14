@@ -12,7 +12,8 @@
     max-width: 530px;
     width: 100%;
     animation: fadeInSlideUp 0.5s ease forwards;
-
+    display: flex;
+    flex-direction: column;
     margin-top: 100px;
 
 }
