@@ -41,8 +41,8 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             <p><strong>{project.description}</strong></p>
 
 
-                        {/* Add Project URL Preview */}
-                        {project.projectUrl && (
+              {/* Add Project URL Preview */}
+              {project.projectUrl && (
               <p>
                 <strong>Project URL: </strong>
                 <a 
@@ -80,6 +80,6 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
       </div>
     </div>
   );
-}
+} //for pushing purposes, please delete this comment later
 
 export default ProjectPreviewModal;
