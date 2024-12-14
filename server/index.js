@@ -817,7 +817,7 @@ const Post = mongoose.model("Post", postSchema);
       const regex = new RegExp(query, 'i'); // Case-insensitive regex
       let results = [];
 
-      if (filter === 'students' || filter === 'all') {
+      if (filter === 'students') {
         const studentResults = await Tupath_usersModel.find({
           $or: [
             { 'profileDetails.firstName': regex },
@@ -828,7 +828,7 @@ const Post = mongoose.model("Post", postSchema);
         results = [...results, ...studentResults];
       }
 
-      if (filter === 'employers' || filter === 'all') {
+      if (filter === 'employers') {
         const employerResults = await Employer_usersModel.find({
           $or: [
             { 'profileDetails.firstName': regex },
@@ -845,7 +845,6 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
-
 
 
   app.get('/api/profile/:id', verifyToken, async (req, res) => {

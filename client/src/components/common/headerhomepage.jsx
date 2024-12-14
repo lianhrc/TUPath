@@ -23,7 +23,7 @@ function HeaderHomepage() {
     JSON.parse(localStorage.getItem('recentSearches')) || []
   );
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
-  const [filter, setFilter] = useState('all'); // New filter state
+  const [filter, setFilter] = useState('students'); // Default filter state
 
   const debouncedSearch = _debounce(async (query, filter) => {
     setIsSearching(true);
@@ -39,13 +39,14 @@ function HeaderHomepage() {
     }
   }, 500); // 500ms delay before firing the search request
 
+
   const handleLogout = () => {
     setIsLoading(true);
     setTimeout(() => {
-      localStorage.clear();
-      window.location.replace('/login');
-    }, 3000);
-  };
+        localStorage.clear();
+        window.location.replace('/login');
+    }, 300); // 30 minutes in milliseconds
+  }
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -79,13 +80,12 @@ function HeaderHomepage() {
     const query = event.target.value;
     setSearchQuery(query);
     setIsSearchFieldClicked(false); // Close the "Recent Searches" section
-    if (query.length > 2) {
+    if (query.length > 0) {
       debouncedSearch(query, filter); // Call debounced search function
     } else {
       setSearchResults([]);
     }
   };
-
 
   const toggleNotifDropdown = () => {
     setNotifOpen(!isNotifOpen);
@@ -154,8 +154,6 @@ function HeaderHomepage() {
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
           <div className="search-container">
-        
-
             <input
               type="text"
               className="search-input"
@@ -163,23 +161,22 @@ function HeaderHomepage() {
               value={searchQuery}
               onChange={handleSearch}
               onClick={handleSearchFieldClick}
-              
             />
             <select
-            className="search-filter"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="students">Students</option>
-            <option value="employers">Employers</option>
-          </select>
+              className="search-filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="students">Students</option>
+              <option value="employers">Employers</option>
+            </select>
             {isSearching}
             {searchResults.length > 0 && (
               <div className="search-results">
                 <h3>Search Results</h3>
                 {searchResults.map((result, index) => (
                   <Link
-                    to={`/profile/${result._id}`} // Assuming `_id` is the unique identifier
+                    to={`/profile/${result._id}`}
                     key={index}
                     className="search-result-item"
                     onClick={() => handleAddToRecentSearches(result)}
@@ -200,7 +197,7 @@ function HeaderHomepage() {
                 ))}
               </div>
             )}
-          
+
             {!isSearching && isSearchFieldClicked && recentSearches.length > 0 && (
               <div className="recent-searches">
                 <h3>Recent Searches</h3>
@@ -225,13 +222,12 @@ function HeaderHomepage() {
                     </div>
                   </Link>
                 ))}
-          
+
                 <button className="clear-recent-btn" onClick={handleClearRecentSearches}>
                   Clear
                 </button>
               </div>
             )}
-          
           </div>
 
           <div className="icon-buttons">
@@ -245,11 +241,12 @@ function HeaderHomepage() {
               <div className="dropdown" onClick={toggleNotifDropdown}>
                 <img src={notificon} alt="Notifications" className="nav-icon" />
                 {isNotifOpen && (
-                  <motion.div className="dropdown-menu notifications-menu"
-                  variants={dropdownVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
+                  <motion.div
+                    className="dropdown-menu notifications-menu"
+                    variants={dropdownVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
                   >
                     <h3>Notifications</h3>
                     {/* Replace with dynamic notifications */}
@@ -259,7 +256,8 @@ function HeaderHomepage() {
               <div className="dropdown" onClick={toggleProfileDropdown}>
                 <img src={profileImageUrl} alt="Profile" className="nav-icon" />
                 {isProfileOpen && (
-                  <motion.div className="dropdown-menu profile-menu"
+                  <motion.div
+                    className="dropdown-menu profile-menu"
                     variants={dropdownVariants}
                     initial="hidden"
                     animate="visible"
