@@ -31,7 +31,7 @@ const predefinedTools = [
 
 
 
-const ProjectUploadModal = ({ show, onClose }) => {
+const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -120,6 +120,8 @@ const ProjectUploadModal = ({ show, onClose }) => {
 
     if (response.data.success) {
       console.log('Project uploaded successfully:', response.data.project);
+              // Call the onProjectUpload prop with the new project
+              onProjectUpload(response.data.project);
       onClose();
     } else {
       console.log('Project upload failed:', response.data.message);

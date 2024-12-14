@@ -61,6 +61,9 @@ function Login() {
     const handleSignupRedirect = () => {
         navigate('/loginroles'); // Redirects to the signup page
     };
+    const handleForgotPasswordRedirect = () =>{
+        navigate('/forgot-password');
+    }
 
     return (
         <div className="Login" >
@@ -146,6 +149,9 @@ function Login() {
 
                     <p className="signup-prompt">
                         Don't have an account? <span onClick={handleSignupRedirect} className="signup-link">Sign Up</span>
+                    </p>
+                    <p className="forgot-password-link" onClick={handleForgotPasswordRedirect}>
+                        Forgot Password?
                     </p>
                 </div>
             </motion.div>
