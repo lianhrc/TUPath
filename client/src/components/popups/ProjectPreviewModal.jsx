@@ -58,11 +58,15 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
           </div>
           <div className="projprev-right">
           <div className="projprevtags">
-          <p><strong>{project.tags}</strong></p>
+          {project.tags.map(tag => (
+            <div key={tag} className="tag-item">{tag}</div>
+          ))}
           
           </div>
             <div className="projprevtools">
-              <p><strong>{project.tools}</strong></p>
+            {project.tools.map(tool => (
+              <div key={tool} className="tool-item">{tool}</div>
+            ))}
             </div>
             <div className="projpreviewfiles">
               {/* Displaying file names */}

@@ -704,8 +704,10 @@ const Post = mongoose.model("Post", postSchema);
       const project = {
         projectName,
         description,
-        tags: tags.split(','), // Assuming tags are passed as a comma-separated string
-        tools: tools.split(','), // Assuming tools are passed as a comma-separated string
+        tags: Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()),
+        tools: Array.isArray(tools) ? tools : tools.split(',').map(tool => tool.trim()),
+
+        
         files: filePaths,  // Array of other project files
         thumbnail: thumbnailPath,  // Path for the thumbnail image
         projectUrl,
