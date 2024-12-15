@@ -40,6 +40,21 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             <h2><strong>{project.projectName}</strong></h2>
             <p><strong>{project.description}</strong></p>
 
+
+              {/* Add Project URL Preview */}
+              {project.projectUrl && (
+              <p>
+                <strong>Project URL: </strong>
+                <a 
+                  href={project.projectUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  {project.projectUrl}
+                </a>
+              </p>
+            )}
+
           </div>
           <div className="projprev-right">
           <div className="projprevtags">
@@ -56,6 +71,8 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
           </div>
         </div>
 
+
+
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>
           <button className="close-btn" onClick={onClose}>Close</button>
@@ -63,6 +80,6 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
       </div>
     </div>
   );
-}
+} //for pushing purposes, please delete this comment later
 
 export default ProjectPreviewModal;

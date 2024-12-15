@@ -49,6 +49,7 @@ const TupathUserSchema = new mongoose.Schema({
       tools: [String], // Array to store tools used
       files: [String], // Array of project file paths
       thumbnail: String, // Add this line to store the thumbnail URL or path
+      projectUrl: String,
     }],
   },
   memberSince: {

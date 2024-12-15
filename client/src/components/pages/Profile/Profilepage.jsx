@@ -90,7 +90,7 @@ function ProfilePage() {
         console.error("Error deleting project:", error);
       }
     };
-
+    
 
   return (
     <div className='Profilepage-container'>
@@ -203,6 +203,8 @@ function ProfilePage() {
                         : project.thumbnail || avatar}
                       />
                       <p>{project.projectName}</p>
+                      
+                      
                     </div>
                   ))}
                 </div>
