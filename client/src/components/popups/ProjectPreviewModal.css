@@ -76,6 +76,10 @@
   margin: 0;  /* Remove any default margins */
 }
 
+.projprev-left .projdesccontainer{
+  margin-bottom: 20px;
+}
+
 .projprev-left h2{
   margin-bottom: 30px;
 }

@@ -13,6 +13,7 @@
 }
 
 
+
 /* Submit button */
 .submit-btn {
     width: 30%;
@@ -172,6 +173,10 @@
 .employer-profile-form textarea {
     height: 80px;
     resize: vertical;
+}
+
+.employer-profile-form input[type=email]{
+    width: 100%;
 }
 
 /* Error message styling */

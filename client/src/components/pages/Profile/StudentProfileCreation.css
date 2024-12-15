@@ -158,7 +158,7 @@
 }
 
 .profile_container input{
-    width: 50%;
+    width: 100%;
 }
 
 /* Profile form fields */
@@ -193,6 +193,10 @@
     height: 80px;
 }
 
+
+.profile-form input[type=email]{
+    width: 100%;
+}
 
 /* Submit button */
 .submit-button {

@@ -38,7 +38,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
         <div className="projprevcontentmain">
           <div className="projprev-left">
             <h2><strong>{project.projectName}</strong></h2>
-            <p><strong>{project.description}</strong></p>
+            <p className='projdesccontainer'><strong>{project.description}</strong></p>
 
 
               {/* Add Project URL Preview */}

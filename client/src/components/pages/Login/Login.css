@@ -1,7 +1,5 @@
 /* Login.css */
 
-
-
 .Login {
     display: flex;
     flex-direction: column;
@@ -103,7 +101,6 @@ label {
 
 input[type="email"],
 input[type="password"] {
-    width: 100%; /* Full width input */
     padding: 10px;
     border: 1px solid #ccc; /* Light gray border */
     border-radius: 5px; /* Rounded corners */
@@ -141,9 +138,15 @@ input[type="password"]:focus {
     margin-top: 20px; /* Space above the prompt */
 }
 
+.forgot-password-link:hover{
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 .signup-link {
     color: #007bff; /* Blue color for the signup link */
     cursor: pointer; /* Pointer cursor for link */
+    text-decoration: underline;
 }
 
 

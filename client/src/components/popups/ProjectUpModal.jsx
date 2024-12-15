@@ -312,16 +312,17 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                 </ul>
               </div>
             )}
+            </div>
             <div className="bottom">
               <label> Project Url:</label>
               <input
+              className="projurlinput"
               type="url"
               name="projectUrl"
               value={projectUrl}
               onChange={(e) => setProjectUrl(e.target.value)} // Update state on change
             />
             </div>
-          </div>
           
 
             </div>

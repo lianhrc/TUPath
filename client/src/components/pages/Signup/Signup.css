@@ -8,6 +8,8 @@
     background-repeat: no-repeat;
     background-size: cover;
 }
+
+
 .studentsignup-container .div{
     max-width: 530px;
     width: 100%;
@@ -53,6 +55,11 @@ form{
     width: 70%;
 }
 
+
+.form-group input[type=email]{
+
+    width: 100%;
+}
 
 .form-groups{
     width:48%;

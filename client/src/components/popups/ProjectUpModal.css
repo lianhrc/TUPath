@@ -84,6 +84,14 @@
     display: flex;
     flex-direction: column;
     margin-top: 15px;
+    width: 100%;
+}
+
+.projecturlinput{
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .leftprojup-container input,
@@ -110,7 +118,21 @@
     scrollbar-width: none; /* For Firefox */
     -ms-overflow-style: none; /* For IE and Edge */
   }
-
+  .projecturlinput {
+    width: 100%; /* Full width of the container */
+    padding: 8px; /* Space inside the input field */
+    border-radius: 4px; /* Rounded corners */
+    border: 1px solid #ccc; /* Light gray border */
+    margin-top: 10px; /* Space above the input */
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+  }
+  
+  .projecturlinput:focus {
+    border-color: #9D0E0F; /* Highlight border color on focus */
+    outline: none; /* Remove the default outline */
+    box-shadow: 0 0 5px rgba(157, 14, 15, 0.5); /* Optional: add a shadow effect on focus */
+  }
+  
 .upload-area {
     display: flex;
     align-items: center;
@@ -272,6 +294,16 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 0.5rem;
+  }
+  
+
+  
+  .rightprojup-container .bottom{
+    width: 100%;
+  }
+
+  .rightprojup-container .bottom input{
+    width: 100%;
   }
   
   .remove-file-btn {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance.js';
-
+import './ResetPassword.css'; // Make sure you have this CSS file
 
 function ResetPassword() {
   const { token } = useParams();
@@ -30,30 +30,35 @@ function ResetPassword() {
 
   return (
     <div className="ResetPassword">
-      <h2>Reset Password</h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="newPassword">New Password</label>
-        <input
-          type="password"
-          id="newPassword"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="Enter your new password"
-          required
-        />
-        <label htmlFor="confirmPassword">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Re-enter your new password"
-          required
-        />
-        <button type="submit">Reset Password</button>
-      </form>
-      {message && <p className="success-message">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      <div className="resetmaincontainer">
+          <div className="Reset_container">
+          <h2>Reset Password</h2>
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="newPassword">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter your new password"
+              required
+            />
+            <label className='confirmpass' htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              className=''
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter your new password"
+              required
+            />
+            <button className='resetbtn' type="submit">Reset Password</button>
+          </form>
+          {message && <p className="success-message">{message}</p>}
+          {error && <p className="error-message">{error}</p>}
+          </div>
+      </div>
     </div>
   );
 }
