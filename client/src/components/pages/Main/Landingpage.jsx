@@ -19,7 +19,7 @@ const LandingPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/studenthomepage', { replace: true });
+      navigate('/homepage', { replace: true });
     }
   }, [navigate]);
 
