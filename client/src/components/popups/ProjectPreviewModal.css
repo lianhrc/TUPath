@@ -183,6 +183,14 @@
 .delete-btn {
   margin-right: 20px;
 }
+.projprev-left a{
+  color: black;
+  font-weight: bold;
+}
+.projprev-left a:hover {
+  color: tomato; /* Replace with your hover color */
+  text-decoration: underline; /* Optional: Adds underline on hover */
+}
 
 /* Extra styling for responsive design */
 @media (max-width: 768px) {

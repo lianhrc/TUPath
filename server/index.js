@@ -110,40 +110,47 @@
   });
 
   // Add a comment to a post
-app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
-  const postId = req.params.id;
-  const { id: userId, username, lastName } = req.user; // Extract user info from token
-  const { comment } = req.body; // Extract the comment from the request body
-
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-  }
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+  // Create a new comment for a post
+  app.post("/api/posts/:id/comment", async (req, res) => {
+    const postId = req.params.id;
+    const { profileImg, name, comment } = req.body;
+  
+    if (!comment || comment.trim() === "") {
+      return res.status(400).json({ success: false, message: "Comment cannot be empty" });
     }
+  
+    try {
+      const post = await Post.findById(postId);
+  
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+  
+      // Include profileImg in the newComment object
+      const newComment = {
+        profileImg, // Save the profile image
+        username: name,
+        comment,
+        createdAt: new Date(),
+      };
+  
+      post.comments.push(newComment);
+      await post.save();
+  
+      // Emit the new comment to all clients
+      io.emit("new_comment", { postId, comment: newComment });
+  
+      res.status(201).json({ success: true, comment: newComment });
+    } catch (err) {
+      console.error("Error adding comment:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
+  
 
-    // Add the new comment
-    const newComment = {
-      userId,
-      username,
-      lastName,
-      comment,
-      createdAt: new Date(),
-    };
-    post.comments.push(newComment);
 
-    await post.save();
-
-    res.status(200).json({ success: true, post });
-  } catch (err) {
-    console.error("Error adding comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+  
 
   
 
@@ -197,9 +204,9 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   ], // Array of users who upvoted
     comments: [
       {
+        profileImg: String,
         userId: String,
         username: String,
-        lastName: String,
         comment: String,
         createdAt: Date,
       },
@@ -687,7 +694,7 @@ const Post = mongoose.model("Post", postSchema);
   ]), async (req, res) => {
     try {
       const userId = req.user.id;
-      const { projectName, description, tags, tools } = req.body;
+      const { projectName, description, tags, tools, projectUrl} = req.body;
   
       // Get the file paths for both thumbnail and project files
       const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
@@ -701,6 +708,7 @@ const Post = mongoose.model("Post", postSchema);
         tools: tools.split(','), // Assuming tools are passed as a comma-separated string
         files: filePaths,  // Array of other project files
         thumbnail: thumbnailPath,  // Path for the thumbnail image
+        projectUrl,
       };
   
       // Update the user profile with the new project
@@ -808,6 +816,7 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+
 // -----------------------------------api for dynamic search----------------------------------
   app.get('/api/search', verifyToken, async (req, res) => {
     const { query, filter } = req.query;
@@ -985,7 +994,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
   }
 });
 
-  
+  //for pushing purposes, please delete this comment later
 
   // Server setup
   const PORT = process.env.PORT || 3001;
