@@ -23,7 +23,7 @@ function StudentProfileCreation() {
         techSkills: '',
         softSkills: '',
         contact: '',
-        email: '',
+        // email: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -239,14 +239,14 @@ function StudentProfileCreation() {
                             onChange={handleInputChange}
                             required
                         />
-                        <input
+                        {/* <input
                             type="email"
                             name="email"
                             placeholder="Email Address"
                             value={formData.email}
                             onChange={handleInputChange}
                             required
-                        />
+                        />*/}
                         <button type="submit" className="submit-button">
                             Submit
                         </button>

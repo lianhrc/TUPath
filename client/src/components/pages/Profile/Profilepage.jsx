@@ -42,12 +42,12 @@ function ProfilePage() {
         try {
           const profileResponse = await axiosInstance.get('/api/profile');
           if (profileResponse.data.success) {
-            const { profileDetails, role, createdAt } = profileResponse.data.profile;
+            const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
     
             // Ensure both profileDetails and projects are set correctly
             const { projects, ...profileWithoutProjects } = profileDetails;
     
-            setProfileData({ ...profileWithoutProjects, createdAt });
+            setProfileData({ ...profileWithoutProjects, createdAt, email });
             setUserRole(role);
             setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
     
@@ -110,19 +110,16 @@ function ProfilePage() {
               <div className='profile-header-right'>
                 <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
                 <p>
-  {profileData.createdAt
-    ? (() => {
-        const date = new Date(profileData.createdAt);
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${month}-${day}-${year}`;
-      })()
-    : 'Date Not Available'}
-</p>
-
-
-
+                  {profileData.createdAt
+                    ? (() => {
+                        const date = new Date(profileData.createdAt);
+                        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${month}-${day}-${year}`;
+                      })()
+                    : 'Date Not Available'}
+                </p>
               </div>
             </div>
           </div>
@@ -145,7 +142,7 @@ function ProfilePage() {
             {/* Student Profile Details */}
             {userRole === 'student' && (
               <>
-                <div className='profile-section'><h3>Student ID</h3><p>{profileData.studentId || 'Not Available'}</p></div>
+                <div className="profile-section"><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Department</h3><p>{profileData.department || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Year Level</h3><p>{profileData.yearLevel || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
@@ -158,6 +155,7 @@ function ProfilePage() {
             {/* Employer Profile Details */}
             {userRole === 'employer' && (
               <>
+                <div className="profile-section"><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
@@ -178,8 +176,7 @@ function ProfilePage() {
             {/* Common Profile Details */}
             <div className='profile-section'><h3>Gender</h3><p>{profileData.gender || 'Not Available'}</p></div>
             <div className='profile-section'><h3>Contact</h3><p>{profileData.contact || profileData.phoneNumber || 'Not Available'}</p></div>
-            <div className='profile-section'><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
-          </div>
+            </div>
         </div>
 
           {/* Project Section */}
