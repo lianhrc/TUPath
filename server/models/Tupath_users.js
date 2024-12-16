@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 
 // Schema for TUPATH students
 const TupathUserSchema = new mongoose.Schema({
-  name: {
+  /*name: {
     type: String,
     required: true,
-  },
+  },*/
   email: {
     type: String,
     required: true,
@@ -60,10 +60,10 @@ const TupathUserSchema = new mongoose.Schema({
 
 // Schema for TUPATH employers
 const EmployerUserSchema = new mongoose.Schema({
-  name: {
+  /*name: {
     type: String,
     required: true,
-  },
+  },*/
   email: {
     type: String,
     required: true,
