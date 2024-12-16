@@ -15,7 +15,22 @@
   margin-bottom: 10px;
   font-size: 12px;
   gap: 10px;
+
 }
+
+.comment-input textarea {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px; /* Rounded corners */
+  resize: none; /* Disable manual resizing */
+  overflow: hidden; /* Prevent scrollbars */
+  font-size: 12px; /* Match input font size */
+  line-height: 1.5; /* Better line spacing */
+  box-sizing: border-box; /* Include padding and border in width/height calculations */
+  transition: height 0.2s ease-in-out; /* Smooth height change */
+}
+
 
 .comment-input input {
   width: 100%;
@@ -33,18 +48,44 @@
 /* Comment */
 .comment {
   display: flex; /* Flexible layout */
-  align-items: flex-start; /* Align items at thse top */
-  flex-wrap: wrap; /* Allow wrapping for overflow */
-  gap: 10px; /*Space between profile icon and text */
   width: 100%; /* Full width */
+  gap: 10px;
+  
+}
+
+.comment .commentprofilediv{
+  width: 5%;
 }
 
 
 .comment div {
-  flex: 1; /* Allow the comment content to fill remaining space */
   display: flex;
   flex-direction: column;
+  padding: 0;
+  line-height:10px;
   max-width: 100%; /* Prevent the content from exceeding parent width */
+}
+
+.comment div .commentsubs{
+  padding: 15px 5px 10px 5px;
+  margin-bottom: 3px;
+  border-radius: 20px;
+  background-color: rgb(244, 244, 244);
+}
+
+.comment-user{
+  font-weight: 600;
+}
+
+.comment-textcontent{
+  line-height:15px;
+  font-weight: 400;
+  
+}
+
+.comment-timestamp{
+
+  font-size:8px;
 }
 
 .comment p {
@@ -73,3 +114,6 @@
     height: 25px;
   }
 }
+
+
+

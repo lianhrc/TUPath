@@ -118,21 +118,29 @@ const PostCommentPopup = ({ post, toggleComments }) => {
           type="text"
           placeholder="Type your comment..."
           value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
+          onChange={(e) => {
+            setCommentText(e.target.value);
+            e.target.style.height = "auto"; // Reset the height to recalculate
+            e.target.style.height = `${e.target.scrollHeight}px`; // Set to the current scrollHeight
+          }}
           onKeyPress={handleKeyPress}
         />
       </div>
       <div className="comments-list">
         {comments.map((comment, index) => (
           <div className="comment" key={comment._id || index}>
-            <img
-              src={comment.profileImg}
-              alt={comment.username}
-              className="comment-profile"
-            />
+           <div className="commentprofilediv">
+                <img
+                src={comment.profileImg}
+                alt={comment.username}
+                className="comment-profile"
+              />
+           </div>
             <div>
-              <p className="comment-user">{comment.username || "Unknown User"}</p>
-              <p>{comment.comment}</p>
+              <div className="commentsubs">
+                  <p className="comment-user">{comment.username || "Unknown User"}</p>
+                  <p className="comment-textcontent">{comment.comment}</p>
+              </div>
               <p className="comment-timestamp">{formatTimeAgo(comment.createdAt)}</p>
             </div>
           </div>
