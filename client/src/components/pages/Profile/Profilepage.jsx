@@ -37,32 +37,32 @@ function ProfilePage() {
   
 
   // Fetch profile data
-    useEffect(() => {
-      const fetchProfileData = async () => {
-        try {
-          const profileResponse = await axiosInstance.get('/api/profile');
-          if (profileResponse.data.success) {
-            const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
-    
-            // Ensure both profileDetails and projects are set correctly
-            const { projects, ...profileWithoutProjects } = profileDetails;
-    
-            setProfileData({ ...profileWithoutProjects, createdAt, email });
-            setUserRole(role);
-            setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-    
-            // Ensure that projects are also set correctly
-            setProjects(profileDetails?.projects || []); // Set projects if available
-          }
-        } catch (error) {
-          console.error('Error fetching profile data:', error);
-        } finally {
-          setLoading(false);
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const profileResponse = await axiosInstance.get('/api/profile');
+        if (profileResponse.data.success) {
+          const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
+          const { projects, ...profileWithoutProjects } = profileDetails;
+  
+          setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
+            techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
+           });
+          setUserRole(role);
+          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+          setProjects(profileDetails?.projects || []);
+          
         }
-      };
-    
-      fetchProfileData();
-  }, [userRole]); // Re-fetch if userRole changes
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchProfileData();
+  }, [userRole, profileData.techSkills, profileData.softSkills]);
+   // Re-fetch if userRole changes
   
   
   
@@ -146,9 +146,23 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Department</h3><p>{profileData.department || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Year Level</h3><p>{profileData.yearLevel || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Technical Skills</h3><p>{profileData.techSkills?.join(', ') || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Soft Skills</h3><p>{profileData.softSkills?.join(', ') || 'Not Available'}</p></div>
-              
+                <div className='profile-section'>
+  <h3>Technical Skills</h3>
+  <p>
+    {Array.isArray(profileData.techSkills)
+      ? profileData.techSkills.join(', ')
+      : 'No tech skills added yet.'}
+  </p>
+</div>
+<div className='profile-section'>
+  <h3>Soft Skills</h3>
+  <p>
+    {Array.isArray(profileData.softSkills)
+      ? profileData.softSkills.join(', ')
+      : 'No soft skills added yet.'}
+  </p>
+</div>
+
               </>
             )}
 
@@ -247,8 +261,33 @@ function ProfilePage() {
                 />
         
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject}/>
-        <GenericModal show={skillsModalOpen} onClose={() => setSkillsModalOpen(false)} title='Add New Skill' onSave={(newSkill) => setProfileData((prev) => ({ ...prev, techSkills: [...(prev.techSkills || []), newSkill] }))} />
-        <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+        <GenericModal
+          show={skillsModalOpen}
+          onClose={() => setSkillsModalOpen(false)}
+          title="Add New Skill"
+          onSave={(newSkill) => {
+            setProfileData((prev) => {
+              const updatedSoftSkills = Array.isArray(prev.softSkills)
+                ? [...prev.softSkills, newSkill]
+                : [newSkill]; // Ensure it's always an array
+
+              // Save updated soft skills to the backend
+              axiosInstance.put(`/api/profile/update-skills`, { softSkills: updatedSoftSkills })
+                .then((response) => {
+                  if (response.data.success) {
+                    console.log('Soft skills updated successfully');
+                  }
+                })
+                .catch((error) => {
+                  console.error('Error updating soft skills:', error);
+                });
+
+              return { ...prev, softSkills: updatedSoftSkills };
+            });
+          }}
+        />
+
+<CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
         <MessagePop />
       </div>
     </div>
