@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './ProjectPreviewModal.css';
+import ProjectAssessmentModal from '../popups/ProjectAssessmentModal';
 
 function ProjectPreviewModal({ show, onClose, project, onDelete }) {
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+
   if (!show || !project) return null;
 
   const handleDelete = () => {
@@ -13,22 +16,24 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
 
   // Extract file name from the full path
   const getFileName = (filePath) => {
-    // Check if filePath is a string
     if (typeof filePath === 'string') {
-      return filePath.split('\\').pop().split('/').pop(); // Handles both Windows and Unix-based paths
+      return filePath.split('\\').pop().split('/').pop();
     }
-    // If it's an array (multiple files), map through and extract file names
     if (Array.isArray(filePath)) {
       return filePath.map(file => getFileName(file)).join(', ');
     }
-    return 'No file available'; // Default message when no file path or file array is found
+    return 'No file available';
+  };
+
+  const handleStatusClick = () => {
+    setShowAssessmentModal(true); // Show the ProjectAssessmentModal when the status is clicked
   };
 
   return (
     <div className="projprev-overlay">
       <div className="projprev-content">
         <div className="projprevheader">
-            <img 
+          <img 
             src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
             ? `http://localhost:3001${project.thumbnail}` 
             : project.thumbnail || avatar}
@@ -40,9 +45,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             <h2><strong>{project.projectName}</strong></h2>
             <p className='projdesccontainer'><strong>{project.description}</strong></p>
 
-
-              {/* Add Project URL Preview */}
-              {project.projectUrl && (
+            {project.projectUrl && (
               <p>
                 <strong>Project URL: </strong>
                 <a 
@@ -55,35 +58,39 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               </p>
             )}
 
+            {/* Clickable Status */}
+            <p className="projprev-status" onClick={handleStatusClick}>
+              <strong>{project.status || 'Click for project assessment'}</strong>
+            </p>
           </div>
+
           <div className="projprev-right">
-          <div className="projprevtags">
-          {project.tags.map(tag => (
-            <div key={tag} className="tag-item">{tag}</div>
-          ))}
-          
-          </div>
+            <div className="projprevtags">
+              {project.tags.map(tag => (
+                <div key={tag} className="tag-item">{tag}</div>
+              ))}
+            </div>
             <div className="projprevtools">
-            {project.tools.map(tool => (
-              <div key={tool} className="tool-item">{tool}</div>
-            ))}
+              {project.tools.map(tool => (
+                <div key={tool} className="tool-item">{tool}</div>
+              ))}
             </div>
             <div className="projpreviewfiles">
-              {/* Displaying file names */}
               <p><strong>{getFileName(project.files)}</strong></p>
             </div>
           </div>
         </div>
-
-
 
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>
           <button className="close-btn" onClick={onClose}>Close</button>
         </div>
       </div>
+
+      {/* Conditional rendering of ProjectAssessmentModal */}
+      {showAssessmentModal && <ProjectAssessmentModal show={showAssessmentModal} onClose={() => setShowAssessmentModal(false)} />}
     </div>
   );
-} //for pushing purposes, please delete this comment later
+}
 
 export default ProjectPreviewModal;

@@ -73,11 +73,11 @@ const ProjectAssessmentModal = ({ show, onClose, onFinalSubmit }) => {
         </div>
 
         <div className="assessment-buttons">
-          <button onClick={onClose} className="assessment-cancel-btn">Edit</button>
+          <button onClick={onClose} className="assessment-cancel-btn">cancel</button>
           {currentPage < totalPages - 1 ? (
-            <button onClick={handleNextPage} className="assessment-next-btn">Next</button>
+            <button onClick={handleNextPage} className="assessment-next-btn">next</button>
           ) : (
-            <button onClick={onFinalSubmit} className="assessment-submit-btn">Submit Project</button>
+            <button onClick={onFinalSubmit} className="assessment-submit-btn">submit</button>
           )}
         </div>
       </div>

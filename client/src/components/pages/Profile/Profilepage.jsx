@@ -110,16 +110,16 @@ function ProfilePage() {
               <div className='profile-header-right'>
                 <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
                 <p>
-  {profileData.createdAt
-    ? (() => {
-        const date = new Date(profileData.createdAt);
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${month}-${day}-${year}`;
-      })()
-    : 'Date Not Available'}
-</p>
+                {profileData.createdAt
+                  ? (() => {
+                      const date = new Date(profileData.createdAt);
+                      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const year = date.getFullYear();
+                      return `${month}-${day}-${year}`;
+                    })()
+                  : 'Date Not Available'}
+              </p>
 
 
 
@@ -194,17 +194,17 @@ function ProfilePage() {
                     <p>Add a Project</p>
                   </div>
 
-                  {/* Display Projects */}
+                {/* Display Projects */}
                   {projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                        <img 
+                      <img 
                         src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
-                        ? `http://localhost:3001${project.thumbnail}` 
-                        : project.thumbnail || avatar}
+                          ? `http://localhost:3001${project.thumbnail}` 
+                          : project.thumbnail || avatar} 
+                        alt="project-thumbnail"
                       />
                       <p>{project.projectName}</p>
-                      
-                      
+                      <p className='proj-status'>{project.status || 'Pending'}</p> {/* Dynamically display status */}
                     </div>
                   ))}
                 </div>

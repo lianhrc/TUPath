@@ -166,6 +166,8 @@
 .project-card {
   background-color: #f0f2f5;
   display: flex;
+  position: relative;
+
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -192,6 +194,25 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.proj-status {
+  position: absolute;
+  top: 5px; /* Adjust this value to control the position outside the card */
+  right: 0px; /* Adjust this value to control the position outside the card */
+  background-color: #faeed7; /* Bright color for visibility */
+  color: rgb(255, 123, 0);
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  font-size: 10px;
+  padding: 5px 10px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Add Project Button */

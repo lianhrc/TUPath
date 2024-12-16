@@ -706,11 +706,10 @@ const Post = mongoose.model("Post", postSchema);
         description,
         tags: Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()),
         tools: Array.isArray(tools) ? tools : tools.split(',').map(tool => tool.trim()),
-
-        
         files: filePaths,  // Array of other project files
         thumbnail: thumbnailPath,  // Path for the thumbnail image
         projectUrl,
+        status: 'pending', // Default status
       };
   
       // Update the user profile with the new project
@@ -742,7 +741,7 @@ const Post = mongoose.model("Post", postSchema);
   
 
   
-   app.get("/api/projects", verifyToken, async (req, res) => {
+  app.get("/api/projects", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
       const user = await Tupath_usersModel.findById(userId);
@@ -752,13 +751,56 @@ const Post = mongoose.model("Post", postSchema);
       console.log("User projects:", user.profileDetails.projects);
       res.status(200).json({
         success: true,
-        projects: user.profileDetails.projects,
+        projects: user.profileDetails.projects.map(project => ({
+          ...project.toObject(), // Ensure you get a plain object
+          status: project.status || 'pending', // Add status if not already present
+        })),
       });
     } catch (error) {
       console.error("Error fetching projects:", error);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+  
+
+  app.put("/api/projects/:projectId/status", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { projectId } = req.params;
+      const { status } = req.body; // Expect status (e.g., "pending", "submitted", etc.)
+  
+      // Validate status
+      const validStatuses = ['pending', 'submitted', 'approved'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ success: false, message: "Invalid status" });
+      }
+  
+      // Find the user and project
+      const user = await Tupath_usersModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      const project = user.profileDetails.projects.find(project => project._id.toString() === projectId);
+      if (!project) {
+        return res.status(404).json({ success: false, message: "Project not found" });
+      }
+  
+      // Update project status
+      project.status = status;
+      await user.save();
+  
+      res.status(200).json({
+        success: true,
+        message: "Project status updated successfully",
+        project: project,
+      });
+    } catch (error) {
+      console.error("Error updating project status:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+  
   
   
   

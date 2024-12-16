@@ -6,8 +6,10 @@ const projectSchema = new mongoose.Schema({
   selectedFiles: [{ type: String }], // Array of file paths or URLs
   tags: [{ type: String }],
   tools: [{ type: String }],
-  thumbnail: { type: String }, // Add this line to store the thumbnail URL or path
-  projectUrl: String,
+  thumbnail: { type: String }, // Thumbnail URL or path
+  projectUrl: String, // Optional project link
+  status: { type: String, default: 'pending' }, // Status field, default is 'pending'
+  createdAt: { type: Date, default: Date.now }, // Automatically set creation date
 });
 
 const Project = mongoose.model('Project', projectSchema);
