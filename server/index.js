@@ -147,12 +147,6 @@
     }
   });
   
-  
-
-
-  
-
-  
 
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
@@ -418,9 +412,6 @@ const Post = mongoose.model("Post", postSchema);
   });
   
 
-
-
-
   // Employer signup endpoint
   app.post("/employersignup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
@@ -457,6 +448,7 @@ const Post = mongoose.model("Post", postSchema);
   });
   
 
+  
   //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
   app.post('/api/updateStudentProfile', verifyToken, async (req, res) => {
@@ -475,8 +467,8 @@ const Post = mongoose.model("Post", postSchema);
           address,
           techSkills,
           softSkills,
-          contact,
-          email  } = req.body;
+          contact} = req.body;
+          // email  
 
         const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
             userId,
@@ -495,8 +487,8 @@ const Post = mongoose.model("Post", postSchema);
                       address,
                       techSkills,
                       softSkills,
-                      contact,
-                      email
+                      contact
+                      // email
                     }
                 }
             },
@@ -530,7 +522,7 @@ const Post = mongoose.model("Post", postSchema);
           aboutCompany,
           contactPersonName,
           position,
-          email,
+          // email,
           phoneNumber,
           preferredRoles,
           internshipOpportunities,
@@ -555,7 +547,7 @@ const Post = mongoose.model("Post", postSchema);
                       aboutCompany,
                       contactPersonName,
                       position,
-                      email,
+                      // email,
                       phoneNumber,
                       preferredRoles,
                       internshipOpportunities,
@@ -585,7 +577,7 @@ const Post = mongoose.model("Post", postSchema);
       const role = req.user.role; // Extract role from the token
   
       const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-      const user = await userModel.findById(userId).select('role profileDetails createdAt googleSignup');
+      const user = await userModel.findById(userId).select('email role profileDetails createdAt googleSignup');
   
       if (!user) {
         return res.status(404).json({ success: false, profile: 'User not Found' });
@@ -593,6 +585,7 @@ const Post = mongoose.model("Post", postSchema);
   
       // Return profile details tailored to the role
       const profile = {
+        email: user.email,
         role: user.role,
         profileDetails: user.profileDetails,
         createdAt: user.createdAt,
@@ -605,7 +598,6 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
-  
 
 
 
@@ -652,7 +644,7 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   */
-
+// api upload image endpoint
   app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;
@@ -686,8 +678,7 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   
-
-
+// api uploadproject endpoint
   app.post("/api/uploadProject", verifyToken, upload.fields([
     { name: "thumbnail", maxCount: 1 },  // Handle the thumbnail upload field
     { name: "projectFiles", maxCount: 5 }, // Handle other project files (e.g., .zip, .docx, etc.)
@@ -917,7 +908,6 @@ const Post = mongoose.model("Post", postSchema);
   });
 
   
-
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;

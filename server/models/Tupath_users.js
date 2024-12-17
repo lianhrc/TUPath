@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 
 // Schema for TUPATH students
 const TupathUserSchema = new mongoose.Schema({
-  name: {
+  /*name: {
     type: String,
     required: true,
-  },
+  },*/
   email: {
     type: String,
     required: true,
@@ -40,7 +40,7 @@ const TupathUserSchema = new mongoose.Schema({
     certificatePhotos: [String], // New field for storing certificate image paths
     techSkills: [String],
     softSkills: [String],
-    email: String,
+    // email: String,
     dob: Date,
     projects: [{ // New field for storing project details
       projectName: String,
@@ -60,10 +60,10 @@ const TupathUserSchema = new mongoose.Schema({
 
 // Schema for TUPATH employers
 const EmployerUserSchema = new mongoose.Schema({
-  name: {
+  /*name: {
     type: String,
     required: true,
-  },
+  },*/
   email: {
     type: String,
     required: true,
@@ -100,7 +100,7 @@ const EmployerUserSchema = new mongoose.Schema({
     aboutCompany: String,
     contactPersonName: String,
     position: String,
-    email: String,
+    // email: String,
     phoneNumber: String,
     profileImg: String, // Add this line for the employer profile image
     preferredRoles: { type: [String], default: [] }, // Always an array
