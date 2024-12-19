@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios"; // For making API requests
-import { io } from "socket.io-client"; // Import Socket.IO client
+import axios from "axios";
+import { io } from "socket.io-client";
 import "./PostCommentPopup.css";
+import dot from "../../assets/dots.png";
 
-// Initialize socket connection
-const socket = io("http://localhost:3001"); // Adjust the port if needed
+const socket = io("http://localhost:3001");
 
-// Function to format timestamps
 const formatTimeAgo = (timestamp) => {
   const now = new Date();
   const postDate = new Date(timestamp);
@@ -20,7 +19,6 @@ const formatTimeAgo = (timestamp) => {
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
 
-  // Format the date for posts older than 2 days
   return postDate.toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -37,7 +35,10 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     lastName: "",
     profileImg: "",
   });
-  const handledComments = useRef(new Set()); // Track added comment IDs
+  const handledComments = useRef(new Set());
+  const [isEditing, setIsEditing] = useState(null);
+  const [editedText, setEditedText] = useState("");
+  const [showActions, setShowActions] = useState(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -74,9 +75,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
     const newComment = {
       profileImg: profileData.profileImg,
-      name: `${profileData.firstName} ${
-        profileData.middleName ? profileData.middleName.charAt(0) + "." : ""
-      } ${profileData.lastName}`.trim() || "Student",
+      name: `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() || "Student",
       comment: commentText,
     };
 
@@ -106,6 +105,54 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     }
   };
 
+  const handleEditClick = (comment) => {
+    setIsEditing(comment._id);
+    setEditedText(comment.comment);
+  };
+
+  const handleSaveClick = async (commentId) => {
+    if (editedText.trim() === "") return;
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
+        { comment: editedText },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment._id === commentId ? response.data.comment : comment
+        )
+      );
+      setIsEditing(null);
+      setEditedText("");
+    } catch (error) {
+      console.error("Error editing comment:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(null);
+    setEditedText("");
+  };
+
+  const handleDeleteClick = async (commentId) => {
+    try {
+      await axios.delete(
+        `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      setComments((prevComments) => prevComments.filter((comment) => comment._id !== commentId));
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
+  const handleDotClick = (commentId) => {
+    setShowActions((prev) => (prev === commentId ? null : commentId));
+  };
+
   return (
     <div className="comments-section">
       <div className="comment-input">
@@ -120,26 +167,57 @@ const PostCommentPopup = ({ post, toggleComments }) => {
           value={commentText}
           onChange={(e) => {
             setCommentText(e.target.value);
-            e.target.style.height = "auto"; // Reset the height to recalculate
-            e.target.style.height = `${e.target.scrollHeight}px`; // Set to the current scrollHeight
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
           }}
           onKeyPress={handleKeyPress}
         />
       </div>
       <div className="comments-list">
-        {comments.map((comment, index) => (
-          <div className="comment" key={comment._id || index}>
-           <div className="commentprofilediv">
-                <img
+        {comments.map((comment) => (
+          <div className="comment" key={comment._id}>
+            <div className="commentprofilediv">
+              <img
                 src={comment.profileImg}
                 alt={comment.username}
                 className="comment-profile"
               />
-           </div>
+            </div>
+
             <div>
               <div className="commentsubs">
+                <div className="usernametopcontainer">
                   <p className="comment-user">{comment.username || "Unknown User"}</p>
+                  <img
+                    src={dot}
+                    alt="dots"
+                    onClick={() => handleDotClick(comment._id)}
+                  />
+                </div>
+
+                {isEditing === comment._id ? (
+                  <div className="saveedit-comment">
+                    <textarea
+                      value={editedText}
+                      onChange={(e) => setEditedText(e.target.value)}
+                    />
+                    <div className="div">
+                      <button onClick={() => handleSaveClick(comment._id)}>Save</button>
+                      <button onClick={handleCancelEdit}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
                   <p className="comment-textcontent">{comment.comment}</p>
+                )}
+
+                {showActions === comment._id && !isEditing ? (
+                  <div className="comment-actions">
+                    <div className="div">
+                      <button onClick={() => handleEditClick(comment)}>Edit</button>
+                      <button onClick={() => handleDeleteClick(comment._id)}>Delete</button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
               <p className="comment-timestamp">{formatTimeAgo(comment.createdAt)}</p>
             </div>

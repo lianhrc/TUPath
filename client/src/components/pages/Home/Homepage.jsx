@@ -9,6 +9,8 @@ import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
 import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
+import dots from '../../../assets/dots.png';
+import EditPostOption from '../../popups/EditOptionsModal';
 
 const socket = io('http://localhost:3001');
 
@@ -19,33 +21,33 @@ const Homepage = () => {
     middleName: '',
     lastName: '',
     address: '',
+    profileImg: '', // Added profileImg to the initial state
   });
 
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [activePostId, setActivePostId] = useState(null);
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
     const diffInMs = now - postDate;
     const diffInMinutes = Math.floor(diffInMs / 60000);
-  
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  
-    // Format the date for posts older than 2 days
+
     return postDate.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
-
 
   const handleUpvote = async (postId) => {
     try {
@@ -56,13 +58,12 @@ const Homepage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to toggle upvote");
       }
-  
+
       const data = await response.json();
-  
       if (data.success) {
         setPostsData((prevPosts) =>
           prevPosts.map((post) =>
@@ -75,14 +76,10 @@ const Homepage = () => {
     }
   };
 
-
-
-  // Fetch posts and initialize `showComments`
   const fetchPostsData = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/posts');
       const data = await response.json();
-
       const updatedPosts = data.map((post) => ({
         ...post,
         showComments: false,
@@ -94,10 +91,9 @@ const Homepage = () => {
     }
   };
 
-  // Listen for socket updates
   useEffect(() => {
     fetchPostsData();
-
+    
     socket.on('new_post', (post) => {
       setPostsData((prevPosts) => [{ ...post, showComments: false }, ...prevPosts]);
     });
@@ -118,7 +114,6 @@ const Homepage = () => {
     };
   }, []);
 
-  // Fetch profile data
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -130,17 +125,14 @@ const Homepage = () => {
         console.error('Error fetching profile data:', error);
       }
     };
-  
+
     fetchProfileData();
   }, []);
-  
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
-  ? `http://localhost:3001${profileData.profileImg}`
-  : profileData.profileImg;
+    ? `http://localhost:3001${profileData.profileImg}`
+    : profileData.profileImg;
 
-
-  // Toggle comments for a specific post
   const toggleComments = (postId) => {
     setPostsData((prevPosts) =>
       prevPosts.map((post) =>
@@ -175,14 +167,13 @@ const Homepage = () => {
       try {
         const newPost = {
           profileImg: profileData.profileImg,
-          name: `${profileData.firstName} ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}  `.trim() || 'Student',
+          name: `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim() || 'Student',
           content: newPostContent,
           postImg: newPostImage,
         };
-  
+
         const response = await axiosInstance.post('/api/posts', newPost);
         if (response.data.success) {
-          // The new post will be automatically added via the 'new_post' socket event
           handleClosePopup();
         } else {
           console.error('Failed to add post:', response.data.message);
@@ -193,17 +184,37 @@ const Homepage = () => {
     }
   };
 
+  const toggleEditModal = (postId) => {
+    setActivePostId((prevId) => (prevId === postId ? null : postId));
+  };
+
   const renderPost = (post, index) => {
-    const userId = 'user_id_from_auth'; // Replace this with actual user ID from authentication
-    const hasUpvoted = post.votedUsers.includes(userId); // Check if user has upvoted
+    const userId = 'user_id_from_auth'; // Replace with actual user ID from authentication
+    const hasUpvoted = post.votedUsers.includes(userId);
 
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
-          <img src={post.profileImg} alt={post.name} />
-          <div className="frompost">
-            <h5>{post.name}</h5>
-            <p>{formatTimeAgo(post.timestamp)}</p>
+          <div className="topleftpostcontent">
+            <img src={post.profileImg} alt={post.name} />
+            <div className="frompost">
+              <h5>{post.name}</h5>
+              <p>{formatTimeAgo(post.timestamp)}</p>
+            </div>
+          </div>
+          <div className="editdots-container">
+            <img
+              className="editdots"
+              src={dots}
+              alt="Options"
+              onClick={() => toggleEditModal(post._id)}
+            />
+            {activePostId === post._id && (
+              <EditPostOption
+                isOpen={activePostId === post._id}
+                onClose={() => setActivePostId(null)}
+              />
+            )}
           </div>
         </div>
         <div className="postcontent">
@@ -211,8 +222,10 @@ const Homepage = () => {
           {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
         </div>
         <div className="downpostcontent">
-          <button onClick={() => handleUpvote(post._id)}
-            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}>
+          <button
+            onClick={() => handleUpvote(post._id)}
+            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}
+          >
             <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
           </button>
           <button onClick={() => toggleComments(post._id)}>
@@ -235,20 +248,16 @@ const Homepage = () => {
       <Headerhomepage />
       <div className="content-container">
         <aside className="sidebar">
-        <div className="profile">
-          <img src={profileImageUrl} alt="Profile Icon" />
-          <h2>
-            {`${profileData.firstName} 
-            ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} 
-            ${profileData.lastName}`.trim()}
-          </h2>
+          <div className="profile">
+            <img src={profileImageUrl} alt="Profile Icon" />
+            <h2>{`${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim()}</h2>
             <p>Student at Technological University of the Philippines</p>
-          <p>{profileData.address || 'Not Available'}</p>
-        </div>
+            <p>{profileData.address || 'Not Available'}</p>
+          </div>
         </aside>
         <main className="feed">
           <div className="post-input" onClick={() => setIsPopupOpen(true)}>
-            <div className='postinputimg-container' >
+            <div className="postinputimg-container">
               <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">

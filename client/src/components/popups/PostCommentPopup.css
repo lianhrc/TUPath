@@ -12,7 +12,7 @@
 .comment-input {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
   font-size: 12px;
   gap: 10px;
 
@@ -70,7 +70,23 @@
   padding: 15px 5px 10px 5px;
   margin-bottom: 3px;
   border-radius: 20px;
+  width: 800px;
   background-color: rgb(244, 244, 244);
+}
+
+.commentsubs .usernametopcontainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.usernametopcontainer img{
+  width: 15px;
+  height: 15px;
+  position:sticky;
+  margin-right: 10px;
+  margin-top: -20px;
+  cursor: pointer;
 }
 
 .comment-user{
@@ -115,5 +131,45 @@
   }
 }
 
+.comment-actions .div {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 10px; /* Adds space between the buttons */
+}
 
+.comment-actions button {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
+.comment-actions button:hover {
+  background-color: #e0e0e0;
+}
+
+.comment-actions button:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.saveedit-comment .div{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 10px; /* Adds space between the buttons */
+}
+
+.saveedit-comment .div button{
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

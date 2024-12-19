@@ -1,0 +1,66 @@
+/* Keyframes for sliding up and sliding down */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* Modal Animation Classes */
+.modal-enter {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.modal-exit {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+
+/* Overlay */
+.edit-options-overlay {
+    position: absolute;
+    display: flex;
+    top: 10px;
+    right: 00px;
+    width: 100px;
+  }
+  
+  /* Modal */
+  .edit-options-modal {
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    width: 100px;
+    padding: 10px 10px;
+    border-radius: 10px;
+    border: solid 1px rgb(195, 195, 195);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .edit-options-modal h6 {
+    line-height: 30px;
+    margin: 0;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .edit-options-modal h6:hover {
+   background-color: #f0f0f0;
+  }
+  
+  

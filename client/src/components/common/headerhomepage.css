@@ -175,7 +175,9 @@ cursor: pointer;
   text-decoration: none;
 }
 
-.profile-menu a:hover {
+
+
+.profile-menu :hover {
   background-color: #f0f0f0;
 }
 
