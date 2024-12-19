@@ -42,21 +42,35 @@ const TupathUserSchema = new mongoose.Schema({
     softSkills: [String],
     email: String,
     dob: Date,
-    projects: [{ // New field for storing project details
-      projectName: String,
-      description: String,
-      tags: [String], // Array to store multiple tags
-      tools: [String], // Array to store tools used
-      files: [String], // Array of project file paths
-      thumbnail: String, // Add this line to store the thumbnail URL or path
-      projectUrl: String,
-    }],
+    projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], 
+    
   },
   memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when a user is created
   }
 }, { timestamps: true }); // This will add createdAt and updatedAt automatically
+
+
+const projectSchema = new mongoose.Schema({
+  projectName: { type: String, required: true },
+  description: { type: String, required: true },
+  selectedFiles: [{ type: String }], // Array of file paths or URLs
+  tags: [{ type: String }],
+  tools: [{ type: String }],
+  thumbnail: { type: String }, // Thumbnail URL or path
+  projectUrl: String, // Optional project link
+  status: { type: String, default: 'pending' }, // Status field, default is 'pending'
+  createdAt: { type: Date, default: Date.now }, // Automatically set creation date
+  assessment: [ // New field for assessment questions and ratings
+    {
+      question: { type: String, required: true },
+      rating: { type: Number, required: true, min: 1, max: 5 },
+    },
+  ],
+});
+
+
 
 // Schema for TUPATH employers
 const EmployerUserSchema = new mongoose.Schema({
@@ -116,8 +130,11 @@ const EmployerUserSchema = new mongoose.Schema({
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
+const Project = mongoose.model('Project', projectSchema);
+
 
 module.exports = {
   Tupath_usersModel,
   Employer_usersModel,
+  Project,
 };

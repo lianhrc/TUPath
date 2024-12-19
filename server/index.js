@@ -6,7 +6,7 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
 
@@ -688,73 +688,114 @@ const Post = mongoose.model("Post", postSchema);
   
 
 
-  app.post("/api/uploadProject", verifyToken, upload.fields([
-    { name: "thumbnail", maxCount: 1 },  // Handle the thumbnail upload field
-    { name: "projectFiles", maxCount: 5 }, // Handle other project files (e.g., .zip, .docx, etc.)
-  ]), async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { projectName, description, tags, tools, projectUrl} = req.body;
-  
-      // Get the file paths for both thumbnail and project files
-      const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
-      const filePaths = req.files.projectFiles ? req.files.projectFiles.map(file => `/projects/${file.filename}`) : [];
-  
-      // Create the project object
-      const project = {
-        projectName,
-        description,
-        tags: Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()),
-        tools: Array.isArray(tools) ? tools : tools.split(',').map(tool => tool.trim()),
-        files: filePaths,  // Array of other project files
-        thumbnail: thumbnailPath,  // Path for the thumbnail image
-        projectUrl,
-        status: 'pending', // Default status
-      };
-  
-      // Update the user profile with the new project
-      const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-        userId,
-        {
-          $push: {
-            "profileDetails.projects": project, // Push the new project to the projects array
-          }
-        },
-        { new: true }
-      );
-  
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
+  app.post(
+    "/api/uploadProject",
+    verifyToken, // Middleware to verify the JWT token
+    upload.fields([
+      { name: "thumbnail", maxCount: 1 },
+      { name: "selectedFiles", maxCount: 10 },
+    ]),
+    async (req, res) => {
+      try {
+        const userId = req.user.id; // Extract user ID from the token
+        const { projectName, description, tags, tools, projectUrl, assessment } = req.body;
+
+        if (!projectName || !projectName.trim()) {
+          return res.status(400).json({ success: false, message: "Project name is required." });
+      }
+
+      if (!description || !description.trim()) {
+          return res.status(400).json({ success: false, message: "Description is required." });
       }
   
-      res.status(200).json({
-        success: true,
-        message: "Project uploaded successfully",
-        project: project,
-      });
+        // Parse assessment data
+        const parsedAssessment = assessment ? JSON.parse(assessment) : [];
   
-    } catch (error) {
-      console.error("Error uploading project files:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
+        // Validate assessment data (if provided)
+        if (tags.includes("Web Development")) {
+          if (!parsedAssessment || parsedAssessment.length === 0) {
+            return res.status(400).json({
+              success: false,
+              message: "Assessment is required for Web Development projects.",
+            });
+          }
+  
+          // Check that all ratings are valid
+          const isValidAssessment = parsedAssessment.every(
+            (item) => item.question && item.rating >= 1 && item.rating <= 5
+          );
+          if (!isValidAssessment) {
+            return res.status(400).json({
+              success: false,
+              message: "Invalid assessment data. Ratings must be between 1 and 5.",
+            });
+          }
+        }
+  
+        // Retrieve files from multer
+        const thumbnail = req.files["thumbnail"]
+          ? req.files["thumbnail"][0].path
+          : null;
+  
+        const selectedFiles = req.files["selectedFiles"]
+          ? req.files["selectedFiles"].map((file) => file.path)
+          : [];
+  
+        // Create a new project document
+        const newProject = new Project({
+          projectName,
+          description,
+          tags: Array.isArray(tags) ? tags : [tags],
+          tools: Array.isArray(tools) ? tools : [tools],
+          selectedFiles,
+          thumbnail,
+          projectUrl,
+          status: "pending",
+          assessment: parsedAssessment, // Save assessment data
+        });
+  
+        // Save project to the database
+        const savedProject = await newProject.save();
+  
+        // Associate the project with the user
+        const user = await Tupath_usersModel.findById(userId);
+        if (!user) {
+          return res
+            .status(404)
+            .json({ success: false, message: "User not found" });
+        }
+  
+        // Add the project to the user's profileDetails.projects
+        user.profileDetails.projects.push(savedProject._id);
+        await user.save();
+  
+        res.status(201).json({
+          success: true,
+          message: "Project uploaded successfully",
+          project: savedProject,
+        });
+      } catch (error) {
+        console.error("Error uploading project:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
     }
-  });
+  );
   
-
   
   app.get("/api/projects", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
-      const user = await Tupath_usersModel.findById(userId);
+      const user = await Tupath_usersModel.findById(userId).populate("profileDetails.projects");
+  
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-      console.log("User projects:", user.profileDetails.projects);
+  
       res.status(200).json({
         success: true,
-        projects: user.profileDetails.projects.map(project => ({
-          ...project.toObject(), // Ensure you get a plain object
-          status: project.status || 'pending', // Add status if not already present
-        })),
+        projects: user.profileDetails.projects,
       });
     } catch (error) {
       console.error("Error fetching projects:", error);
