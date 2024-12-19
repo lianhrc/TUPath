@@ -51,9 +51,9 @@
     });
     
     const upload = multer({ 
-      storage: storage,
-      limits: { fileSize: 10 * 1024 * 1024 }, // Set size limit (e.g., 10MB)
+      storage: storage 
     });
+    
 
   // JWT verification middleware
   // JWT verification middleware with added debugging and error handling
@@ -110,42 +110,41 @@
   });
 
   // Add a comment to a post
-  // Create a new comment for a post
-  app.post("/api/posts/:id/comment", async (req, res) => {
-    const postId = req.params.id;
-    const { profileImg, name, comment } = req.body;
-  
-    if (!comment || comment.trim() === "") {
+app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.id;
+  const { profileImg, name, comment } = req.body;
+
+  if (!comment || comment.trim() === "") {
       return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-    }
-  
-    try {
+  }
+
+  try {
       const post = await Post.findById(postId);
-  
+
       if (!post) {
-        return res.status(404).json({ success: false, message: "Post not found" });
+          return res.status(404).json({ success: false, message: "Post not found" });
       }
-  
-      // Include profileImg in the newComment object
+
       const newComment = {
-        profileImg, // Save the profile image
-        username: name,
-        comment,
-        createdAt: new Date(),
+          profileImg,
+          username: name,
+          userId, // Include userId in the comment
+          comment,
+          createdAt: new Date(),
       };
-  
+
       post.comments.push(newComment);
       await post.save();
-  
-      // Emit the new comment to all clients
+
       io.emit("new_comment", { postId, comment: newComment });
-  
+
       res.status(201).json({ success: true, comment: newComment });
-    } catch (err) {
+  } catch (err) {
       console.error("Error adding comment:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
+  }
+});
   
 
 // Increment upvotes for a post
@@ -183,6 +182,7 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
 
   // Define Post schema
   const postSchema = new mongoose.Schema({
+    userId: String,
     profileImg: String,
     name: String,
     timestamp: { type: Date, default: Date.now },
@@ -198,8 +198,8 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   ], // Array of users who upvoted
     comments: [
       {
-        profileImg: String,
         userId: String,
+        profileImg: String,
         username: String,
         comment: String,
         createdAt: Date,
@@ -220,23 +220,31 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
 
-  // Create a new post
-  app.post("/api/posts", async (req, res) => {
+    // Create a new post
+  app.post("/api/posts", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
     const { profileImg, name, content, postImg } = req.body;
     try {
-      const newPost = new Post({ profileImg, name, content, postImg });
-      await newPost.save();
-      res.status(201).json({ success: true, post: newPost });
-      io.emit("new_post", newPost);
+        const newPost = new Post({
+            profileImg,
+            name,
+            content,
+            postImg,
+            userId, // Save userId for the post
+        });
+        await newPost.save();
+        res.status(201).json({ success: true, post: newPost });
+        io.emit("new_post", newPost);
     } catch (err) {
-      console.error("Error creating post:", err);
-      res.status(500).json({ success: false, message: "Internal server error" });
+        console.error("Error creating post:", err);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
 
+
   // Socket.IO events for real-time chat
   io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.id}`);
+    // console.log(`User connected: ${socket.id}`);
 
     socket.on("send_message", async (data) => {
       try {
@@ -249,7 +257,7 @@ const Post = mongoose.model("Post", postSchema);
     });
 
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.id}`);
+     // console.log(`User disconnected: ${socket.id}`);
     });
   });
 
