@@ -151,6 +151,46 @@ app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
       res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+// Delete a comment from a post
+app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.postId;
+  const commentId = req.params.commentId;
+
+  try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Find the comment to delete
+      const commentIndex = post.comments.findIndex(
+          (comment) => comment._id.toString() === commentId && comment.userId === userId
+      );
+
+      if (commentIndex === -1) {
+          return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
+      }
+
+      // Remove the comment from the comments array
+      post.comments.splice(commentIndex, 1);
+
+      // Save the updated post
+      await post.save();
+
+      // Emit the comment deletion event
+      io.emit("delete_comment", { postId, commentId });
+
+      res.status(200).json({ success: true, message: "Comment deleted successfully" });
+  } catch (err) {
+      console.error("Error deleting comment:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
   
 
 // Increment upvotes for a post
