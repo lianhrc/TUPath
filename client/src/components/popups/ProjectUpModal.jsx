@@ -224,6 +224,34 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                                             </span>
                                         ))}
                                     </div>
+
+                                    <div className="tools-input-container">
+                  <label>Tools Used:</label>
+                    <select onChange={handleToolSelect}>
+                      <option value="">Select a Tool</option>
+                      {predefinedTools.map((tool, index) => (
+                        <option key={index} value={tool}>
+                          {tool}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="tools-list">
+                      {tools.map((tool, index) => (
+                        <span key={index} className="tool">
+                          {tool}
+                          <button
+                            type="button"
+                            className="remove-tool-btn"
+                            onClick={() => handleToolRemove(tool)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+
                                 </div>
                             </div>
                         </div>

@@ -585,7 +585,9 @@ const Post = mongoose.model("Post", postSchema);
       const role = req.user.role; // Extract role from the token
   
       const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-      const user = await userModel.findById(userId).select('role profileDetails createdAt googleSignup');
+      const user = await userModel.findById(userId)
+      .select('role profileDetails createdAt googleSignup')
+      .populate('profileDetails.projects', 'projectName description tags tools thumbnail projectUrl'); // Populate project details selectively
   
       if (!user) {
         return res.status(404).json({ success: false, profile: 'User not Found' });
@@ -733,9 +735,8 @@ const Post = mongoose.model("Post", postSchema);
         }
   
         // Retrieve files from multer
-        const thumbnail = req.files["thumbnail"]
-          ? req.files["thumbnail"][0].path
-          : null;
+  // Retrieve files from multer
+        const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
   
         const selectedFiles = req.files["selectedFiles"]
           ? req.files["selectedFiles"].map((file) => file.path)

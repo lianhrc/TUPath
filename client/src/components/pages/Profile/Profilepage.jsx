@@ -197,12 +197,7 @@ function ProfilePage() {
                 {/* Display Projects */}
                   {projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                      <img 
-                        src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
-                          ? `http://localhost:3001${project.thumbnail}` 
-                          : project.thumbnail || avatar} 
-                        alt="project-thumbnail"
-                      />
+                      {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
                       <p className='proj-status'>{project.status || 'Pending'}</p> {/* Dynamically display status */}
                     </div>
