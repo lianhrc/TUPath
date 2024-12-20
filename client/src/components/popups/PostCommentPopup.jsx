@@ -113,24 +113,28 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   const handleSaveClick = async (commentId) => {
     if (editedText.trim() === "") return;
 
+    console.log("Attempting to save comment...", { editedText, commentId }); // Debug log
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
-        { comment: editedText },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
+        const response = await axios.put(
+            `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
+            { comment: editedText },
+            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        );
 
-      setComments((prevComments) =>
-        prevComments.map((comment) =>
-          comment._id === commentId ? response.data.comment : comment
-        )
-      );
-      setIsEditing(null);
-      setEditedText("");
+        console.log("Comment updated successfully:", response.data); // Debug log
+        setComments((prevComments) =>
+            prevComments.map((comment) =>
+                comment._id === commentId ? response.data.comment : comment
+            )
+        );
+        setIsEditing(null);
+        setEditedText("");
     } catch (error) {
-      console.error("Error editing comment:", error);
+        console.error("Error during save:", error); // Debug log
     }
-  };
+};
+
+
 
   const handleCancelEdit = () => {
     setIsEditing(null);

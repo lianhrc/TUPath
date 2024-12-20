@@ -191,6 +191,52 @@ app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res
   }
 });
 
+// Edit a comment on a post
+app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.postId;
+  const commentId = req.params.commentId;
+  const { comment } = req.body;
+
+  if (!comment || comment.trim() === "") {
+      return res.status(400).json({ success: false, message: "Comment cannot be empty" });
+  }
+
+  try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Find the comment to edit
+      const existingComment = post.comments.find(
+          (commentItem) => commentItem._id.toString() === commentId && commentItem.userId === userId
+      );
+
+      if (!existingComment) {
+          return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
+      }
+
+      // Update the comment text
+      existingComment.comment = comment;
+      existingComment.updatedAt = new Date();
+
+      // Save the updated post
+      await post.save();
+
+      // Emit the comment edit event
+      io.emit("edit_comment", { postId, comment: existingComment });
+
+      res.status(200).json({ success: true, comment: existingComment });
+  } catch (err) {
+      console.error("Error editing comment:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
   
 
 // Increment upvotes for a post
