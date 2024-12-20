@@ -7,12 +7,13 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
 
   if (!show || !project) return null;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
-      onDelete(project._id); // Call onDelete function passed from the parent
-      onClose(); // Close the modal after deletion
+      await onDelete(project._id); // Wait for deletion to complete
+      onClose(); // Close the modal only after successful deletion
     }
   };
+  
 
   // Extract file name from the full path
   const getFileName = (filePath) => {

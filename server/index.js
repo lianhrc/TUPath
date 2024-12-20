@@ -845,10 +845,9 @@ const Post = mongoose.model("Post", postSchema);
   
   
   
-  
   app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.id; // Extract user ID from the token
       const { projectId } = req.params;
   
       // Find the user
@@ -857,19 +856,27 @@ const Post = mongoose.model("Post", postSchema);
         return res.status(404).json({ success: false, message: "User not found" });
       }
   
-      // Find the project and remove it from the user's profile
-      const projectIndex = user.profileDetails.projects.findIndex(project => project._id.toString() === projectId);
+      // Find the project in the user's profile and remove it
+      const projectIndex = user.profileDetails.projects.findIndex(
+        (project) => project._id.toString() === projectId
+      );
       if (projectIndex === -1) {
-        return res.status(404).json({ success: false, message: "Project not found" });
+        return res.status(404).json({ success: false, message: "Project not found in user's profile" });
       }
   
-      // Remove the project from the user's profile
+      // Remove the project reference from the user's profile
       user.profileDetails.projects.splice(projectIndex, 1);
       await user.save();
   
+      // Delete the project document from the 'projects' collection
+      const deletedProject = await Project.findByIdAndDelete(projectId);
+      if (!deletedProject) {
+        return res.status(404).json({ success: false, message: "Project not found in projects collection" });
+      }
+  
       res.status(200).json({
         success: true,
-        message: "Project deleted successfully"
+        message: "Project deleted successfully from user's profile and projects collection",
       });
     } catch (error) {
       console.error("Error deleting project:", error);

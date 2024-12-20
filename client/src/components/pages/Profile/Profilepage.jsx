@@ -81,15 +81,19 @@ function ProfilePage() {
       try {
         const response = await axiosInstance.delete(`/api/projects/${projectId}`);
         if (response.data.success) {
-          // Remove the deleted project from state
+          // Update the UI state to reflect the deletion
           setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
+          console.log('Project deleted successfully.');
         } else {
-          console.error("Error deleting project:", response.data.message);
+          console.error('Failed to delete project:', response.data.message);
         }
       } catch (error) {
-        console.error("Error deleting project:", error);
+        console.error('Error occurred while deleting the project:', error);
       }
     };
+    
+    
+  
     
 
   return (
