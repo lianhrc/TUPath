@@ -9,7 +9,7 @@
   const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
-
+  require('dotenv').config()
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
 
@@ -34,10 +34,16 @@
 
 
   // MongoDB connection
-  mongoose
-    .connect("mongodb://127.0.0.1:27017/tupath_users")
-    .then(() => console.log("MongoDB connected successfully"))
+  mongoose.connect(
+    "mongodb+srv://admin123:admin123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority",
+    {
+      useNewUrlParser: true,
+    }
+  )
+    .then(() => console.log("Connected to MongoDB Atlas successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
+  
+  
 
 
     // Configure multer for file uploads
