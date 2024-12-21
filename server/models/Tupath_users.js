@@ -127,14 +127,36 @@ const EmployerUserSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
+const AssessmentQuestionSchema = new mongoose.Schema({
+  text: { type: String, required: true }, // The question text
+  type: { type: String, enum: ['rating', 'indicator'], required: true }, // Specifies the input type
+  scale: {
+      min: { type: Number, default: 1 }, // Minimum value of the scale
+      max: { type: Number, default: 5 }, // Maximum value of the scale
+      step: { type: Number, default: 1 } // Step size for ratings (e.g., 1, 0.5)
+  },
+  required: { type: Boolean, default: true }, // Is the question mandatory?
+  category: { type: String, required: false }, // Optional grouping for questions
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+
+
+
+
+
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
+const AssessmentQuestion = mongoose.model('AssessmentQuestion', AssessmentQuestionSchema);
+
 
 
 module.exports = {
   Tupath_usersModel,
   Employer_usersModel,
   Project,
+  AssessmentQuestion,
 };

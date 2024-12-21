@@ -1,54 +1,52 @@
 import React, { useState } from "react";
 import "./ProjectAssessmentModal.css";
 
-const ProjectAssessmentModal = ({ 
-  show, 
-  onClose, 
-  questions, 
-  ratings, 
-  setRatings, 
-  onFinalSubmit 
+const ProjectAssessmentModal = ({
+  show,
+  onClose,
+  questions,
+  ratings,
+  setRatings,
+  onFinalSubmit,
 }) => {
-  const [currentPage, setCurrentPage] = useState(0); // Track current page
+  const [currentPage, setCurrentPage] = useState(0); // Current page for pagination
   const questionsPerPage = 5; // Number of questions per page
-  const totalPages = Math.ceil(questions.length / questionsPerPage); // Total pages
+  const totalPages = Math.ceil(questions.length / questionsPerPage); // Total number of pages
 
   if (!show) return null;
 
-  // Handle star rating click
-  const handleRatingClick = (index, rating) => {
+  // Handle rating updates
+  const handleRatingChange = (index, rating) => {
     const updatedRatings = [...ratings];
     updatedRatings[index] = rating;
     setRatings(updatedRatings);
   };
 
-  // Navigate to the next page
+  // Navigation between pages
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
   };
 
-  // Navigate to the previous page
   const handlePreviousPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 0) setCurrentPage(currentPage - 1);
   };
 
-  // Submit the assessment
+  // Submit assessment
   const handleSubmit = () => {
     if (ratings.some((rating) => rating === 0)) {
       alert("Please provide ratings for all questions before submitting.");
       return;
     }
-    onFinalSubmit(); // Trigger the final submit action
-    onClose(); // Close the modal
+    onFinalSubmit();
+    onClose();
   };
 
-  // Calculate the current set of questions to display
+  // Calculate questions for the current page
   const startIndex = currentPage * questionsPerPage;
-  const currentQuestions = questions.slice(startIndex, startIndex + questionsPerPage);
+  const currentQuestions = questions.slice(
+    startIndex,
+    startIndex + questionsPerPage
+  );
 
   return (
     <div className="assessment-modal-overlay" onClick={onClose}>
@@ -57,12 +55,11 @@ const ProjectAssessmentModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <h3>Project Assessment</h3>
-        <p>Please rate the following questions before final submission:</p>
-
+        <p>Please rate the following questions:</p>
         <div className="assessment-questions">
           {currentQuestions.map((question, index) => (
             <div key={startIndex + index} className="assessment-question">
-              <p>{question}</p>
+              <p>{question.text}</p>
               <div className="star-rating">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
@@ -70,7 +67,7 @@ const ProjectAssessmentModal = ({
                     className={`star ${
                       star <= ratings[startIndex + index] ? "selected" : ""
                     }`}
-                    onClick={() => handleRatingClick(startIndex + index, star)}
+                    onClick={() => handleRatingChange(startIndex + index, star)}
                   >
                     ★
                   </span>
@@ -79,7 +76,6 @@ const ProjectAssessmentModal = ({
             </div>
           ))}
         </div>
-
         <div className="assessment-buttons">
           {currentPage > 0 && (
             <button onClick={handlePreviousPage} className="assessment-nav-btn">
