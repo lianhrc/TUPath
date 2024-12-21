@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./PostCommentPopup.css";
 import dot from "../../assets/dots.png";
@@ -39,6 +40,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   const [isEditing, setIsEditing] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [showActions, setShowActions] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -157,6 +159,10 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     setShowActions((prev) => (prev === commentId ? null : commentId));
   };
 
+  const handleProfileClick = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+
   return (
     <div className="comments-section">
       <div className="comment-input">
@@ -185,13 +191,21 @@ const PostCommentPopup = ({ post, toggleComments }) => {
                 src={comment.profileImg}
                 alt={comment.username}
                 className="comment-profile"
+                onClick={() => handleProfileClick(comment.userId)}
+                style={{ cursor: "pointer" }}
               />
             </div>
 
             <div>
               <div className="commentsubs">
                 <div className="usernametopcontainer">
-                  <p className="comment-user">{comment.username || "Unknown User"}</p>
+                  <p
+                    className="comment-user"
+                    onClick={() => handleProfileClick(comment.userId)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {comment.username || "Unknown User"}
+                  </p>
                   <img
                     src={dot}
                     alt="dots"
