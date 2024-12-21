@@ -34,11 +34,15 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
     <div className="projprev-overlay">
       <div className="projprev-content">
         <div className="projprevheader">
-        <img 
-          src={project.thumbnail.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail} 
-          alt="Thumbnail" 
-          className="project-thumbnail"
-        />
+        {project.thumbnail ? (
+            <img 
+              src={project.thumbnail.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail} 
+              alt="Thumbnail" 
+              className="project-thumbnail"
+            />
+          ) : (
+            <div className="placeholder-thumbnail">No Thumbnail</div>
+          )}
         </div>
 
         <div className="projprevcontentmain">
