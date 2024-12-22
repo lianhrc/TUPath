@@ -31,7 +31,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [tags, setTags] = useState([]);
+  const [tag, setTag] = useState("");
   const [tools, setTools] = useState([]);
   const [thumbnail, setThumbnail] = useState(null);
   const [projectUrl, setProjectUrl] = useState("");
@@ -45,15 +45,15 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (tags.length > 0) {
-      fetchAssessmentQuestions(tags);
+    if (tag) {
+      fetchAssessmentQuestions(tag); // Fetch questions based on the selected tag
     }
-  }, [tags]);
+  }, [tag]);
 
-  const fetchAssessmentQuestions = async (categories) => {
+  const fetchAssessmentQuestions = async (selectedTag) => {
     try {
       const response = await axiosInstance.get(
-        `http://localhost:3001/api/assessment-questions?category=${categories.join(",")}`
+        `http://localhost:3001/api/assessment-questions?category=${selectedTag}`
       );
       if (response.data.success) {
         setAssessmentQuestions(response.data.questions);
@@ -89,9 +89,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
 
   const handleTagSelect = (e) => {
     const selectedTag = e.target.value;
-    if (selectedTag && !tags.includes(selectedTag)) {
-      setTags([...tags, selectedTag]);
-    }
+    setTag(selectedTag); // Set the single tag
   };
 
   const handleTagRemove = (tagToRemove) => {
@@ -109,6 +107,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     setTools(tools.filter((tool) => tool !== toolToRemove));
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -122,6 +121,11 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
       return;
     }
 
+    if (!tag) {
+      alert("Please select a tag.");
+      return;
+    }
+
     if (assessmentQuestions.length > 0 && !readyToSubmit) {
       setShowAssessmentModal(true);
       return;
@@ -130,7 +134,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
-    tags.forEach((tag) => formData.append("tags", tag));
+    formData.append("tag", tag); // Pass the single tag
     tools.forEach((tool) => formData.append("tools", tool));
     formData.append("projectUrl", projectUrl);
     formData.append("status", status);
@@ -206,29 +210,17 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
               </div>
               <div className="bottom">
                 <label>Tags:</label>
-                <select onChange={handleTagSelect}>
-                  <option value="">Select a Tag</option>
-                  {predefinedTags.map((tag, index) => (
-                    <option key={index} value={tag}>
-                      {tag}
-                    </option>
-                  ))}
-                </select>
-                <div className="tags-list">
-                  {tags.map((tag, index) => (
-                    <span key={index} className="tag">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => handleTagRemove(tag)}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
+                <select value={tag} onChange={handleTagSelect}>
+              <option value="">Select a Tag</option>
+              {predefinedTags.map((tag, index) => (
+                <option key={index} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
 
 
-<div className="tools-input-container">
+                <div className="tools-input-container">
                   <label>Tools Used:</label>
                     <select onChange={handleToolSelect}>
                       <option value="">Select a Tool</option>
@@ -252,7 +244,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                         </span>
                       ))}
                     </div>
-                  </div>
+                  
 
 
                 </div>

@@ -71,9 +71,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
 
           <div className="projprev-right">
             <div className="projprevtags">
-              {project.tags.map(tag => (
-                <div key={tag} className="tag-item">{tag}</div>
-              ))}
+            <div className="tag-item">{project.tag}</div>
             </div>
             <div className="projprevtools">
               {project.tools.map(tool => (

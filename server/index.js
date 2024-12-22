@@ -700,7 +700,7 @@ const Post = mongoose.model("Post", postSchema);
     async (req, res) => {
       try {
         const userId = req.user.id; // Extract user ID from the token
-        const { projectName, description, tags, tools, projectUrl, assessment } = req.body;
+        const { projectName, description, tag, tools, projectUrl, assessment } = req.body; // Use 'tag' instead of 'tags'
   
         // Validate required fields
         if (!projectName || !projectName.trim()) {
@@ -711,22 +711,34 @@ const Post = mongoose.model("Post", postSchema);
           return res.status(400).json({ success: false, message: "Description is required." });
         }
   
+        if (!tag || !tag.trim()) {
+          return res.status(400).json({ success: false, message: "A single tag is required." });
+        }
+  
         // Parse assessment data
         const parsedAssessment = assessment ? JSON.parse(assessment) : [];
   
-        // Validate assessment data if certain tags require it
-        if (tags.includes("Web Development")) {
+        // Validate assessment data for required tags
+        const requiredAssessmentTags = [
+          "Web Development",
+          "AI",
+          "Machine Learning",
+          "Data Science",
+          "Cybersecurity",
+          "Mobile Development",
+          "UI/UX Design",
+        ];
+        if (requiredAssessmentTags.includes(tag)) {
           if (!parsedAssessment || parsedAssessment.length === 0) {
             return res.status(400).json({
               success: false,
-              message: "Assessment is required for Web Development projects.",
+              message: `Assessment is required for ${tag} projects.`,
             });
           }
   
           // Check that all questions have valid ratings
           const isValidAssessment = parsedAssessment.every(
-            (item) =>
-              item.question && item.rating >= 1 && item.rating <= 5
+            (item) => item.question && item.rating >= 1 && item.rating <= 5
           );
   
           if (!isValidAssessment) {
@@ -750,7 +762,7 @@ const Post = mongoose.model("Post", postSchema);
         const newProject = new Project({
           projectName,
           description,
-          tags: Array.isArray(tags) ? tags : [tags],
+          tag, // Save the single tag
           tools: Array.isArray(tools) ? tools : [tools],
           selectedFiles,
           thumbnail,
@@ -764,15 +776,14 @@ const Post = mongoose.model("Post", postSchema);
   
         // Associate the project with the user
         const user = await Tupath_usersModel.findById(userId);
-        
+  
         if (!user) {
-          return res
-            .status(404)
-            .json({ success: false, message: "User not found" });
+          return res.status(404).json({ success: false, message: "User not found" });
         }
   
         // Add the project to the user's profileDetails.projects
         user.profileDetails.projects.push(savedProject._id);
+        await user.calculateBestTag(); // Recalculate the best tag for the user
         await user.save();
   
         res.status(201).json({
@@ -786,6 +797,7 @@ const Post = mongoose.model("Post", postSchema);
       }
     }
   );
+  
   
   
   
