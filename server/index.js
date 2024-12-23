@@ -866,44 +866,57 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 // -----------------------------------api for dynamic search----------------------------------
-  app.get('/api/search', verifyToken, async (req, res) => {
-    const { query, filter } = req.query;
-    if (!query) {
-      return res.status(400).json({ success: false, message: 'Query parameter is required' });
+
+app.get('/api/search', verifyToken, async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ success: false, message: 'Query parameter is required' });
+  }
+
+  try {
+    const regex = new RegExp(query, 'i'); // Case-insensitive regex
+    const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
+    let results = [];
+
+    if (req.user.role === 'student') {
+      // Students can search employers
+      const employerResults = await Employer_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...employerResults];
+    } else if (req.user.role === 'employer') {
+      // Employers can search students
+      const studentResults = await Tupath_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...studentResults];
     }
 
-    try {
-      const regex = new RegExp(query, 'i'); // Case-insensitive regex
-      let results = [];
-
-      if (filter === 'students') {
-        const studentResults = await Tupath_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...studentResults];
-      }
-
-      if (filter === 'employers') {
-        const employerResults = await Employer_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...employerResults];
-      }
-
-      res.status(200).json({ success: true, results });
-    } catch (err) {
-      console.error('Error during search:', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-  });
+    res.status(200).json({ success: true, results });
+  } catch (err) {
+    console.error('Error during search:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
   app.get('/api/profile/:id', verifyToken, async (req, res) => {
