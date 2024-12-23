@@ -34,14 +34,13 @@
 
 
   // MongoDB connection
-  mongoose.connect(
-    "mongodb+srv://admin123:admin123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-    }
-  )
-    .then(() => console.log("Connected to MongoDB Atlas successfully"))
-    .catch((err) => console.error("MongoDB connection error:", err));
+// MongoDB connection
+mongoose.connect(
+  "mongodb+srv://admin123:admin123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+)
+  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
   
   
 
