@@ -11,6 +11,7 @@ import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 import dots from '../../../assets/dots.png';
 import EditPostOption from '../../popups/EditOptionsModal';
+import { useNavigate } from "react-router-dom";
 
 const socket = io('http://localhost:3001');
 
@@ -28,6 +29,7 @@ const Homepage = () => {
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [activePostId, setActivePostId] = useState(null);
+  const navigate = useNavigate();
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
@@ -188,6 +190,10 @@ const Homepage = () => {
     setActivePostId((prevId) => (prevId === postId ? null : postId));
   };
 
+  const handleProfileClick = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+
   const renderPost = (post, index) => {
     const userId = 'user_id_from_auth'; // Replace with actual user ID from authentication
     const hasUpvoted = post.votedUsers.includes(userId);
@@ -196,9 +202,14 @@ const Homepage = () => {
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
           <div className="topleftpostcontent">
-            <img src={post.profileImg} alt={post.name} />
+            <img src={post.profileImg} alt={post.name} 
+            onClick={() => handleProfileClick(post.userId)}
+            style={{ cursor: "pointer" }}/>
             <div className="frompost">
-              <h5>{post.name}</h5>
+              <h5 onClick={() => handleProfileClick(post.userId)} 
+                style={{ cursor: "pointer" }}>
+                {post.name}
+              </h5>
               <p>{formatTimeAgo(post.timestamp)}</p>
             </div>
           </div>

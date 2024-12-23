@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./PostCommentPopup.css";
 import dot from "../../assets/dots.png";
@@ -39,6 +40,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   const [isEditing, setIsEditing] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [showActions, setShowActions] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -113,24 +115,28 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   const handleSaveClick = async (commentId) => {
     if (editedText.trim() === "") return;
 
+    console.log("Attempting to save comment...", { editedText, commentId }); // Debug log
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
-        { comment: editedText },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
+        const response = await axios.put(
+            `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
+            { comment: editedText },
+            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        );
 
-      setComments((prevComments) =>
-        prevComments.map((comment) =>
-          comment._id === commentId ? response.data.comment : comment
-        )
-      );
-      setIsEditing(null);
-      setEditedText("");
+        console.log("Comment updated successfully:", response.data); // Debug log
+        setComments((prevComments) =>
+            prevComments.map((comment) =>
+                comment._id === commentId ? response.data.comment : comment
+            )
+        );
+        setIsEditing(null);
+        setEditedText("");
     } catch (error) {
-      console.error("Error editing comment:", error);
+        console.error("Error during save:", error); // Debug log
     }
-  };
+};
+
+
 
   const handleCancelEdit = () => {
     setIsEditing(null);
@@ -151,6 +157,10 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
   const handleDotClick = (commentId) => {
     setShowActions((prev) => (prev === commentId ? null : commentId));
+  };
+
+  const handleProfileClick = (userId) => {
+    navigate(`/profile/${userId}`);
   };
 
   return (
@@ -181,13 +191,21 @@ const PostCommentPopup = ({ post, toggleComments }) => {
                 src={comment.profileImg}
                 alt={comment.username}
                 className="comment-profile"
+                onClick={() => handleProfileClick(comment.userId)}
+                style={{ cursor: "pointer" }}
               />
             </div>
 
             <div>
               <div className="commentsubs">
                 <div className="usernametopcontainer">
-                  <p className="comment-user">{comment.username || "Unknown User"}</p>
+                  <p
+                    className="comment-user"
+                    onClick={() => handleProfileClick(comment.userId)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {comment.username || "Unknown User"}
+                  </p>
                   <img
                     src={dot}
                     alt="dots"
