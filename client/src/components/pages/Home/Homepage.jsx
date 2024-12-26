@@ -60,11 +60,11 @@ const Homepage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to toggle upvote");
       }
-
+  
       const data = await response.json();
       if (data.success) {
         setPostsData((prevPosts) =>
@@ -77,6 +77,7 @@ const Homepage = () => {
       console.error("Error toggling upvote:", err);
     }
   };
+  
 
   const fetchPostsData = async () => {
     try {
@@ -115,6 +116,17 @@ const Homepage = () => {
       socket.off('receive_comment');
     };
   }, []);
+
+  useEffect(() => {
+    socket.on("delete_post", ({ postId }) => {
+      setPostsData((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+    });
+  
+    return () => {
+      socket.off("delete_post");
+    };
+  }, []);
+  
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -193,6 +205,35 @@ const Homepage = () => {
   const handleProfileClick = (userId) => {
     navigate(`/profile/${userId}`);
   };
+  
+  const handleDeletePost = async (postId) => {
+    try {
+      const response = await axiosInstance.delete(`/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      const { success, message } = response.data;
+  
+      if (success) {
+        // Optimistic UI update: remove post from local state
+        setPostsData((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId) // Removing the deleted post
+        );
+      } else {
+        console.error("Error deleting post:", message);
+        alert(message || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("An error occurred while deleting the post. Please try again.");
+    }
+  };
+  
+  
+  
+  
 
   const renderPost = (post, index) => {
     const userId = 'user_id_from_auth'; // Replace with actual user ID from authentication
@@ -214,19 +255,23 @@ const Homepage = () => {
             </div>
           </div>
           <div className="editdots-container">
-            <img
-              className="editdots"
-              src={dots}
-              alt="Options"
-              onClick={() => toggleEditModal(post._id)}
-            />
-            {activePostId === post._id && (
-              <EditPostOption
-                isOpen={activePostId === post._id}
-                onClose={() => setActivePostId(null)}
-              />
-            )}
-          </div>
+  <img
+    className="editdots"
+    src={dots}
+    alt="Options"
+    onClick={() => toggleEditModal(post._id)}
+  />
+  {activePostId === post._id && (
+    <EditPostOption
+    isOpen={activePostId === post._id}
+    onClose={() => setActivePostId(null)}
+    onDelete={() => handleDeletePost(post._id)} // Pass handleDeletePost to onDelete
+  />
+  
+  )}
+</div>
+
+
         </div>
         <div className="postcontent">
           <p>{post.content}</p>

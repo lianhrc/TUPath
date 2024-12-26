@@ -27,8 +27,11 @@ const EditOptionsModal = ({ isOpen, onClose, postContent, onEdit, onDelete }) =>
           </div>
         ) : (
           <div>
-            <h6 onClick={() => setIsEditing(true)}>Edit</h6>
-            <h6 onClick={onDelete}>Delete</h6>
+            <button onClick={() => setIsEditing(true)}>Edit</button>
+            {/* Replace the h6 with a button for deleting */}
+            <button onClick={onDelete} className="delete-button">
+              Delete
+            </button>
           </div>
         )}
       </div>
