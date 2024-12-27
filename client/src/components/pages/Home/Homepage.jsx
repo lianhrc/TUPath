@@ -31,6 +31,7 @@ const Homepage = () => {
   const [activePostId, setActivePostId] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+  const [editingImage, setEditingImage] = useState(null);
   const navigate = useNavigate();
 
   const formatTimeAgo = (timestamp) => {
@@ -62,11 +63,11 @@ const Homepage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to toggle upvote");
       }
-  
+
       const data = await response.json();
       if (data.success) {
         setPostsData((prevPosts) =>
@@ -170,6 +171,17 @@ const Homepage = () => {
     }
   };
 
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setNewPostContent('');
@@ -233,17 +245,23 @@ const Homepage = () => {
   const saveEdit = async () => {
     if (editingPostId && editingContent.trim()) {
       try {
-        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, {
+        const updatedPost = {
           content: editingContent,
-        });
+          postImg: editingImage || undefined, // Ensure the new image is added if provided
+        };
+  
+        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, updatedPost);
         if (response.data.success) {
           setPostsData((prevPosts) =>
             prevPosts.map((post) =>
-              post._id === editingPostId ? { ...post, content: editingContent } : post
+              post._id === editingPostId
+                ? { ...post, content: editingContent, postImg: editingImage || post.postImg }
+                : post
             )
           );
           setEditingPostId(null);
           setEditingContent('');
+          setEditingImage(null); // Reset the editing image state
         } else {
           console.error('Failed to save edit:', response.data.message);
         }
@@ -252,10 +270,12 @@ const Homepage = () => {
       }
     }
   };
+  
 
   const cancelEdit = () => {
     setEditingPostId(null);
     setEditingContent('');
+    setEditingImage(null);
   };
 
   const renderPost = (post, index) => {
@@ -297,6 +317,7 @@ const Homepage = () => {
                 onEditMode={() => {
                   setEditingPostId(post._id);
                   setEditingContent(post.content);
+                  setEditingImage(post.postImg);
                   setActivePostId(null);
                 }}
               />
@@ -310,6 +331,12 @@ const Homepage = () => {
                 value={editingContent}
                 onChange={(e) => setEditingContent(e.target.value)}
               />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleEditImageChange}
+              />
+              {editingImage && <img src={editingImage} alt="Preview" className="post-image" />}
               <button onClick={saveEdit}>Save</button>
               <button onClick={cancelEdit}>Cancel</button>
             </div>
