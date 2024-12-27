@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './AdminDashboard.css';
 import { FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa'; // Importing icons
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('Users'); // State to track the active section
@@ -156,7 +159,6 @@ const UsersSection = () => {
   
         {/* Users List Container */}
         <div className="userslistcontainer">
-          <h3>{selectedType} List</h3>
           {selectedType === 'Students' ? renderStudentsTable() : renderEmployersTable()}
         </div>
       </div>
@@ -165,16 +167,151 @@ const UsersSection = () => {
   
 
   
+// Register necessary components for Pie Chart
+ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
 // Reports Section Component
 const ReportsSection = () => {
-  return (
-    <div className='reportsadminsection'>
-      <h2>Reports</h2>
-      <p>View reports here.</p>
-    </div>
-  );
-};
+    const [userType, setUserType] = useState('Students'); // Track selected user type (students/employers)
+  
+    // Sample data for demonstration
+    const data = {
+      Students: {
+        totalUsers: 200,   // Total users
+        newUsers: 50,      // New users
+      },
+      Employers: {
+        totalUsers: 100,   // Total employers
+        newUsers: 30,      // New employers
+      },
+    };
+  
+    // Pie chart data based on the selected user type
+    const chartData = {
+      labels: [`Total ${userType}`, `New ${userType}`],
+      datasets: [
+        {
+          data: [data[userType].totalUsers, data[userType].newUsers],
+          backgroundColor: ['rgba(75,192,192,0.6)', 'rgba(255,99,132,0.6)'],
+          hoverBackgroundColor: ['rgba(75,192,192,0.8)', 'rgba(255,99,132,0.8)'],
+        },
+      ],
+    };
+  
+    return (
+      <div className='reportsadminsection'>
+        <div className="reportsleftsection">
+            <h2>Reports</h2>
+            <p>View reports here.</p>
+    
+            {/* Radio buttons for selecting user type */}
+            <div className="radio-buttons">
+            <label>
+                <input
+                type="radio"
+                name="userType"
+                value="Students"
+                checked={userType === 'Students'}
+                onChange={() => setUserType('Students')}
+                />
+                Students
+            </label>
+            <label>
+                <input
+                type="radio"
+                name="userType"
+                value="Employers"
+                checked={userType === 'Employers'}
+                onChange={() => setUserType('Employers')}
+                />
+                Employers
+            </label>
+            </div>
+            {/* Pie chart to display the data */}
+            <div className="chart-container">
+            <Pie data={chartData} options={{ responsive: true, plugins: { title: { display: true, text: `User Stats for ${userType}` } } }} />
+            </div>
+        </div>
+
+        <div className="reports-section__right">
+            <div className="reports-section__search">
+                <label htmlFor="">Search</label>    
+                <input type="search" />
+            </div>
+            <div className="reports-section__table-wrapper">
+                <div className="reports-section__table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Scores</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>John Doe</td>
+                        <td>john.doe@example.com</td>
+                        <td>10</td>
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>10</td>
+
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>10</td>
+
+                    </tr>
+
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>9</td>
+                    </tr>
+
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>9</td>
+                    </tr>
+
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>8</td>
+                    </tr>
+
+                     <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>7</td>
+                    </tr>
+
+                     <tr>
+                        <td>Jane Smith</td>
+                        <td>jane.smith@example.com</td>
+                        <td>7</td>
+                    </tr>
+                   
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </div>
+
+
+      </div>
+    );
+  };
 
 
 export default AdminDashboard;
