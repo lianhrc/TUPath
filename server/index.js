@@ -235,6 +235,42 @@ app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) =
   }
 });
 
+
+// update a post
+app.put("/api/posts/:postId", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.postId;
+  const { content } = req.body;
+
+  if (!content || content.trim() === "") {
+    return res.status(400).json({ success: false, message: "Post content cannot be empty" });
+  }
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    post.content = content;
+    post.updatedAt = new Date();
+
+    await post.save();
+
+    res.status(200).json({ success: true, post });
+  } catch (err) {
+    console.error("Error editing post:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+// delete a post
 app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
   const userId = req.user.id; // Extract userId from the verified token
   const postId = req.params.postId;
@@ -271,11 +307,6 @@ app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
   }
 });
 
-
-
-
-
-  
 
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
