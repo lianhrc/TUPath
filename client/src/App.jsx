@@ -8,6 +8,7 @@ import LoginRoles from './components/pages/Login/LoginRoles';
 import Landingpage from './components/pages/Main/Landingpage';
 import Studentlandpage from './components/pages/Main/studentlandpage';
 import AdminLogin from './components/pages/admin/AdminLogin.jsx';
+import AdminDashboard from './components/pages/admin/AdminDashboard.jsx'; // Admin dashboard component
 import Employerlandpage from './components/pages/Main/employerlandpage';
 import Homepage from './components/pages/Home/Homepage';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
@@ -69,7 +70,6 @@ function App() {
         />
 
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path='/admin-login' element={<AdminLogin />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path='/employerlandpage' element={<Employerlandpage />} />
           <Route path='/studentlandpage' element={<Studentlandpage />} />
@@ -79,6 +79,8 @@ function App() {
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
+          <Route path='/adminlogin' element={<AdminLogin />} />
+          <Route path='/admindashboard' element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
