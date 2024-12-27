@@ -56,7 +56,10 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
         `http://localhost:3001/api/assessment-questions?category=${selectedTag}`
       );
       if (response.data.success) {
-        setAssessmentQuestions(response.data.questions);
+        setAssessmentQuestions(response.data.questions.map(q => ({
+          text: q.text,
+          scoring: q.scoring,
+        })));
         setAssessmentRatings(Array(response.data.questions.length).fill(0));
       } else {
         console.error("Failed to fetch assessment questions:", response.data.message);
@@ -144,6 +147,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
         assessmentQuestions.map((question, index) => ({
           question,
           rating: assessmentRatings[index],
+          scoring: question.scoring, // Include scoring data
         }))
       )
     );

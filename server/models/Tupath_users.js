@@ -46,6 +46,11 @@ const TupathUserSchema = new mongoose.Schema({
     
   },
   bestTag: { type: String }, // New field to store the tag the student excels in
+  bestTagScores: {
+    type: Map, // A map of tags to scores
+    of: Number,
+    default: {},
+  },
   memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when a user is created
@@ -54,42 +59,44 @@ const TupathUserSchema = new mongoose.Schema({
 
 TupathUserSchema.methods.calculateBestTag = async function () {
   try {
-    // Fetch all projects associated with this user
     const user = this;
+
+    // Fetch all projects associated with the user
     const projects = await mongoose.model('Project').find({
       _id: { $in: user.profileDetails.projects },
     });
 
-    // Aggregate ratings by tag
-    const tagRatings = projects.reduce((acc, project) => {
+    // Aggregate cumulative scores by tag
+    const tagScores = projects.reduce((acc, project) => {
       if (project.tag && project.assessment.length > 0) {
-        const avgRating =
-          project.assessment.reduce((sum, a) => sum + a.rating, 0) /
-          project.assessment.length;
+        const weightedScore = project.assessment.reduce(
+          (sum, a) => sum + (a.weightedScore || a.rating * 1), // Use weightedScore if available, else calculate
+          0
+        );
 
-        if (!acc[project.tag]) {
-          acc[project.tag] = { totalRating: 0, count: 0 };
-        }
-        acc[project.tag].totalRating += avgRating;
-        acc[project.tag].count += 1;
+        acc[project.tag] = (acc[project.tag] || 0) + weightedScore; // Accumulate scores
       }
       return acc;
     }, {});
 
-    // Determine the tag with the highest average rating
-    let bestTag = null;
-    let highestAvgRating = 0;
+    // Update the bestTagScores map
+    user.bestTagScores = tagScores;
 
-    for (const [tag, { totalRating, count }] of Object.entries(tagRatings)) {
-      const avgRating = totalRating / count;
-      if (avgRating > highestAvgRating) {
+    // Determine the tag with the highest cumulative score
+    let bestTag = null;
+    let highestScore = 0;
+
+    for (const [tag, score] of Object.entries(tagScores)) {
+      if (score > highestScore) {
         bestTag = tag;
-        highestAvgRating = avgRating;
+        highestScore = score;
       }
     }
 
     // Update the user's bestTag field
     user.bestTag = bestTag;
+
+    // Save the updated user document
     await user.save();
   } catch (error) {
     console.error("Error calculating best tag:", error);
@@ -111,10 +118,14 @@ const projectSchema = new mongoose.Schema({
   projectUrl: String, // Optional project link
   status: { type: String, default: 'pending' }, // Status field, default is 'pending'
   createdAt: { type: Date, default: Date.now }, // Automatically set creation date
-  assessment: [ // New field for assessment questions and ratings
+  assessment: [
     {
-      question: { type: String, required: true },
+      question: {
+        text: { type: String, required: true },
+        scoring: { type: Map, of: Number, required: true },
+      },
       rating: { type: Number, required: true, min: 1, max: 5 },
+      weightedScore: { type: Number, default: 0 },
     },
   ],
 });
@@ -187,7 +198,12 @@ const AssessmentQuestionSchema = new mongoose.Schema({
   required: { type: Boolean, default: true }, // Is the question mandatory?
   category: { type: String, required: true }, // Optional grouping for questions
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  scoring: { // Define custom scores for each star
+    type: Map,
+    of: Number, // e.g., { "1": 3, "2": 5, "3": 10, "4": 15, "5": 20 }
+    required: true,
+  },
 });
 
 

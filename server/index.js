@@ -9,6 +9,7 @@
   const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
+  require('dotenv').config()
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -32,13 +33,20 @@
     next();
   });
 
-
+/*
   // MongoDB connection
   mongoose
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
+*/
 
+// MongoDB connection
+mongoose.connect(
+  "mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+)
+  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
     // Configure multer for file uploads
     const storage = multer.diskStorage({
@@ -700,7 +708,7 @@ const Post = mongoose.model("Post", postSchema);
     async (req, res) => {
       try {
         const userId = req.user.id; // Extract user ID from the token
-        const { projectName, description, tag, tools, projectUrl, assessment } = req.body; // Use 'tag' instead of 'tags'
+        const { projectName, description, tag, tools, projectUrl, assessment } = req.body;
   
         // Validate required fields
         if (!projectName || !projectName.trim()) {
@@ -716,7 +724,12 @@ const Post = mongoose.model("Post", postSchema);
         }
   
         // Parse assessment data
-        const parsedAssessment = assessment ? JSON.parse(assessment) : [];
+        const parsedAssessment = assessment
+          ? JSON.parse(assessment).map(q => ({
+              ...q,
+              weightedScore: q.scoring[q.rating], // Use the scoring for the given rating
+            }))
+          : [];
   
         // Validate assessment data for required tags
         const requiredAssessmentTags = [
@@ -728,6 +741,7 @@ const Post = mongoose.model("Post", postSchema);
           "Mobile Development",
           "UI/UX Design",
         ];
+  
         if (requiredAssessmentTags.includes(tag)) {
           if (!parsedAssessment || parsedAssessment.length === 0) {
             return res.status(400).json({
@@ -738,7 +752,7 @@ const Post = mongoose.model("Post", postSchema);
   
           // Check that all questions have valid ratings
           const isValidAssessment = parsedAssessment.every(
-            (item) => item.question && item.rating >= 1 && item.rating <= 5
+            item => item.question && item.rating >= 1 && item.rating <= 5
           );
   
           if (!isValidAssessment) {
@@ -755,7 +769,7 @@ const Post = mongoose.model("Post", postSchema);
           : null;
   
         const selectedFiles = req.files["selectedFiles"]
-          ? req.files["selectedFiles"].map((file) => file.path)
+          ? req.files["selectedFiles"].map(file => file.path)
           : [];
   
         // Create a new project document
@@ -783,7 +797,11 @@ const Post = mongoose.model("Post", postSchema);
   
         // Add the project to the user's profileDetails.projects
         user.profileDetails.projects.push(savedProject._id);
-        await user.calculateBestTag(); // Recalculate the best tag for the user
+  
+        // Recalculate the best tag and cumulative scores
+        await user.calculateBestTag();
+  
+        // Save the updated user
         await user.save();
   
         res.status(201).json({
@@ -797,6 +815,7 @@ const Post = mongoose.model("Post", postSchema);
       }
     }
   );
+  
   
   
   
