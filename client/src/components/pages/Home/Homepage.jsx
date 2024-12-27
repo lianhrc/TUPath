@@ -159,22 +159,16 @@ const Homepage = () => {
     setNewPostContent(e.target.value);
   };
 
-  const handleImageChange = (e, postId) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPostsData((prevPosts) =>
-          prevPosts.map((post) =>
-            post._id === postId ? { ...post, newPostImage: reader.result } : post
-          )
-        );
+        setNewPostImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
-  
-  
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
@@ -212,7 +206,6 @@ const Homepage = () => {
     navigate(`/profile/${userId}`);
   };
 
-  //delete post state 
   const handleDeletePost = async (postId) => {
     try {
       const response = await axiosInstance.delete(`/api/posts/${postId}`, {
@@ -238,40 +231,27 @@ const Homepage = () => {
   };
 
   const saveEdit = async () => {
-  if (editingPostId && editingContent.trim()) {
-    try {
-      // Define the updated post data
-      const postToUpdate = {
-        content: editingContent,
-        postImg: postsData.find((post) => post._id === editingPostId)?.newPostImage || null, // use new post image if available
-      };
-
-      // Call the API to update the post
-      const response = await axiosInstance.put(`/api/posts/${editingPostId}`, postToUpdate);
-
-      if (response.data.success) {
-        // Update state with the edited content and image if available
-        setPostsData((prevPosts) =>
-          prevPosts.map((post) =>
-            post._id === editingPostId
-              ? { ...post, content: editingContent, postImg: postToUpdate.postImg }
-              : post
-          )
-        );
-        // Reset editing state
-        setEditingPostId(null);
-        setEditingContent('');
-      } else {
-        console.error('Failed to save edit:', response.data.message);
+    if (editingPostId && editingContent.trim()) {
+      try {
+        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, {
+          content: editingContent,
+        });
+        if (response.data.success) {
+          setPostsData((prevPosts) =>
+            prevPosts.map((post) =>
+              post._id === editingPostId ? { ...post, content: editingContent } : post
+            )
+          );
+          setEditingPostId(null);
+          setEditingContent('');
+        } else {
+          console.error('Failed to save edit:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error saving edit:', error);
       }
-    } catch (error) {
-      console.error('Error saving edit:', error);
     }
-  }
-};
-
-
-  
+  };
 
   const cancelEdit = () => {
     setEditingPostId(null);
@@ -330,16 +310,6 @@ const Homepage = () => {
                 value={editingContent}
                 onChange={(e) => setEditingContent(e.target.value)}
               />
-              <div>
-                <label htmlFor="editImage">Change Image</label>
-                <input
-                  type="file"
-                  id="editImage"
-                  onChange={(e) => handleImageChange(e, post._id)} // Handle image change
-                />
-                {/* Display the current image if any */}
-                {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
-              </div>
               <button onClick={saveEdit}>Save</button>
               <button onClick={cancelEdit}>Cancel</button>
             </div>
@@ -347,7 +317,7 @@ const Homepage = () => {
             <>
               <p>{post.content}</p>
               {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
-              </>
+            </>
           )}
         </div>
         <div className="downpostcontent">
