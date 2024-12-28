@@ -45,16 +45,13 @@
   text-align: center;
 }
 
-
-
 .search-input {
   height: 30px;
   width: 50%;
   padding: 10px;
   z-index: 10000;
   border: 1px solid #ccc;
-  border-top-left-radius: 35px;
-  border-bottom-left-radius: 35px;
+ border-radius: 35px;
   margin-right: -2px;
 }
 
