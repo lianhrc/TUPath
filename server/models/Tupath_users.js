@@ -70,7 +70,7 @@ TupathUserSchema.methods.calculateBestTag = async function () {
     const tagScores = projects.reduce((acc, project) => {
       if (project.tag && project.assessment.length > 0) {
         const weightedScore = project.assessment.reduce(
-          (sum, a) => sum + (a.weightedScore || a.rating * 1), // Use weightedScore if available, else calculate
+          (sum, a) => sum + (a.weightedScore || a.rating * 10), // Use weightedScore if available, else calculate
           0
         );
 
@@ -126,6 +126,17 @@ const projectSchema = new mongoose.Schema({
       },
       rating: { type: Number, required: true, min: 1, max: 5 },
       weightedScore: { type: Number, default: 0 },
+    },
+  ],
+  dynamicQuestions: [
+    {
+      tool: { type: String, required: true }, // Tool name
+      questions: [
+        {
+          text: { type: String, required: true },
+          scoring: { type: Map, of: Number, required: true },
+        },
+      ],
     },
   ],
 });

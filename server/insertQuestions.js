@@ -65,7 +65,7 @@ const questions = [
 const insertQuestions = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect("mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority", {
+    await mongoose.connect("mongodb://127.0.0.1:27017/tupath_users", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

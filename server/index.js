@@ -9,7 +9,7 @@
   const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
-  require('dotenv').config()
+  /*require('dotenv').config()*/
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -33,21 +33,21 @@
     next();
   });
 
-/*
+
   // MongoDB connection
   mongoose
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
-*/
 
+/*
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
+*/
     // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -823,15 +823,34 @@ const Post = mongoose.model("Post", postSchema);
   app.get("/api/projects", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
+  
+      // Fetch user with populated projects
       const user = await Tupath_usersModel.findById(userId).populate("profileDetails.projects");
   
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
   
+      // Add scores and tag summary for each project
+      const projectsWithScores = user.profileDetails.projects.map((project) => {
+        const totalScore = project.assessment.reduce((sum, question) => sum + (question.weightedScore || 0), 0);
+  
+        return {
+          _id: project._id,
+          projectName: project.projectName,
+          description: project.description,
+          tag: project.tag,
+          totalScore, // Sum of all weighted scores for the project
+          tools: project.tools,
+          status: project.status,
+          assessment: project.assessment, // Include detailed assessment
+          createdAt: project.createdAt,
+        };
+      });
+  
       res.status(200).json({
         success: true,
-        projects: user.profileDetails.projects,
+        projects: projectsWithScores,
       });
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -839,44 +858,6 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   
-
-  app.put("/api/projects/:projectId/status", verifyToken, async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { projectId } = req.params;
-      const { status } = req.body; // Expect status (e.g., "pending", "submitted", etc.)
-  
-      // Validate status
-      const validStatuses = ['pending', 'submitted', 'approved'];
-      if (!validStatuses.includes(status)) {
-        return res.status(400).json({ success: false, message: "Invalid status" });
-      }
-  
-      // Find the user and project
-      const user = await Tupath_usersModel.findById(userId);
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-  
-      const project = user.profileDetails.projects.find(project => project._id.toString() === projectId);
-      if (!project) {
-        return res.status(404).json({ success: false, message: "Project not found" });
-      }
-  
-      // Update project status
-      project.status = status;
-      await user.save();
-  
-      res.status(200).json({
-        success: true,
-        message: "Project status updated successfully",
-        project: project,
-      });
-    } catch (error) {
-      console.error("Error updating project status:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
   
   
   
