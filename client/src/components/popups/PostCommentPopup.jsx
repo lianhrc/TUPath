@@ -101,6 +101,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
       }
 
       setCommentText("");
+      handledComments.current.clear(); // Clear the handled comments ref
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
