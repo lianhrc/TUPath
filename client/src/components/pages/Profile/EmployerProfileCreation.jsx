@@ -206,7 +206,9 @@ function EmployerProfileCreation() {
                                     />
                                     <p>Internship Opportunities</p>
                            </div>
-                        <button type="submit" className="submit-btn">Submit</button>
+                            <div className="divnxtbtn">
+                                <button type="submit" className="submit-btn">Submit</button>
+                             </div>
                     </>
                 );
             default:

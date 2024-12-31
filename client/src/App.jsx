@@ -68,7 +68,6 @@ function App() {
             </ProtectedRoute>
           } 
         />
-
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path='/employerlandpage' element={<Employerlandpage />} />
