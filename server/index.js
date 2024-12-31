@@ -236,8 +236,6 @@ app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) =
 });
 
 
-  
-
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   const postId = req.params.id;
@@ -329,6 +327,79 @@ const Post = mongoose.model("Post", postSchema);
     } catch (err) {
         console.error("Error creating post:", err);
         res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  
+  // update a post
+  app.put("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+    const { content } = req.body;
+
+    if (!content || content.trim() === "") {
+      return res.status(400).json({ success: false, message: "Post content cannot be empty" });
+    }
+
+    try {
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      post.content = content;
+      post.postImg =  req.body.postImg;
+      post.updatedAt = new Date();
+
+      await post.save();
+
+      res.status(200).json({ success: true, post });
+    } catch (err) {
+      console.error("Error editing post:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+
+  // delete a post
+  app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+
+    try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Check if the user is the one who created the post
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      // Delete the post using deleteOne
+      const deletedPost = await Post.deleteOne({ _id: postId });
+
+      // Check if a post was deleted
+      if (deletedPost.deletedCount === 0) {
+        return res.status(500).json({ success: false, message: "Failed to delete post" });
+      }
+
+      // Emit post deletion event (optional)
+      io.emit("delete_post", { postId });
+
+      // Respond with a success message
+      res.status(200).json({ success: true, message: "Post deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      res.status(500).json({ success: false, message: "Internal server error", error: err.message });
     }
   });
 
@@ -466,7 +537,7 @@ const Post = mongoose.model("Post", postSchema);
       );
   
       const redirectPath = role === 'student' ? '/homepage' : '/homepage';
-  
+      
       res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {
       console.error('Google login error:', error);

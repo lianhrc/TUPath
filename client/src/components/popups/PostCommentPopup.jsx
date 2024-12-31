@@ -28,7 +28,12 @@ const formatTimeAgo = (timestamp) => {
 };
 
 const PostCommentPopup = ({ post, toggleComments }) => {
-  const [comments, setComments] = useState(post.comments || []);
+  const [comments, setComments] = useState(
+    (post.comments || []).map((comment, index) => ({
+      ...comment,
+      _id: comment._id || `temp-${index}`, // Ensure unique key fallback
+    }))
+  );
   const [commentText, setCommentText] = useState("");
   const [profileData, setProfileData] = useState({
     firstName: "",
@@ -96,6 +101,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
       }
 
       setCommentText("");
+      handledComments.current.clear(); // Clear the handled comments ref
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
@@ -115,28 +121,24 @@ const PostCommentPopup = ({ post, toggleComments }) => {
   const handleSaveClick = async (commentId) => {
     if (editedText.trim() === "") return;
 
-    console.log("Attempting to save comment...", { editedText, commentId }); // Debug log
     try {
-        const response = await axios.put(
-            `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
-            { comment: editedText },
-            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-        );
+      const response = await axios.put(
+        `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
+        { comment: editedText },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
 
-        console.log("Comment updated successfully:", response.data); // Debug log
-        setComments((prevComments) =>
-            prevComments.map((comment) =>
-                comment._id === commentId ? response.data.comment : comment
-            )
-        );
-        setIsEditing(null);
-        setEditedText("");
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment._id === commentId ? response.data.comment : comment
+        )
+      );
+      setIsEditing(null);
+      setEditedText("");
     } catch (error) {
-        console.error("Error during save:", error); // Debug log
+      console.error("Error saving comment:", error);
     }
-};
-
-
+  };
 
   const handleCancelEdit = () => {
     setIsEditing(null);
@@ -184,8 +186,8 @@ const PostCommentPopup = ({ post, toggleComments }) => {
         />
       </div>
       <div className="comments-list">
-        {comments.map((comment) => (
-          <div className="comment" key={comment._id}>
+        {comments.map((comment, index) => (
+          <div className="comment" key={comment._id || `temp-${index}`}>
             <div className="commentprofilediv">
               <img
                 src={comment.profileImg}

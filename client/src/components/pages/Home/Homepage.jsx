@@ -22,13 +22,16 @@ const Homepage = () => {
     middleName: '',
     lastName: '',
     address: '',
-    profileImg: '', // Added profileImg to the initial state
+    profileImg: '',
   });
 
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [activePostId, setActivePostId] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [editingImage, setEditingImage] = useState(null);
   const navigate = useNavigate();
 
   const formatTimeAgo = (timestamp) => {
@@ -117,6 +120,16 @@ const Homepage = () => {
   }, []);
 
   useEffect(() => {
+    socket.on("delete_post", ({ postId }) => {
+      setPostsData((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+    });
+  
+    return () => {
+      socket.off("delete_post");
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const response = await axiosInstance.get('/api/profile');
@@ -158,6 +171,17 @@ const Homepage = () => {
     }
   };
 
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setNewPostContent('');
@@ -194,20 +218,85 @@ const Homepage = () => {
     navigate(`/profile/${userId}`);
   };
 
+  const handleDeletePost = async (postId) => {
+    try {
+      const response = await axiosInstance.delete(`/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      const { success, message } = response.data;
+  
+      if (success) {
+        setPostsData((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId)
+        );
+      } else {
+        console.error("Error deleting post:", message);
+        alert(message || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("An error occurred while deleting the post. Please try again.");
+    }
+  };
+
+  const saveEdit = async () => {
+    if (editingPostId && editingContent.trim()) {
+      try {
+        const updatedPost = {
+          content: editingContent,
+          postImg: editingImage || undefined, // Ensure the new image is added if provided
+        };
+  
+        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, updatedPost);
+        if (response.data.success) {
+          setPostsData((prevPosts) =>
+            prevPosts.map((post) =>
+              post._id === editingPostId
+                ? { ...post, content: editingContent, postImg: editingImage || post.postImg }
+                : post
+            )
+          );
+          setEditingPostId(null);
+          setEditingContent('');
+          setEditingImage(null); // Reset the editing image state
+        } else {
+          console.error('Failed to save edit:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error saving edit:', error);
+      }
+    }
+  };
+  
+
+  const cancelEdit = () => {
+    setEditingPostId(null);
+    setEditingContent('');
+    setEditingImage(null);
+  };
+
   const renderPost = (post, index) => {
-    const userId = 'user_id_from_auth'; // Replace with actual user ID from authentication
+    const userId = 'user_id_from_auth';
     const hasUpvoted = post.votedUsers.includes(userId);
 
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
           <div className="topleftpostcontent">
-            <img src={post.profileImg} alt={post.name} 
-            onClick={() => handleProfileClick(post.userId)}
-            style={{ cursor: "pointer" }}/>
+            <img
+              src={post.profileImg}
+              alt={post.name}
+              onClick={() => handleProfileClick(post.userId)}
+              style={{ cursor: 'pointer' }}
+            />
             <div className="frompost">
-              <h5 onClick={() => handleProfileClick(post.userId)} 
-                style={{ cursor: "pointer" }}>
+              <h5
+                onClick={() => handleProfileClick(post.userId)}
+                style={{ cursor: 'pointer' }}
+              >
                 {post.name}
               </h5>
               <p>{formatTimeAgo(post.timestamp)}</p>
@@ -224,13 +313,39 @@ const Homepage = () => {
               <EditPostOption
                 isOpen={activePostId === post._id}
                 onClose={() => setActivePostId(null)}
+                onDelete={() => handleDeletePost(post._id)}
+                onEditMode={() => {
+                  setEditingPostId(post._id);
+                  setEditingContent(post.content);
+                  setEditingImage(post.postImg);
+                  setActivePostId(null);
+                }}
               />
             )}
           </div>
         </div>
         <div className="postcontent">
-          <p>{post.content}</p>
-          {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
+          {editingPostId === post._id ? (
+            <div>
+              <textarea
+                value={editingContent}
+                onChange={(e) => setEditingContent(e.target.value)}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleEditImageChange}
+              />
+              {editingImage && <img src={editingImage} alt="Preview" className="post-image" />}
+              <button onClick={saveEdit}>Save</button>
+              <button onClick={cancelEdit}>Cancel</button>
+            </div>
+          ) : (
+            <>
+              <p>{post.content}</p>
+              {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
+            </>
+          )}
         </div>
         <div className="downpostcontent">
           <button
@@ -246,7 +361,7 @@ const Homepage = () => {
         {post.showComments && (
           <PostCommentPopup
             post={post}
-            handleCommentSubmit={() => console.log('Comment submit')} // Update with actual implementation
+            handleCommentSubmit={() => console.log('Comment submit')}
             toggleComments={toggleComments}
           />
         )}
