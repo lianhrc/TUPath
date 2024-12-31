@@ -9,7 +9,7 @@
   const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
-  /*require('dotenv').config()*/
+  require('dotenv').config()
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -34,20 +34,20 @@
   });
 
 
-  // MongoDB connection
+/* // MongoDB connection
   mongoose
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
 
-/*
+*/
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-*/
+
     // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -700,14 +700,14 @@ const Post = mongoose.model("Post", postSchema);
 
   app.post(
     "/api/uploadProject",
-    verifyToken, // Middleware to verify the JWT token
+    verifyToken,
     upload.fields([
       { name: "thumbnail", maxCount: 1 },
       { name: "selectedFiles", maxCount: 10 },
     ]),
     async (req, res) => {
       try {
-        const userId = req.user.id; // Extract user ID from the token
+        const userId = req.user.id;
         const { projectName, description, tag, tools, projectUrl, assessment } = req.body;
   
         // Validate required fields
@@ -723,42 +723,43 @@ const Post = mongoose.model("Post", postSchema);
           return res.status(400).json({ success: false, message: "A single tag is required." });
         }
   
+        // Ensure tools is always an array
+        const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
+  
         // Parse assessment data
         const parsedAssessment = assessment
-          ? JSON.parse(assessment).map(q => ({
+          ? JSON.parse(assessment).map((q) => ({
               ...q,
-              weightedScore: q.scoring[q.rating], // Use the scoring for the given rating
+              weightedScore: q.scoring[q.rating],
             }))
           : [];
   
-        // Validate assessment data for required tags
-        const requiredAssessmentTags = [
-          "Web Development",
-          "AI",
-          "Machine Learning",
-          "Data Science",
-          "Cybersecurity",
-          "Mobile Development",
-          "UI/UX Design",
+        // Validate assessment data for required categories (tags and tools)
+        const requiredCategories = [
+          { type: "tag", name: tag },
+          ...toolsArray.map((tool) => ({ type: "tool", name: tool })),
         ];
   
-        if (requiredAssessmentTags.includes(tag)) {
-          if (!parsedAssessment || parsedAssessment.length === 0) {
+        for (const category of requiredCategories) {
+          const relevantAssessment = parsedAssessment.filter(
+            (a) => a.category === category.type && a.categoryName === category.name
+          );
+  
+          if (!relevantAssessment.length) {
             return res.status(400).json({
               success: false,
-              message: `Assessment is required for ${tag} projects.`,
+              message: `Assessment is required for ${category.type} '${category.name}'.`,
             });
           }
   
-          // Check that all questions have valid ratings
-          const isValidAssessment = parsedAssessment.every(
-            item => item.question && item.rating >= 1 && item.rating <= 5
+          const isValidAssessment = relevantAssessment.every(
+            (item) => item.question && item.rating >= 1 && item.rating <= 5
           );
   
           if (!isValidAssessment) {
             return res.status(400).json({
               success: false,
-              message: "Invalid assessment data. Ratings must be between 1 and 5.",
+              message: `Invalid assessment data for ${category.type} '${category.name}'. Ratings must be between 1 and 5.`,
             });
           }
         }
@@ -769,20 +770,20 @@ const Post = mongoose.model("Post", postSchema);
           : null;
   
         const selectedFiles = req.files["selectedFiles"]
-          ? req.files["selectedFiles"].map(file => file.path)
+          ? req.files["selectedFiles"].map((file) => file.path)
           : [];
   
         // Create a new project document
         const newProject = new Project({
           projectName,
           description,
-          tag, // Save the single tag
-          tools: Array.isArray(tools) ? tools : [tools],
+          tag,
+          tools: toolsArray,
           selectedFiles,
           thumbnail,
           projectUrl,
           status: "pending",
-          assessment: parsedAssessment, // Save dynamic assessment data
+          assessment: parsedAssessment,
         });
   
         // Save project to the database
@@ -795,7 +796,6 @@ const Post = mongoose.model("Post", postSchema);
           return res.status(404).json({ success: false, message: "User not found" });
         }
   
-        // Add the project to the user's profileDetails.projects
         user.profileDetails.projects.push(savedProject._id);
   
         // Recalculate the best tag and cumulative scores
@@ -815,6 +815,8 @@ const Post = mongoose.model("Post", postSchema);
       }
     }
   );
+  
+  
   
   
   
@@ -1108,24 +1110,24 @@ app.post("/api/reset-password/:token", async (req, res) => {
   //===============================================FOR ASSESSMENT QUESTIONS
 
   // Fetch assessment questions by category
-app.get("/api/assessment-questions", verifyToken, async (req, res) => {
-  const { category } = req.query;
+  app.get("/api/assessment-questions", verifyToken, async (req, res) => {
+    const { category, categoryName } = req.query;
 
-  if (!category) {
-    return res.status(400).json({ success: false, message: "Category is required" });
-  }
-
-  try {
-    const questions = await AssessmentQuestion.find({ category });
-    if (questions.length === 0) {
-      return res.status(404).json({ success: false, message: "No questions found for this category" });
+    if (!category || !categoryName) {
+        return res.status(400).json({ success: false, message: "Category and categoryName are required" });
     }
 
-    res.status(200).json({ success: true, questions });
-  } catch (error) {
-    console.error("Error fetching assessment questions:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
+    try {
+        const questions = await AssessmentQuestion.find({ category, categoryName });
+        if (questions.length === 0) {
+            return res.status(404).json({ success: false, message: "No questions found" });
+        }
+
+        res.status(200).json({ success: true, questions });
+    } catch (error) {
+        console.error("Error fetching assessment questions:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
 });
 
 

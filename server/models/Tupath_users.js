@@ -128,17 +128,6 @@ const projectSchema = new mongoose.Schema({
       weightedScore: { type: Number, default: 0 },
     },
   ],
-  dynamicQuestions: [
-    {
-      tool: { type: String, required: true }, // Tool name
-      questions: [
-        {
-          text: { type: String, required: true },
-          scoring: { type: Map, of: Number, required: true },
-        },
-      ],
-    },
-  ],
 });
 
 
@@ -208,6 +197,7 @@ const AssessmentQuestionSchema = new mongoose.Schema({
   },
   required: { type: Boolean, default: true }, // Is the question mandatory?
   category: { type: String, required: true }, // Optional grouping for questions
+  categoryName: { type: String, required: true }, // Allows differentiation for tools or tags
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   scoring: { // Define custom scores for each star

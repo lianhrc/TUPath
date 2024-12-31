@@ -1,88 +1,67 @@
 const mongoose = require("mongoose");
 const { AssessmentQuestion } = require("./models/Tupath_users"); // Adjust the path to your models file
 
-// Define questions with scoring
-const questions = [
-  // Web Development
-  {
-    text: "How well-structured is the code?",
-    type: "rating",
-    category: "Web Development",
-    scoring: { "1": 3, "2": 5, "3": 10, "4": 15, "5": 20 },
-  },
-  {
-    text: "How user-friendly is the interface?",
-    type: "rating",
-    category: "Web Development",
-    scoring: { "1": 2, "2": 4, "3": 8, "4": 12, "5": 16 },
-  },
 
-  // AI
-  {
-    text: "How innovative is the solution?",
-    type: "rating",
-    category: "AI",
-    scoring: { "1": 2, "2": 4, "3": 8, "4": 12, "5": 18 },
-  },
-  {
-    text: "How accurate are the results?",
-    type: "rating",
-    category: "AI",
-    scoring: { "1": 1, "2": 3, "3": 6, "4": 9, "5": 15 },
-  },
 
-  // Machine Learning
+// Temporary questions for tools and tags
+const tempQuestions = [
   {
-    text: "How effective is the training process?",
+    text: "How well does this project demonstrate the use of Machine Learning?",
     type: "rating",
-    category: "Machine Learning",
+    scale: { min: 1, max: 5, step: 1 },
+    required: true,
+    category: "tag",
+    categoryName: "Machine Learning",
     scoring: { "1": 5, "2": 10, "3": 15, "4": 20, "5": 25 },
   },
   {
-    text: "How accurate is the prediction model?",
+    text: "How effectively was React used in this project?",
     type: "rating",
-    category: "Machine Learning",
-    scoring: { "1": 4, "2": 8, "3": 12, "4": 16, "5": 20 },
-  },
-
-  // Data Science
-  {
-    text: "How comprehensive is the analysis?",
-    type: "rating",
-    category: "Data Science",
+    scale: { min: 1, max: 5, step: 1 },
+    required: true,
+    category: "tool",
+    categoryName: "React",
     scoring: { "1": 3, "2": 6, "3": 9, "4": 12, "5": 15 },
   },
   {
-    text: "How well is the data visualized?",
+    text: "How well does this project integrate cybersecurity best practices?",
     type: "rating",
-    category: "Data Science",
-    scoring: { "1": 2, "2": 5, "3": 8, "4": 10, "5": 13 },
+    scale: { min: 1, max: 5, step: 1 },
+    required: true,
+    category: "tag",
+    categoryName: "Cybersecurity",
+    scoring: { "1": 4, "2": 8, "3": 12, "4": 16, "5": 20 },
   },
-
-  // Add more categories as needed
+  {
+    text: "How proficiently was MongoDB utilized in this project?",
+    type: "rating",
+    scale: { min: 1, max: 5, step: 1 },
+    required: true,
+    category: "tool",
+    categoryName: "MongoDB",
+    scoring: { "1": 2, "2": 4, "3": 6, "4": 8, "5": 10 },
+  },
 ];
 
-const insertQuestions = async () => {
+const insertTemporaryQuestions = async () => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect("mongodb://127.0.0.1:27017/tupath_users", {
+    await mongoose.connect("mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+
     console.log("Connected to MongoDB");
 
-    // Insert questions into the database
-    const result = await AssessmentQuestion.insertMany(questions);
-    console.log("Questions Added:", result);
+    // Insert temporary questions
+    const result = await AssessmentQuestion.insertMany(tempQuestions);
+    console.log("Temporary questions inserted:", result);
 
-    // Disconnect from MongoDB
     await mongoose.disconnect();
     console.log("Disconnected from MongoDB");
   } catch (error) {
-    console.error("Error inserting questions:", error);
-    await mongoose.disconnect();
+    console.error("Error inserting temporary questions:", error);
+    process.exit(1);
   }
 };
 
-// Run the script
-insertQuestions();
+insertTemporaryQuestions();
