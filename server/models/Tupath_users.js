@@ -95,11 +95,11 @@ const EmployerUserSchema = new mongoose.Schema({
     nationality: String,
     address: String,
     companyName: String,
+    position: String,
     industry: String,
     location: String,
     aboutCompany: String,
     contactPersonName: String,
-    position: String,
     // email: String,
     phoneNumber: String,
     profileImg: String, // Add this line for the employer profile image

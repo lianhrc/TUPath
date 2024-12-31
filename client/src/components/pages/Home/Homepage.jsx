@@ -21,8 +21,13 @@ const Homepage = () => {
     firstName: '',
     middleName: '',
     lastName: '',
+    studentId:'',
     address: '',
     profileImg: '',
+    department: '',
+    yearLevel: '',
+    position: '',
+    industry: '',
   });
 
   const [newPostContent, setNewPostContent] = useState('');
@@ -377,8 +382,10 @@ const Homepage = () => {
           <div className="profile">
             <img src={profileImageUrl} alt="Profile Icon" />
             <h2>{`${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim()}</h2>
-            <p>Student at Technological University of the Philippines</p>
-            <p>{profileData.address || 'Not Available'}</p>
+            <p>{profileData.studentId}</p>
+            <p>{profileData.department || profileData.industry}</p>
+            <p>{profileData.yearLevel || profileData.position }</p>
+            <p>{profileData.address}</p>
           </div>
         </aside>
         <main className="feed">

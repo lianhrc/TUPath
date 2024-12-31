@@ -44,7 +44,7 @@ function ProfilePage() {
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
           const { projects, ...profileWithoutProjects } = profileDetails;
-  
+
           setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
            });
@@ -52,7 +52,7 @@ function ProfilePage() {
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
           setProjects(profileDetails?.projects || []);
           
-        }
+        }mmmmmmm
       } catch (error) {
         console.error('Error fetching profile data:', error);
       } finally {
@@ -174,9 +174,9 @@ function ProfilePage() {
               <>
                 <div className="profile-section"><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
