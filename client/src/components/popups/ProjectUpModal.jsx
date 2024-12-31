@@ -47,15 +47,19 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
 
   useEffect(() => {
     if (tag) fetchAssessmentQuestions(tag, "tag");
-    tools.forEach((tool) => fetchAssessmentQuestions(tool, "tool"));
+  
+    // Avoid fetching the same tool questions multiple times
+    const uniqueTools = Array.from(new Set(tools));
+    uniqueTools.forEach((tool) => fetchAssessmentQuestions(tool, "tool"));
   }, [tag, tools]);
+  
 
   const fetchAssessmentQuestions = async (name, category) => {
     try {
       const response = await axiosInstance.get(
         `/api/assessment-questions?category=${category}&categoryName=${name}`
       );
-
+  
       if (response.data.success) {
         const newQuestions = response.data.questions.map((q) => ({
           text: q.text,
@@ -63,9 +67,21 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
           category,
           categoryName: name,
         }));
-
-        setAssessmentQuestions((prev) => [...prev, ...newQuestions]);
-        setAssessmentRatings((prev) => [...prev, ...Array(newQuestions.length).fill(0)]);
+  
+        // Avoid duplicates by filtering new questions
+        setAssessmentQuestions((prev) => {
+          const existingQuestions = new Set(prev.map((q) => q.text + q.category + q.categoryName));
+          const uniqueQuestions = newQuestions.filter(
+            (q) => !existingQuestions.has(q.text + q.category + q.categoryName)
+          );
+          return [...prev, ...uniqueQuestions];
+        });
+  
+        setAssessmentRatings((prev) => {
+          const updatedRatings = [...prev, ...Array(newQuestions.length).fill(0)];
+          return updatedRatings.slice(0, assessmentQuestions.length + newQuestions.length);
+        });
+        
       } else {
         console.error("Failed to fetch assessment questions:", response.data.message);
       }
@@ -73,7 +89,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
       console.error("Error fetching assessment questions:", error);
     }
   };
-
+  
   if (!show) return null;
 
   const handleFileChange = (e) => {
