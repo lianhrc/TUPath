@@ -175,6 +175,7 @@ function Inboxpage() {
                       </li>
                     ))}
                   </ul>
+                  
                 )}
                 <label>Message:</label>
                 <textarea
