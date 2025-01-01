@@ -28,12 +28,29 @@ const predefinedTools = [
   "PHP",
 ];
 
+const predefinedRoles = [
+  "Frontend Developer",
+  "UI/UX Designer",
+  "React.js Developer",
+  "Angular Developer",
+  "Vue.js Developer",
+  "HTML/CSS Specialist",
+  "JavaScript Developer",
+  "Web Accessibility Specialist",
+  "Web Performance Engineer",
+  "Web Animator",
+];
+
+
+
 const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [tag, setTag] = useState("");
   const [tools, setTools] = useState([]);
+  const [roles, setRoles] = useState([]); // Add this state variable
+
   const [thumbnail, setThumbnail] = useState(null);
   const [projectUrl, setProjectUrl] = useState("");
   const [status] = useState("pending");
@@ -119,6 +136,19 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     }
   };
 
+  const handleRoleSelect = (e) => {
+    const selectedRole = e.target.value;
+    if (selectedRole && !roles.includes(selectedRole)) {
+      setRoles([...roles, selectedRole]);
+    }
+  };
+  
+  const handleRoleRemove = (roleToRemove) => {
+    setRoles(roles.filter((role) => role !== roleToRemove));
+  };
+
+
+
   const handleToolRemove = (toolToRemove) => {
     setTools(tools.filter((tool) => tool !== toolToRemove));
   };
@@ -151,8 +181,8 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     formData.append("description", description);
     formData.append("tag", tag);
     tools.forEach((tool) => formData.append("tools", tool));
+    roles.forEach((role) => formData.append("roles", role));
     formData.append("projectUrl", projectUrl);
-    formData.append("status", status);
     formData.append(
       "assessment",
       JSON.stringify(
@@ -222,8 +252,10 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                   onChange={(e) => setDescription(e.target.value)}
                 ></textarea>
               </div>
+
               <div className="bottom">
-                <label>Tags:</label>
+               
+              <label>Tags:</label>
                 <select value={tag} onChange={handleTagSelect}>
                   <option value="">Select a Tag</option>
                   {predefinedTags.map((tag, index) => (
@@ -233,7 +265,9 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                   ))}
                 </select>
 
+
                 <div className="tools-input-container">
+
                   <label>Tools Used:</label>
                   <select onChange={handleToolSelect}>
                     <option value="">Select a Tool</option>
@@ -243,21 +277,52 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
                       </option>
                     ))}
                   </select>
-                  <div className="tools-list">
-                    {tools.map((tool, index) => (
-                      <span key={index} className="tool">
-                        {tool}
-                        <button
-                          type="button"
-                          className="remove-tool-btn"
-                          onClick={() => handleToolRemove(tool)}
-                        >
-                          ×
-                        </button>
-                      </span>
+                  
+                  <label>Role:</label>
+                  <select onChange={handleRoleSelect}>
+                    <option value="">Select a Role</option>
+                    {predefinedRoles.map((role, index) => (
+                      <option key={index} value={role}>
+                        {role}
+                      </option>
                     ))}
-                  </div>
+                  </select>
+
+             
                 </div>
+
+                <div className="divlistcat">
+                      <div className="tools-list">
+                      {tools.map((tool, index) => (
+                        <span key={index} className="tool">
+                          {tool}
+                          <button
+                            type="button"
+                            className="remove-tool-btn"
+                            onClick={() => handleToolRemove(tool)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+
+                      {roles.map((role, index) => (
+                        <span key={index} className="role">
+                          {role}
+                          <button
+                            type="button"
+                            className="remove-tool-btn"
+                            onClick={() => handleRoleRemove(role)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    
+                </div>
+
               </div>
             </div>
 

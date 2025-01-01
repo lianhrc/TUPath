@@ -52,7 +52,7 @@ function ProfilePage() {
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
           setProjects(profileDetails?.projects || []);
           
-        }mmmmmmm
+        }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       } finally {
@@ -217,7 +217,6 @@ function ProfilePage() {
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                       {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
-                      <p className='proj-status'>{project.status || 'Pending'}</p> {/* Dynamically display status */}
                     </div>
                   ))}
                 </div>

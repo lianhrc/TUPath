@@ -114,9 +114,9 @@ const projectSchema = new mongoose.Schema({
   selectedFiles: [{ type: String }], // Array of file paths or URLs
   tag: { type: String, required: true }, // Updated to accept only one tag
   tools: [{ type: String }],
+  roles: [{ type: String }],
   thumbnail: { type: String }, // Thumbnail URL or path
   projectUrl: String, // Optional project link
-  status: { type: String, default: 'pending' }, // Status field, default is 'pending'
   createdAt: { type: Date, default: Date.now }, // Automatically set creation date
   assessment: [
     {
@@ -206,10 +206,6 @@ const AssessmentQuestionSchema = new mongoose.Schema({
     required: true,
   },
 });
-
-
-
-
 
 
 // Models
