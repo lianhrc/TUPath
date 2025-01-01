@@ -67,20 +67,19 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
 
           <div className="projprev-right">
             <div className="projprevtags">
-            <div className="tag-item">{project.tag}</div>
-            </div>
-            <div className="projprevtools">
-              {project.tools.map(tool => (
-                <div key={tool} className="tool-item">{tool}</div>
-              ))}
-            </div>
-            <div className="projpreviewfiles">
-              <p><strong>{getFileName(project.files)}</strong></p>
-            </div>
-          </div>
-        </div>
-                  <div className="projprevroles">
-            <h4>Roles:</h4>
+             {project.tag ? (
+              <div className="tag-item">{project.tag}</div>
+            ) : (
+              <p>No tag available</p>
+            )}
+            {project.tools && project.tools.length > 0 ? (
+              project.tools.map((tool, index) => (
+                <div key={index} className="tool-item">{tool}</div>
+              ))
+            ) : (
+              <p>No tools available</p>  
+            )}
+
             {project.roles && project.roles.length > 0 ? (
               project.roles.map((role, index) => (
                 <div key={index} className="role-item">{role}</div>
@@ -88,9 +87,19 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             ) : (
               <p>No roles specified.</p>
             )}
+            </div>
+
+            <div className="projpreviewfiles">
+              <p><strong>{getFileName(project.files)}</strong></p>
+            </div>
           </div>
+        </div>
+                 
 
         <div className="project-assessment-details">
+        
+      
+
         <h4>Assessment Details:</h4>
         {project.assessment && project.assessment.length > 0 ? (
           project.assessment.map((item, index) => (
