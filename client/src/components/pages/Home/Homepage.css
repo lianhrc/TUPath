@@ -103,7 +103,7 @@
 /* Feed */
 .feed {
   padding: 50px 20px;
-  width: calc(100% - 400px);
+  width: calc(60% - 200px);
   height: calc(100vh - 50px); /* Make the feed fill the height below the header */
 }
 
@@ -160,6 +160,7 @@
 .subpost-input input {
   width: 100%;
   height: 35px;
+  cursor: pointer;
   padding: 5px 10px;
   border-radius: 20px;
   border: 1px solid #ccc;
@@ -172,10 +173,10 @@
 .subpost-input button {
   background: none;
   border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;
+  width: 100px;
   padding: 5px;
   color: #419bfa;
 }
@@ -254,6 +255,10 @@
   display: flex;
   justify-content: center;
   margin-top: 10px;
+}
+.post-image{
+  width: 100%;
+  height: auto;
 }
 
 .postimagecontent img {

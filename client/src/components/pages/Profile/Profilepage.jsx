@@ -35,34 +35,35 @@ function ProfilePage() {
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
   
   
+ // Fetch profile data
+ useEffect(() => {
+  const fetchProfileData = async () => {
+    try {
+      const profileResponse = await axiosInstance.get('/api/profile');
+      if (profileResponse.data.success) {
+        const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
-  // Fetch profile data
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const profileResponse = await axiosInstance.get('/api/profile');
-        if (profileResponse.data.success) {
-          const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
-          const { projects, ...profileWithoutProjects } = profileDetails;
+        // Ensure both profileDetails and projects are set correctly
+        const { projects, ...profileWithoutProjects } = profileDetails;
 
-          setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
+                  setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
            });
-          setUserRole(role);
-          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-          setProjects(profileDetails?.projects || []);
-          
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
+        setUserRole(role);
+        setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+
+        // Ensure that projects are also set correctly
+        setProjects(profileDetails?.projects || []); // Set projects if available
       }
-    };
-  
-    fetchProfileData();
-  }, [userRole, profileData.techSkills, profileData.softSkills]);
-   // Re-fetch if userRole changes
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfileData();
+}, [userRole]); // Re-fetch if userRole changes
   
   
   

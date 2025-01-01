@@ -284,9 +284,15 @@ const Homepage = () => {
   };
 
   const renderPost = (post, index) => {
-    const userId = 'user_id_from_auth';
+    // Construct the current user's full name
+    const userFullName = `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim();
+  
+    // Check if the post creator's name matches the logged-in user's name
+    const isPostOwner = post.name === userFullName;
+  
+    const userId = 'user_id_from_auth'; // Adjust as needed to get the actual user ID
     const hasUpvoted = post.votedUsers.includes(userId);
-
+  
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
@@ -307,28 +313,33 @@ const Homepage = () => {
               <p>{formatTimeAgo(post.timestamp)}</p>
             </div>
           </div>
-          <div className="editdots-container">
-            <img
-              className="editdots"
-              src={dots}
-              alt="Options"
-              onClick={() => toggleEditModal(post._id)}
-            />
-            {activePostId === post._id && (
-              <EditPostOption
-                isOpen={activePostId === post._id}
-                onClose={() => setActivePostId(null)}
-                onDelete={() => handleDeletePost(post._id)}
-                onEditMode={() => {
-                  setEditingPostId(post._id);
-                  setEditingContent(post.content);
-                  setEditingImage(post.postImg);
-                  setActivePostId(null);
-                }}
+  
+          {/* Show the edit and delete options only if the user is the post creator */}
+          {isPostOwner && (
+            <div className="editdots-container">
+              <img
+                className="editdots"
+                src={dots}
+                alt="Options"
+                onClick={() => toggleEditModal(post._id)}
               />
-            )}
-          </div>
+              {activePostId === post._id && (
+                <EditPostOption
+                  isOpen={activePostId === post._id}
+                  onClose={() => setActivePostId(null)}
+                  onDelete={() => handleDeletePost(post._id)}
+                  onEditMode={() => {
+                    setEditingPostId(post._id);
+                    setEditingContent(post.content);
+                    setEditingImage(post.postImg);
+                    setActivePostId(null);
+                  }}
+                />
+              )}
+            </div>
+          )}
         </div>
+  
         <div className="postcontent">
           {editingPostId === post._id ? (
             <div>
@@ -352,6 +363,7 @@ const Homepage = () => {
             </>
           )}
         </div>
+  
         <div className="downpostcontent">
           <button
             onClick={() => handleUpvote(post._id)}
@@ -363,6 +375,7 @@ const Homepage = () => {
             <img src={commenticon} alt="Comment" /> {post.comments.length}
           </button>
         </div>
+  
         {post.showComments && (
           <PostCommentPopup
             post={post}
@@ -373,6 +386,7 @@ const Homepage = () => {
       </div>
     );
   };
+  
 
   return (
     <div className="Homepage-container">
@@ -389,13 +403,13 @@ const Homepage = () => {
           </div>
         </aside>
         <main className="feed">
-          <div className="post-input" onClick={() => setIsPopupOpen(true)}>
+          <div className="post-input">
             <div className="postinputimg-container">
               <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
-              <input type="text" placeholder="Start a post" readOnly />
-              <button className="media-btn">
+              <input  onClick={() => setIsPopupOpen(true)} type="text" placeholder="Start a post" readOnly />
+              <button className="media-btn"  onClick={() => setIsPopupOpen(true)}>
                 <img src={mediaupload} alt="Media Upload" /> Media
               </button>
             </div>

@@ -126,12 +126,7 @@
     margin-top: 10px; /* Space above the input */
     box-sizing: border-box; /* Ensure padding doesn't affect width */
   }
-  
-  .projecturlinput:focus {
-    border-color: #9D0E0F; /* Highlight border color on focus */
-    outline: none; /* Remove the default outline */
-    box-shadow: 0 0 5px rgba(157, 14, 15, 0.5); /* Optional: add a shadow effect on focus */
-  }
+ 
   
 .upload-area {
     display: flex;

@@ -39,7 +39,7 @@
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
-*/
+ */
 
 // MongoDB connection
 mongoose.connect(
@@ -57,7 +57,7 @@ mongoose.connect(
         cb(null, Date.now() + '-' + file.originalname); // Define how files are named
       }
     });
-    
+   
     const upload = multer({ 
       storage: storage 
     });
@@ -878,7 +878,7 @@ const Post = mongoose.model("Post", postSchema);
     async (req, res) => {
       try {
         const userId = req.user.id;
-        const { projectName, description, tag, tools, projectUrl, assessment } = req.body;
+        const { projectName, description, tag, tools, projectUrl, assessment,roles } = req.body;
   
         // Validate required fields
         if (!projectName || !projectName.trim()) {
@@ -895,7 +895,13 @@ const Post = mongoose.model("Post", postSchema);
   
         // Ensure tools is always an array
         const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
-  
+        const rolesArray = Array.isArray(roles) ? roles : roles ? [roles] : [];
+
+              // Validate roles
+      if (!rolesArray.length) {
+        return res.status(400).json({ success: false, message: "At least one role must be selected." });
+      }
+
         // Parse assessment data
         const parsedAssessment = assessment
           ? JSON.parse(assessment).map((q) => ({
@@ -952,6 +958,7 @@ const Post = mongoose.model("Post", postSchema);
           selectedFiles,
           thumbnail,
           projectUrl,
+          roles: rolesArray,
           status: "pending",
           assessment: parsedAssessment,
         });
@@ -1017,6 +1024,7 @@ const Post = mongoose.model("Post", postSchema);
           status: project.status,
           assessment: project.assessment, // Include detailed assessment
           createdAt: project.createdAt,
+          roles:project.roles,
         };
       });
   
