@@ -103,6 +103,19 @@
     timestamp: { type: Date, default: Date.now },
   });
   const Message = mongoose.model("Message", messageSchema);
+  // Add this endpoint to fetch users
+  
+app.get('/api/users', verifyToken, async (req, res) => {
+  try {
+    const students = await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const employers = await Employer_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const users = [...students, ...employers];
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
   // REST endpoint to fetch chat messages
   app.get("/api/messages", async (req, res) => {
