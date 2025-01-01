@@ -33,17 +33,17 @@
     next();
   });
 
-
-/* // MongoDB connection
+/*
+  // MongoDB connection
   mongoose
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
-
 */
+
 // MongoDB connection
 mongoose.connect(
-  "mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
