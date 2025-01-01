@@ -63,10 +63,6 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               </p>
             )}
 
-            {/* Clickable Status */}
-            <p className="projprev-status" onClick={handleStatusClick}>
-              <strong>{project.status || 'Click for project assessment'}</strong>
-            </p>
           </div>
 
           <div className="projprev-right">
@@ -83,6 +79,16 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             </div>
           </div>
         </div>
+                  <div className="projprevroles">
+            <h4>Roles:</h4>
+            {project.roles && project.roles.length > 0 ? (
+              project.roles.map((role, index) => (
+                <div key={index} className="role-item">{role}</div>
+              ))
+            ) : (
+              <p>No roles specified.</p>
+            )}
+          </div>
 
         <div className="project-assessment-details">
         <h4>Assessment Details:</h4>
