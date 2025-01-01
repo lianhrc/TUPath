@@ -289,7 +289,7 @@ function ProfilePage() {
           }}
         />
 
-<CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+      <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
         <MessagePop />
       </div>
     </div>
