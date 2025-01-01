@@ -403,13 +403,13 @@ const Homepage = () => {
           </div>
         </aside>
         <main className="feed">
-          <div className="post-input" onClick={() => setIsPopupOpen(true)}>
+          <div className="post-input">
             <div className="postinputimg-container">
               <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
-              <input type="text" placeholder="Start a post" readOnly />
-              <button className="media-btn">
+              <input  onClick={() => setIsPopupOpen(true)} type="text" placeholder="Start a post" readOnly />
+              <button className="media-btn"  onClick={() => setIsPopupOpen(true)}>
                 <img src={mediaupload} alt="Media Upload" /> Media
               </button>
             </div>
