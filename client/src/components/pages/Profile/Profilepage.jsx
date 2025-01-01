@@ -44,7 +44,7 @@ function ProfilePage() {
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
           const { projects, ...profileWithoutProjects } = profileDetails;
-  
+
           setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
            });
@@ -81,15 +81,19 @@ function ProfilePage() {
       try {
         const response = await axiosInstance.delete(`/api/projects/${projectId}`);
         if (response.data.success) {
-          // Remove the deleted project from state
+          // Update the UI state to reflect the deletion
           setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
+          console.log('Project deleted successfully.');
         } else {
-          console.error("Error deleting project:", response.data.message);
+          console.error('Failed to delete project:', response.data.message);
         }
       } catch (error) {
-        console.error("Error deleting project:", error);
+        console.error('Error occurred while deleting the project:', error);
       }
     };
+    
+    
+  
     
 
   return (
@@ -174,9 +178,9 @@ function ProfilePage() {
               <>
                 <div className="profile-section"><h3>Email</h3><p>{profileData.email || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Company Name</h3><p>{profileData.companyName || 'Not Available'}</p></div>
+                <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Industry</h3><p>{profileData.industry || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Position</h3><p>{profileData.position || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
@@ -211,14 +215,8 @@ function ProfilePage() {
                 {/* Display Projects */}
                   {projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                      <img 
-                        src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
-                          ? `http://localhost:3001${project.thumbnail}` 
-                          : project.thumbnail || avatar} 
-                        alt="project-thumbnail"
-                      />
+                      {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
-                      <p className='proj-status'>{project.status || 'Pending'}</p> {/* Dynamically display status */}
                     </div>
                   ))}
                 </div>

@@ -6,10 +6,11 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   require('dotenv').config()
+
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
 
@@ -32,19 +33,20 @@
     next();
   });
 
-
+/*
   // MongoDB connection
-  mongoose.connect(
-    "mongodb+srv://admin123:admin123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-    }
-  )
-    .then(() => console.log("Connected to MongoDB Atlas successfully"))
+  mongoose
+    .connect("mongodb://127.0.0.1:27017/tupath_users")
+    .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
-  
-  
+*/
 
+// MongoDB connection
+mongoose.connect(
+  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+)
+  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
     // Configure multer for file uploads
     const storage = multer.diskStorage({
@@ -250,8 +252,6 @@ app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) =
 });
 
 
-  
-
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   const postId = req.params.id;
@@ -343,6 +343,79 @@ const Post = mongoose.model("Post", postSchema);
     } catch (err) {
         console.error("Error creating post:", err);
         res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  
+  // update a post
+  app.put("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+    const { content } = req.body;
+
+    if (!content || content.trim() === "") {
+      return res.status(400).json({ success: false, message: "Post content cannot be empty" });
+    }
+
+    try {
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      post.content = content;
+      post.postImg =  req.body.postImg;
+      post.updatedAt = new Date();
+
+      await post.save();
+
+      res.status(200).json({ success: true, post });
+    } catch (err) {
+      console.error("Error editing post:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+
+  // delete a post
+  app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+
+    try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Check if the user is the one who created the post
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      // Delete the post using deleteOne
+      const deletedPost = await Post.deleteOne({ _id: postId });
+
+      // Check if a post was deleted
+      if (deletedPost.deletedCount === 0) {
+        return res.status(500).json({ success: false, message: "Failed to delete post" });
+      }
+
+      // Emit post deletion event (optional)
+      io.emit("delete_post", { postId });
+
+      // Respond with a success message
+      res.status(200).json({ success: true, message: "Post deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      res.status(500).json({ success: false, message: "Internal server error", error: err.message });
     }
   });
 
@@ -480,7 +553,7 @@ const Post = mongoose.model("Post", postSchema);
       );
   
       const redirectPath = role === 'student' ? '/homepage' : '/homepage';
-  
+      
       res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {
       console.error('Google login error:', error);
@@ -690,7 +763,9 @@ const Post = mongoose.model("Post", postSchema);
       const role = req.user.role; // Extract role from the token
   
       const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-      const user = await userModel.findById(userId).select('email role profileDetails createdAt googleSignup');
+      const user = await userModel.findById(userId)
+      .select('email role profileDetails createdAt googleSignup')
+      .populate('profileDetails.projects', 'projectName description tags tools thumbnail projectUrl'); // Populate project details selectively
   
       if (!user) {
         return res.status(404).json({ success: false, profile: 'User not Found' });
@@ -791,116 +866,166 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   
-// api uploadproject endpoint
-  app.post("/api/uploadProject", verifyToken, upload.fields([
-    { name: "thumbnail", maxCount: 1 },  // Handle the thumbnail upload field
-    { name: "projectFiles", maxCount: 5 }, // Handle other project files (e.g., .zip, .docx, etc.)
-  ]), async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { projectName, description, tags, tools, projectUrl} = req.body;
-  
-      // Get the file paths for both thumbnail and project files
-      const thumbnailPath = req.files.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : null;
-      const filePaths = req.files.projectFiles ? req.files.projectFiles.map(file => `/projects/${file.filename}`) : [];
-  
-      // Create the project object
-      const project = {
-        projectName,
-        description,
-        tags: Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim()),
-        tools: Array.isArray(tools) ? tools : tools.split(',').map(tool => tool.trim()),
-        files: filePaths,  // Array of other project files
-        thumbnail: thumbnailPath,  // Path for the thumbnail image
-        projectUrl,
-        status: 'pending', // Default status
-      };
-  
-      // Update the user profile with the new project
-      const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-        userId,
-        {
-          $push: {
-            "profileDetails.projects": project, // Push the new project to the projects array
-          }
-        },
-        { new: true }
-      );
-  
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-  
-      res.status(200).json({
-        success: true,
-        message: "Project uploaded successfully",
-        project: project,
-      });
-  
-    } catch (error) {
-      console.error("Error uploading project files:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
-  
 
+
+  app.post(
+    "/api/uploadProject",
+    verifyToken,
+    upload.fields([
+      { name: "thumbnail", maxCount: 1 },
+      { name: "selectedFiles", maxCount: 10 },
+    ]),
+    async (req, res) => {
+      try {
+        const userId = req.user.id;
+        const { projectName, description, tag, tools, projectUrl, assessment } = req.body;
+  
+        // Validate required fields
+        if (!projectName || !projectName.trim()) {
+          return res.status(400).json({ success: false, message: "Project name is required." });
+        }
+  
+        if (!description || !description.trim()) {
+          return res.status(400).json({ success: false, message: "Description is required." });
+        }
+  
+        if (!tag || !tag.trim()) {
+          return res.status(400).json({ success: false, message: "A single tag is required." });
+        }
+  
+        // Ensure tools is always an array
+        const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
+  
+        // Parse assessment data
+        const parsedAssessment = assessment
+          ? JSON.parse(assessment).map((q) => ({
+              ...q,
+              weightedScore: q.scoring[q.rating],
+            }))
+          : [];
+  
+        // Validate assessment data for required categories (tags and tools)
+        const requiredCategories = [
+          { type: "tag", name: tag },
+          ...toolsArray.map((tool) => ({ type: "tool", name: tool })),
+        ];
+  
+        for (const category of requiredCategories) {
+          const relevantAssessment = parsedAssessment.filter(
+            (a) => a.category === category.type && a.categoryName === category.name
+          );
+  
+          if (!relevantAssessment.length) {
+            return res.status(400).json({
+              success: false,
+              message: `Assessment is required for ${category.type} '${category.name}'.`,
+            });
+          }
+  
+          const isValidAssessment = relevantAssessment.every(
+            (item) => item.question && item.rating >= 1 && item.rating <= 5
+          );
+  
+          if (!isValidAssessment) {
+            return res.status(400).json({
+              success: false,
+              message: `Invalid assessment data for ${category.type} '${category.name}'. Ratings must be between 1 and 5.`,
+            });
+          }
+        }
+  
+        // Retrieve files from multer
+        const thumbnail = req.files["thumbnail"]
+          ? `/uploads/${req.files["thumbnail"][0].filename}`
+          : null;
+  
+        const selectedFiles = req.files["selectedFiles"]
+          ? req.files["selectedFiles"].map((file) => file.path)
+          : [];
+  
+        // Create a new project document
+        const newProject = new Project({
+          projectName,
+          description,
+          tag,
+          tools: toolsArray,
+          selectedFiles,
+          thumbnail,
+          projectUrl,
+          status: "pending",
+          assessment: parsedAssessment,
+        });
+  
+        // Save project to the database
+        const savedProject = await newProject.save();
+  
+        // Associate the project with the user
+        const user = await Tupath_usersModel.findById(userId);
+  
+        if (!user) {
+          return res.status(404).json({ success: false, message: "User not found" });
+        }
+  
+        user.profileDetails.projects.push(savedProject._id);
+  
+        // Recalculate the best tag and cumulative scores
+        await user.calculateBestTag();
+  
+        // Save the updated user
+        await user.save();
+  
+        res.status(201).json({
+          success: true,
+          message: "Project uploaded successfully",
+          project: savedProject,
+        });
+      } catch (error) {
+        console.error("Error uploading project:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+      }
+    }
+  );
+  
+  
+  
+  
+  
+  
   
   app.get("/api/projects", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id;
-      const user = await Tupath_usersModel.findById(userId);
+  
+      // Fetch user with populated projects
+      const user = await Tupath_usersModel.findById(userId).populate("profileDetails.projects");
+  
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-      console.log("User projects:", user.profileDetails.projects);
+  
+      // Add scores and tag summary for each project
+      const projectsWithScores = user.profileDetails.projects.map((project) => {
+        const totalScore = project.assessment.reduce((sum, question) => sum + (question.weightedScore || 0), 0);
+  
+        return {
+          _id: project._id,
+          projectName: project.projectName,
+          description: project.description,
+          tag: project.tag,
+          totalScore, // Sum of all weighted scores for the project
+          tools: project.tools,
+          status: project.status,
+          assessment: project.assessment, // Include detailed assessment
+          createdAt: project.createdAt,
+        };
+      });
+  
       res.status(200).json({
         success: true,
-        projects: user.profileDetails.projects.map(project => ({
-          ...project.toObject(), // Ensure you get a plain object
-          status: project.status || 'pending', // Add status if not already present
-        })),
+        projects: projectsWithScores,
       });
     } catch (error) {
       console.error("Error fetching projects:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
-  
-
-  app.put("/api/projects/:projectId/status", verifyToken, async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { projectId } = req.params;
-      const { status } = req.body; // Expect status (e.g., "pending", "submitted", etc.)
-  
-      // Validate status
-      const validStatuses = ['pending', 'submitted', 'approved'];
-      if (!validStatuses.includes(status)) {
-        return res.status(400).json({ success: false, message: "Invalid status" });
-      }
-  
-      // Find the user and project
-      const user = await Tupath_usersModel.findById(userId);
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-  
-      const project = user.profileDetails.projects.find(project => project._id.toString() === projectId);
-      if (!project) {
-        return res.status(404).json({ success: false, message: "Project not found" });
-      }
-  
-      // Update project status
-      project.status = status;
-      await user.save();
-  
-      res.status(200).json({
-        success: true,
-        message: "Project status updated successfully",
-        project: project,
-      });
-    } catch (error) {
-      console.error("Error updating project status:", error);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
@@ -910,7 +1035,7 @@ const Post = mongoose.model("Post", postSchema);
   
   app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.id; // Extract user ID from the token
       const { projectId } = req.params;
   
       // Find the user
@@ -919,19 +1044,27 @@ const Post = mongoose.model("Post", postSchema);
         return res.status(404).json({ success: false, message: "User not found" });
       }
   
-      // Find the project and remove it from the user's profile
-      const projectIndex = user.profileDetails.projects.findIndex(project => project._id.toString() === projectId);
+      // Find the project in the user's profile and remove it
+      const projectIndex = user.profileDetails.projects.findIndex(
+        (project) => project._id.toString() === projectId
+      );
       if (projectIndex === -1) {
-        return res.status(404).json({ success: false, message: "Project not found" });
+        return res.status(404).json({ success: false, message: "Project not found in user's profile" });
       }
   
-      // Remove the project from the user's profile
+      // Remove the project reference from the user's profile
       user.profileDetails.projects.splice(projectIndex, 1);
       await user.save();
   
+      // Delete the project document from the 'projects' collection
+      const deletedProject = await Project.findByIdAndDelete(projectId);
+      if (!deletedProject) {
+        return res.status(404).json({ success: false, message: "Project not found in projects collection" });
+      }
+  
       res.status(200).json({
         success: true,
-        message: "Project deleted successfully"
+        message: "Project deleted successfully from user's profile and projects collection",
       });
     } catch (error) {
       console.error("Error deleting project:", error);
@@ -966,44 +1099,57 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 // -----------------------------------api for dynamic search----------------------------------
-  app.get('/api/search', verifyToken, async (req, res) => {
-    const { query, filter } = req.query;
-    if (!query) {
-      return res.status(400).json({ success: false, message: 'Query parameter is required' });
+
+app.get('/api/search', verifyToken, async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ success: false, message: 'Query parameter is required' });
+  }
+
+  try {
+    const regex = new RegExp(query, 'i'); // Case-insensitive regex
+    const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
+    let results = [];
+
+    if (req.user.role === 'student') {
+      // Students can search employers
+      const employerResults = await Employer_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...employerResults];
+    } else if (req.user.role === 'employer') {
+      // Employers can search students
+      const studentResults = await Tupath_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...studentResults];
     }
 
-    try {
-      const regex = new RegExp(query, 'i'); // Case-insensitive regex
-      let results = [];
-
-      if (filter === 'students') {
-        const studentResults = await Tupath_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...studentResults];
-      }
-
-      if (filter === 'employers') {
-        const employerResults = await Employer_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...employerResults];
-      }
-
-      res.status(200).json({ success: true, results });
-    } catch (err) {
-      console.error('Error during search:', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-  });
+    res.status(200).json({ success: true, results });
+  } catch (err) {
+    console.error('Error during search:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
   app.get('/api/profile/:id', verifyToken, async (req, res) => {
@@ -1142,6 +1288,30 @@ app.post("/api/reset-password/:token", async (req, res) => {
 });
 
   //for pushing purposes, please delete this comment later
+
+  //===============================================FOR ASSESSMENT QUESTIONS
+
+  // Fetch assessment questions by category
+  app.get("/api/assessment-questions", verifyToken, async (req, res) => {
+    const { category, categoryName } = req.query;
+
+    if (!category || !categoryName) {
+        return res.status(400).json({ success: false, message: "Category and categoryName are required" });
+    }
+
+    try {
+        const questions = await AssessmentQuestion.find({ category, categoryName });
+        if (questions.length === 0) {
+            return res.status(404).json({ success: false, message: "No questions found" });
+        }
+
+        res.status(200).json({ success: true, questions });
+    } catch (error) {
+        console.error("Error fetching assessment questions:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
 
   // Server setup
   const PORT = process.env.PORT || 3001;

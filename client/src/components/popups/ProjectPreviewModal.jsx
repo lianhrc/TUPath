@@ -7,12 +7,13 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
 
   if (!show || !project) return null;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
-      onDelete(project._id); // Call onDelete function passed from the parent
-      onClose(); // Close the modal after deletion
+      await onDelete(project._id); // Wait for deletion to complete
+      onClose(); // Close the modal only after successful deletion
     }
   };
+  
 
   // Extract file name from the full path
   const getFileName = (filePath) => {
@@ -33,11 +34,15 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
     <div className="projprev-overlay">
       <div className="projprev-content">
         <div className="projprevheader">
-          <img 
-            src={typeof project.thumbnail === 'string' && project.thumbnail.startsWith('/') 
-            ? `http://localhost:3001${project.thumbnail}` 
-            : project.thumbnail || avatar}
-          />
+        {project.thumbnail ? (
+            <img 
+              src={project.thumbnail.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail} 
+              alt="Thumbnail" 
+              className="project-thumbnail"
+            />
+          ) : (
+            <div className="placeholder-thumbnail">No Thumbnail</div>
+          )}
         </div>
 
         <div className="projprevcontentmain">
@@ -58,17 +63,12 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               </p>
             )}
 
-            {/* Clickable Status */}
-            <p className="projprev-status" onClick={handleStatusClick}>
-              <strong>{project.status || 'Click for project assessment'}</strong>
-            </p>
+          
           </div>
 
           <div className="projprev-right">
             <div className="projprevtags">
-              {project.tags.map(tag => (
-                <div key={tag} className="tag-item">{tag}</div>
-              ))}
+            <div className="tag-item">{project.tag}</div>
             </div>
             <div className="projprevtools">
               {project.tools.map(tool => (
@@ -80,6 +80,31 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
             </div>
           </div>
         </div>
+
+        <div className="project-assessment-details">
+          <h4>Assessment Details:</h4>
+          {project.assessment && project.assessment.length > 0 ? (
+            project.assessment.map((item, index) => (
+              <div key={index} className="assessment-item">
+                <p><strong>Question:</strong> {item.question.text}</p>
+                <p><strong>Rating:</strong> {item.rating} / 5</p>
+                <p><strong>Score:</strong> {item.weightedScore} points</p>
+                <div className="assessment-rating-stars">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <span
+                      key={i}
+                      className={`star ${i < item.rating ? "filled" : ""}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No assessment data available.</p>
+          )}
+      </div>
 
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>

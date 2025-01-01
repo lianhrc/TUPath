@@ -101,6 +101,19 @@
   overflow: hidden; /* Ensures any overflowing content is hidden */
 }
 
+.project-assessment-details{
+  padding: 20px;
+  color: black;
+}
+
+
+
+.project-assessment-details p,
+.project-assessment-details .assessment-rating-stars p,
+.project-assessment-details  .assessment-item p{
+  color: black;
+}
+
 .projprev-right p{
   display: inline-block;
   background-color: #9D0E0F;

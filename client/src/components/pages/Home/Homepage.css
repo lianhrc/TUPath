@@ -1,4 +1,5 @@
 /* Main Container */
+
 .Homepage-container {
   display: flex;
   flex-direction: column;
@@ -20,8 +21,7 @@
 .sidebar {
   width: 380px;
   left: 0;
-  top: 50px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 10px);
   background-color: #F4F2EE;
   padding: 20px;
   overflow-y: auto;

@@ -23,12 +23,12 @@ function HeaderHomepage() {
     JSON.parse(localStorage.getItem('recentSearches')) || []
   );
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
-  const [filter, setFilter] = useState('students'); // Default filter state
 
-  const debouncedSearch = _debounce(async (query, filter) => {
+  // Debounced search function to delay API calls
+  const debouncedSearch = _debounce(async (query) => {
     setIsSearching(true);
     try {
-      const response = await axiosInstance.get(`/api/search`, { params: { query, filter } });
+      const response = await axiosInstance.get('/api/search', { params: { query } });
       if (response.data.success) {
         setSearchResults(response.data.results);
       }
@@ -37,16 +37,15 @@ function HeaderHomepage() {
     } finally {
       setIsSearching(false);
     }
-  }, 500); // 500ms delay before firing the search request
-
+  }, 500);
 
   const handleLogout = () => {
     setIsLoading(true);
     setTimeout(() => {
-        localStorage.clear();
-        window.location.replace('/login');
-    }, 300); // 30 minutes in milliseconds
-  }
+      localStorage.clear();
+      window.location.replace('/login');
+    }, 300);
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -79,9 +78,9 @@ function HeaderHomepage() {
   const handleSearch = (event) => {
     const query = event.target.value;
     setSearchQuery(query);
-    setIsSearchFieldClicked(false); // Close the "Recent Searches" section
+    setIsSearchFieldClicked(false);
     if (query.length > 0) {
-      debouncedSearch(query, filter); // Call debounced search function
+      debouncedSearch(query);
     } else {
       setSearchResults([]);
     }
@@ -109,7 +108,7 @@ function HeaderHomepage() {
   const handleAddToRecentSearches = (profile) => {
     if (!recentSearches.some((search) => search._id === profile._id)) {
       const updatedSearches = [profile, ...recentSearches];
-      if (updatedSearches.length > 5) updatedSearches.pop(); // Keep only last 5 searches
+      if (updatedSearches.length > 5) updatedSearches.pop();
       setRecentSearches(updatedSearches);
       localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
     }
@@ -153,6 +152,7 @@ function HeaderHomepage() {
           <Link className="lefticon" to="/Homepage">
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
+
           <div className="search-container">
             <input
               type="text"
@@ -162,14 +162,6 @@ function HeaderHomepage() {
               onChange={handleSearch}
               onClick={handleSearchFieldClick}
             />
-            <select
-              className="search-filter"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="students">Students</option>
-              <option value="employers">Employers</option>
-            </select>
             {isSearching}
             {searchResults.length > 0 && (
               <div className="search-results">
@@ -249,7 +241,6 @@ function HeaderHomepage() {
                     exit="exit"
                   >
                     <h3>Notifications</h3>
-                    {/* Replace with dynamic notifications */}
                   </motion.div>
                 )}
               </div>
