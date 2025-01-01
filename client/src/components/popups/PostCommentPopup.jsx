@@ -230,7 +230,8 @@ const PostCommentPopup = ({ post, toggleComments }) => {
                   <p className="comment-textcontent">{comment.comment}</p>
                 )}
 
-                {showActions === comment._id && !isEditing ? (
+                {showActions === comment._id && !isEditing && 
+                comment.username === `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() ? (
                   <div className="comment-actions">
                     <div className="div">
                       <button onClick={() => handleEditClick(comment)}>Edit</button>
@@ -238,6 +239,7 @@ const PostCommentPopup = ({ post, toggleComments }) => {
                     </div>
                   </div>
                 ) : null}
+
               </div>
               <p className="comment-timestamp">{formatTimeAgo(comment.createdAt)}</p>
             </div>
