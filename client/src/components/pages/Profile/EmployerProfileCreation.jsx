@@ -23,7 +23,7 @@ function EmployerProfileCreation() {
         aboutCompany: '',
         contactPersonName: '',
         position: '',
-        email: '',
+        // email: '',
         phoneNumber: '',
         preferredRoles: '',
         internshipOpportunities: false,
@@ -174,6 +174,7 @@ function EmployerProfileCreation() {
                 return (
                     <>
                         <input type="text" name="companyName" placeholder="Company Name" value={formData.companyName} onChange={handleInputChange} required />
+                        <input type="text" name="position" placeholder="Position/Title" value={formData.position} onChange={handleInputChange} />
                         <input type="text" name="industry" placeholder="Industry" value={formData.industry} onChange={handleInputChange} />
                         <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleInputChange} />
                         <textarea name="aboutCompany" placeholder="About Company" value={formData.aboutCompany} onChange={handleInputChange}></textarea>
@@ -184,8 +185,8 @@ function EmployerProfileCreation() {
                 return (
                     <>
                         <input type="text" name="contactPersonName" placeholder="Contact Person Name" value={formData.contactPersonName} onChange={handleInputChange} />
-                        <input type="text" name="position" placeholder="Position/Title" value={formData.position} onChange={handleInputChange} />
-                        <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange} required />
+                        {/* <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange} required /> 
+                        */}
                         <input type="text" name="phoneNumber" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleInputChange} />
                         <button type="button" className="next-btn" onClick={() => setActiveSection('Job Preferences')}>Next</button>
                     </>
@@ -205,7 +206,9 @@ function EmployerProfileCreation() {
                                     />
                                     <p>Internship Opportunities</p>
                            </div>
-                        <button type="submit" className="submit-btn">Submit</button>
+                            <div className="divnxtbtn">
+                                <button type="submit" className="submit-btn">Submit</button>
+                             </div>
                     </>
                 );
             default:

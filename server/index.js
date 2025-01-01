@@ -59,9 +59,9 @@ mongoose.connect(
     });
     
     const upload = multer({ 
-      storage: storage,
-      limits: { fileSize: 10 * 1024 * 1024 }, // Set size limit (e.g., 10MB)
+      storage: storage 
     });
+    
 
   // JWT verification middleware
   // JWT verification middleware with added debugging and error handling
@@ -118,49 +118,126 @@ mongoose.connect(
   });
 
   // Add a comment to a post
-  // Create a new comment for a post
-  app.post("/api/posts/:id/comment", async (req, res) => {
-    const postId = req.params.id;
-    const { profileImg, name, comment } = req.body;
-  
-    if (!comment || comment.trim() === "") {
+app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.id;
+  const { profileImg, name, comment } = req.body;
+
+  if (!comment || comment.trim() === "") {
       return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-    }
-  
-    try {
+  }
+
+  try {
       const post = await Post.findById(postId);
-  
+
       if (!post) {
-        return res.status(404).json({ success: false, message: "Post not found" });
+          return res.status(404).json({ success: false, message: "Post not found" });
       }
-  
-      // Include profileImg in the newComment object
+
       const newComment = {
-        profileImg, // Save the profile image
-        username: name,
-        comment,
-        createdAt: new Date(),
+          profileImg,
+          username: name,
+          userId, // Include userId in the comment
+          comment,
+          createdAt: new Date(),
       };
-  
+
       post.comments.push(newComment);
       await post.save();
-  
-      // Emit the new comment to all clients
+
       io.emit("new_comment", { postId, comment: newComment });
-  
+
       res.status(201).json({ success: true, comment: newComment });
-    } catch (err) {
+  } catch (err) {
       console.error("Error adding comment:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
-  
-  
+  }
+});
 
+// Delete a comment from a post
+app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.postId;
+  const commentId = req.params.commentId;
 
-  
+  try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
 
-  
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Find the comment to delete
+      const commentIndex = post.comments.findIndex(
+          (comment) => comment._id.toString() === commentId && comment.userId === userId
+      );
+
+      if (commentIndex === -1) {
+          return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
+      }
+
+      // Remove the comment from the comments array
+      post.comments.splice(commentIndex, 1);
+
+      // Save the updated post
+      await post.save();
+
+      // Emit the comment deletion event
+      io.emit("delete_comment", { postId, commentId });
+
+      res.status(200).json({ success: true, message: "Comment deleted successfully" });
+  } catch (err) {
+      console.error("Error deleting comment:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Edit a comment on a post
+app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
+  const userId = req.user.id; // Extract userId from the verified token
+  const postId = req.params.postId;
+  const commentId = req.params.commentId;
+  const { comment } = req.body;
+
+  if (!comment || comment.trim() === "") {
+      return res.status(400).json({ success: false, message: "Comment cannot be empty" });
+  }
+
+  try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+          return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Find the comment to edit
+      const existingComment = post.comments.find(
+          (commentItem) => commentItem._id.toString() === commentId && commentItem.userId === userId
+      );
+
+      if (!existingComment) {
+          return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
+      }
+
+      // Update the comment text
+      existingComment.comment = comment;
+      existingComment.updatedAt = new Date();
+
+      // Save the updated post
+      await post.save();
+
+      // Emit the comment edit event
+      io.emit("edit_comment", { postId, comment: existingComment });
+
+      res.status(200).json({ success: true, comment: existingComment });
+  } catch (err) {
+      console.error("Error editing comment:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
@@ -197,6 +274,7 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
 
   // Define Post schema
   const postSchema = new mongoose.Schema({
+    userId: String,
     profileImg: String,
     name: String,
     timestamp: { type: Date, default: Date.now },
@@ -212,8 +290,8 @@ app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
   ], // Array of users who upvoted
     comments: [
       {
-        profileImg: String,
         userId: String,
+        profileImg: String,
         username: String,
         comment: String,
         createdAt: Date,
@@ -234,23 +312,104 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
 
-  // Create a new post
-  app.post("/api/posts", async (req, res) => {
+    // Create a new post
+  app.post("/api/posts", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
     const { profileImg, name, content, postImg } = req.body;
     try {
-      const newPost = new Post({ profileImg, name, content, postImg });
-      await newPost.save();
-      res.status(201).json({ success: true, post: newPost });
-      io.emit("new_post", newPost);
+        const newPost = new Post({
+            profileImg,
+            name,
+            content,
+            postImg,
+            userId, // Save userId for the post
+        });
+        await newPost.save();
+        res.status(201).json({ success: true, post: newPost });
+        io.emit("new_post", newPost);
     } catch (err) {
-      console.error("Error creating post:", err);
+        console.error("Error creating post:", err);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  
+  // update a post
+  app.put("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+    const { content } = req.body;
+
+    if (!content || content.trim() === "") {
+      return res.status(400).json({ success: false, message: "Post content cannot be empty" });
+    }
+
+    try {
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      post.content = content;
+      post.postImg =  req.body.postImg;
+      post.updatedAt = new Date();
+
+      await post.save();
+
+      res.status(200).json({ success: true, post });
+    } catch (err) {
+      console.error("Error editing post:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
 
+
+  // delete a post
+  app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
+    const userId = req.user.id; // Extract userId from the verified token
+    const postId = req.params.postId;
+
+    try {
+      // Find the post by ID
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(404).json({ success: false, message: "Post not found" });
+      }
+
+      // Check if the user is the one who created the post
+      if (post.userId.toString() !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+
+      // Delete the post using deleteOne
+      const deletedPost = await Post.deleteOne({ _id: postId });
+
+      // Check if a post was deleted
+      if (deletedPost.deletedCount === 0) {
+        return res.status(500).json({ success: false, message: "Failed to delete post" });
+      }
+
+      // Emit post deletion event (optional)
+      io.emit("delete_post", { postId });
+
+      // Respond with a success message
+      res.status(200).json({ success: true, message: "Post deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      res.status(500).json({ success: false, message: "Internal server error", error: err.message });
+    }
+  });
+
+
   // Socket.IO events for real-time chat
   io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.id}`);
+    // console.log(`User connected: ${socket.id}`);
 
     socket.on("send_message", async (data) => {
       try {
@@ -263,7 +422,7 @@ const Post = mongoose.model("Post", postSchema);
     });
 
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.id}`);
+     // console.log(`User disconnected: ${socket.id}`);
     });
   });
 
@@ -381,7 +540,7 @@ const Post = mongoose.model("Post", postSchema);
       );
   
       const redirectPath = role === 'student' ? '/homepage' : '/homepage';
-  
+      
       res.json({ success: true, token: jwtToken, redirectPath });
     } catch (error) {
       console.error('Google login error:', error);
@@ -426,9 +585,6 @@ const Post = mongoose.model("Post", postSchema);
   });
   
 
-
-
-
   // Employer signup endpoint
   app.post("/employersignup", async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
@@ -465,6 +621,7 @@ const Post = mongoose.model("Post", postSchema);
   });
   
 
+  
   //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
   app.post('/api/updateStudentProfile', verifyToken, async (req, res) => {
@@ -483,8 +640,8 @@ const Post = mongoose.model("Post", postSchema);
           address,
           techSkills,
           softSkills,
-          contact,
-          email  } = req.body;
+          contact} = req.body;
+          // email  
 
         const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
             userId,
@@ -503,8 +660,8 @@ const Post = mongoose.model("Post", postSchema);
                       address,
                       techSkills,
                       softSkills,
-                      contact,
-                      email
+                      contact
+                      // email
                     }
                 }
             },
@@ -538,7 +695,7 @@ const Post = mongoose.model("Post", postSchema);
           aboutCompany,
           contactPersonName,
           position,
-          email,
+          // email,
           phoneNumber,
           preferredRoles,
           internshipOpportunities,
@@ -563,7 +720,7 @@ const Post = mongoose.model("Post", postSchema);
                       aboutCompany,
                       contactPersonName,
                       position,
-                      email,
+                      // email,
                       phoneNumber,
                       preferredRoles,
                       internshipOpportunities,
@@ -594,7 +751,7 @@ const Post = mongoose.model("Post", postSchema);
   
       const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
       const user = await userModel.findById(userId)
-      .select('role profileDetails createdAt googleSignup')
+      .select('email role profileDetails createdAt googleSignup')
       .populate('profileDetails.projects', 'projectName description tags tools thumbnail projectUrl'); // Populate project details selectively
   
       if (!user) {
@@ -603,6 +760,7 @@ const Post = mongoose.model("Post", postSchema);
   
       // Return profile details tailored to the role
       const profile = {
+        email: user.email,
         role: user.role,
         profileDetails: user.profileDetails,
         createdAt: user.createdAt,
@@ -615,7 +773,6 @@ const Post = mongoose.model("Post", postSchema);
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   });
-  
 
 
 
@@ -662,7 +819,7 @@ const Post = mongoose.model("Post", postSchema);
     }
   });
   */
-
+// api upload image endpoint
   app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;
@@ -929,44 +1086,57 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 // -----------------------------------api for dynamic search----------------------------------
-  app.get('/api/search', verifyToken, async (req, res) => {
-    const { query, filter } = req.query;
-    if (!query) {
-      return res.status(400).json({ success: false, message: 'Query parameter is required' });
+
+app.get('/api/search', verifyToken, async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ success: false, message: 'Query parameter is required' });
+  }
+
+  try {
+    const regex = new RegExp(query, 'i'); // Case-insensitive regex
+    const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
+    let results = [];
+
+    if (req.user.role === 'student') {
+      // Students can search employers
+      const employerResults = await Employer_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...employerResults];
+    } else if (req.user.role === 'employer') {
+      // Employers can search students
+      const studentResults = await Tupath_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      results = [...results, ...studentResults];
     }
 
-    try {
-      const regex = new RegExp(query, 'i'); // Case-insensitive regex
-      let results = [];
-
-      if (filter === 'students') {
-        const studentResults = await Tupath_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...studentResults];
-      }
-
-      if (filter === 'employers') {
-        const employerResults = await Employer_usersModel.find({
-          $or: [
-            { 'profileDetails.firstName': regex },
-            { 'profileDetails.middleName': regex },
-            { 'profileDetails.lastName': regex }
-          ]
-        }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-        results = [...results, ...employerResults];
-      }
-
-      res.status(200).json({ success: true, results });
-    } catch (err) {
-      console.error('Error during search:', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-  });
+    res.status(200).json({ success: true, results });
+  } catch (err) {
+    console.error('Error during search:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
   app.get('/api/profile/:id', verifyToken, async (req, res) => {
@@ -984,7 +1154,6 @@ const Post = mongoose.model("Post", postSchema);
   });
 
   
-
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {
       const userId = req.user.id;

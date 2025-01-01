@@ -6,8 +6,8 @@ import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
 
 function StudentSignup() {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    // const [firstName, setFirstName] = useState('');
+    // const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('student');
@@ -17,15 +17,15 @@ function StudentSignup() {
     const handleSignup = async (event) => {
         event.preventDefault();
     
-        if (!firstName || !lastName || !email || !password) {
+        if (!email || !password) {
             setMessage('All fields are required.');
             return;
         }
     
         try {
             const response = await axiosInstance.post('/studentsignup', {
-                firstName,
-                lastName,
+                // firstName,
+                // lastName,
                 email,
                 password,
             });
@@ -84,7 +84,7 @@ function StudentSignup() {
                 </div>
                 <p className="d-flex justify-content-center mb-3">or</p>
                 <form onSubmit={handleSignup}>
-                    <div className='nameinput'>
+                    {/*<div className='nameinput'>
                         <div className="form-groups mb-3">
                             <input
                                 type="text"
@@ -105,7 +105,7 @@ function StudentSignup() {
                                 required
                             />
                         </div>
-                    </div>
+                    </div>*/}
                     <div className="form-group mb-3">
                         <input
                             type="email"

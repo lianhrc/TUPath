@@ -9,6 +9,9 @@ import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
 import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
+import dots from '../../../assets/dots.png';
+import EditPostOption from '../../popups/EditOptionsModal';
+import { useNavigate } from "react-router-dom";
 
 const socket = io('http://localhost:3001');
 
@@ -18,34 +21,43 @@ const Homepage = () => {
     firstName: '',
     middleName: '',
     lastName: '',
+    studentId:'',
     address: '',
+    profileImg: '',
+    department: '',
+    yearLevel: '',
+    position: '',
+    industry: '',
   });
 
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [activePostId, setActivePostId] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [editingImage, setEditingImage] = useState(null);
+  const navigate = useNavigate();
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
     const diffInMs = now - postDate;
     const diffInMinutes = Math.floor(diffInMs / 60000);
-  
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  
-    // Format the date for posts older than 2 days
+
     return postDate.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
-
 
   const handleUpvote = async (postId) => {
     try {
@@ -56,13 +68,12 @@ const Homepage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to toggle upvote");
       }
-  
+
       const data = await response.json();
-  
       if (data.success) {
         setPostsData((prevPosts) =>
           prevPosts.map((post) =>
@@ -75,14 +86,10 @@ const Homepage = () => {
     }
   };
 
-
-
-  // Fetch posts and initialize `showComments`
   const fetchPostsData = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/posts');
       const data = await response.json();
-
       const updatedPosts = data.map((post) => ({
         ...post,
         showComments: false,
@@ -94,10 +101,9 @@ const Homepage = () => {
     }
   };
 
-  // Listen for socket updates
   useEffect(() => {
     fetchPostsData();
-
+    
     socket.on('new_post', (post) => {
       setPostsData((prevPosts) => [{ ...post, showComments: false }, ...prevPosts]);
     });
@@ -118,7 +124,16 @@ const Homepage = () => {
     };
   }, []);
 
-  // Fetch profile data
+  useEffect(() => {
+    socket.on("delete_post", ({ postId }) => {
+      setPostsData((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+    });
+  
+    return () => {
+      socket.off("delete_post");
+    };
+  }, []);
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -130,17 +145,14 @@ const Homepage = () => {
         console.error('Error fetching profile data:', error);
       }
     };
-  
+
     fetchProfileData();
   }, []);
-  
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
-  ? `http://localhost:3001${profileData.profileImg}`
-  : profileData.profileImg;
+    ? `http://localhost:3001${profileData.profileImg}`
+    : profileData.profileImg;
 
-
-  // Toggle comments for a specific post
   const toggleComments = (postId) => {
     setPostsData((prevPosts) =>
       prevPosts.map((post) =>
@@ -164,6 +176,17 @@ const Homepage = () => {
     }
   };
 
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setNewPostContent('');
@@ -175,14 +198,13 @@ const Homepage = () => {
       try {
         const newPost = {
           profileImg: profileData.profileImg,
-          name: `${profileData.firstName} ${ profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}  `.trim() || 'Student',
+          name: `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim() || 'Student',
           content: newPostContent,
           postImg: newPostImage,
         };
-  
+
         const response = await axiosInstance.post('/api/posts', newPost);
         if (response.data.success) {
-          // The new post will be automatically added via the 'new_post' socket event
           handleClosePopup();
         } else {
           console.error('Failed to add post:', response.data.message);
@@ -193,26 +215,148 @@ const Homepage = () => {
     }
   };
 
+  const toggleEditModal = (postId) => {
+    setActivePostId((prevId) => (prevId === postId ? null : postId));
+  };
+
+  const handleProfileClick = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const response = await axiosInstance.delete(`/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      const { success, message } = response.data;
+  
+      if (success) {
+        setPostsData((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId)
+        );
+      } else {
+        console.error("Error deleting post:", message);
+        alert(message || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("An error occurred while deleting the post. Please try again.");
+    }
+  };
+
+  const saveEdit = async () => {
+    if (editingPostId && editingContent.trim()) {
+      try {
+        const updatedPost = {
+          content: editingContent,
+          postImg: editingImage || undefined, // Ensure the new image is added if provided
+        };
+  
+        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, updatedPost);
+        if (response.data.success) {
+          setPostsData((prevPosts) =>
+            prevPosts.map((post) =>
+              post._id === editingPostId
+                ? { ...post, content: editingContent, postImg: editingImage || post.postImg }
+                : post
+            )
+          );
+          setEditingPostId(null);
+          setEditingContent('');
+          setEditingImage(null); // Reset the editing image state
+        } else {
+          console.error('Failed to save edit:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error saving edit:', error);
+      }
+    }
+  };
+  
+
+  const cancelEdit = () => {
+    setEditingPostId(null);
+    setEditingContent('');
+    setEditingImage(null);
+  };
+
   const renderPost = (post, index) => {
-    const userId = 'user_id_from_auth'; // Replace this with actual user ID from authentication
-    const hasUpvoted = post.votedUsers.includes(userId); // Check if user has upvoted
+    const userId = 'user_id_from_auth';
+    const hasUpvoted = post.votedUsers.includes(userId);
 
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
-          <img src={post.profileImg} alt={post.name} />
-          <div className="frompost">
-            <h5>{post.name}</h5>
-            <p>{formatTimeAgo(post.timestamp)}</p>
+          <div className="topleftpostcontent">
+            <img
+              src={post.profileImg}
+              alt={post.name}
+              onClick={() => handleProfileClick(post.userId)}
+              style={{ cursor: 'pointer' }}
+            />
+            <div className="frompost">
+              <h5
+                onClick={() => handleProfileClick(post.userId)}
+                style={{ cursor: 'pointer' }}
+              >
+                {post.name}
+              </h5>
+              <p>{formatTimeAgo(post.timestamp)}</p>
+            </div>
+          </div>
+          <div className="editdots-container">
+            <img
+              className="editdots"
+              src={dots}
+              alt="Options"
+              onClick={() => toggleEditModal(post._id)}
+            />
+            {activePostId === post._id && (
+              <EditPostOption
+                isOpen={activePostId === post._id}
+                onClose={() => setActivePostId(null)}
+                onDelete={() => handleDeletePost(post._id)}
+                onEditMode={() => {
+                  setEditingPostId(post._id);
+                  setEditingContent(post.content);
+                  setEditingImage(post.postImg);
+                  setActivePostId(null);
+                }}
+              />
+            )}
           </div>
         </div>
         <div className="postcontent">
-          <p>{post.content}</p>
-          {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
+          {editingPostId === post._id ? (
+            <div>
+              <textarea
+                value={editingContent}
+                onChange={(e) => setEditingContent(e.target.value)}
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleEditImageChange}
+              />
+              {editingImage && <img src={editingImage} alt="Preview" className="post-image" />}
+              <button onClick={saveEdit}>Save</button>
+              <button onClick={cancelEdit}>Cancel</button>
+            </div>
+          ) : (
+            <>
+              <p>{post.content}</p>
+              {post.postImg && <img src={post.postImg} alt="Post" className="post-image" />}
+            </>
+          )}
         </div>
         <div className="downpostcontent">
-          <button onClick={() => handleUpvote(post._id)}
-            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}>
+          <button
+            onClick={() => handleUpvote(post._id)}
+            style={{ backgroundColor: hasUpvoted ? 'lightblue' : 'white' }}
+          >
             <img src={upvoteicon} alt="Upvote" /> {post.upvotes}
           </button>
           <button onClick={() => toggleComments(post._id)}>
@@ -222,7 +366,7 @@ const Homepage = () => {
         {post.showComments && (
           <PostCommentPopup
             post={post}
-            handleCommentSubmit={() => console.log('Comment submit')} // Update with actual implementation
+            handleCommentSubmit={() => console.log('Comment submit')}
             toggleComments={toggleComments}
           />
         )}
@@ -235,20 +379,18 @@ const Homepage = () => {
       <Headerhomepage />
       <div className="content-container">
         <aside className="sidebar">
-        <div className="profile">
-          <img src={profileImageUrl} alt="Profile Icon" />
-          <h2>
-            {`${profileData.firstName} 
-            ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} 
-            ${profileData.lastName}`.trim()}
-          </h2>
-            <p>Student at Technological University of the Philippines</p>
-          <p>{profileData.address || 'Not Available'}</p>
-        </div>
+          <div className="profile">
+            <img src={profileImageUrl} alt="Profile Icon" />
+            <h2>{`${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim()}</h2>
+            <p>{profileData.studentId}</p>
+            <p>{profileData.department || profileData.industry}</p>
+            <p>{profileData.yearLevel || profileData.position }</p>
+            <p>{profileData.address}</p>
+          </div>
         </aside>
         <main className="feed">
           <div className="post-input" onClick={() => setIsPopupOpen(true)}>
-            <div className='postinputimg-container' >
+            <div className="postinputimg-container">
               <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
