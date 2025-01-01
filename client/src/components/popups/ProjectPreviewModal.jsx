@@ -63,7 +63,10 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               </p>
             )}
 
-          
+            {/* Clickable Status */}
+            <p className="projprev-status" onClick={handleStatusClick}>
+              <strong>{project.status || 'Click for project assessment'}</strong>
+            </p>
           </div>
 
           <div className="projprev-right">
@@ -82,28 +85,28 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
         </div>
 
         <div className="project-assessment-details">
-          <h4>Assessment Details:</h4>
-          {project.assessment && project.assessment.length > 0 ? (
-            project.assessment.map((item, index) => (
-              <div key={index} className="assessment-item">
-                <p><strong>Question:</strong> {item.question.text}</p>
-                <p><strong>Rating:</strong> {item.rating} / 5</p>
-                <p><strong>Score:</strong> {item.weightedScore} points</p>
-                <div className="assessment-rating-stars">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span
-                      key={i}
-                      className={`star ${i < item.rating ? "filled" : ""}`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+        <h4>Assessment Details:</h4>
+        {project.assessment && project.assessment.length > 0 ? (
+          project.assessment.map((item, index) => (
+            <div key={index} className="assessment-item">
+              <p><strong>Question:</strong> {item.question.text}</p>
+              <p><strong>Rating:</strong> {item.rating} / 5</p>
+              <p><strong>Score:</strong> {item.weightedScore} points</p>
+              <div className="assessment-rating-stars">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`star ${i < item.rating ? "filled" : ""}`}
+                  >
+                    ★
+                  </span>
+                ))}
               </div>
-            ))
-          ) : (
-            <p>No assessment data available.</p>
-          )}
+            </div>
+          ))
+        ) : (
+          <p>No assessment data available.</p>
+        )}
       </div>
 
         <div className="div">
