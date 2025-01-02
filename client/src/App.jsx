@@ -23,6 +23,7 @@ import ResetPassword from './components/pages/Login/ResetPassword.jsx';
 import './App.css'
 import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
 import AdminSignup from './components/pages/admin/AdminSignup.jsx';
+import QuestionManager from './components/pages/admin/QuestionManager.jsx';
 
 
 function App() {
@@ -81,9 +82,13 @@ function App() {
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
+
+
+
           <Route path='/adminlogin' element={<AdminLogin />} />
           <Route path='/admindashboard' element={<AdminDashboard />} />
           <Route path='/adminsignup' element={<AdminSignup />} />
+          <Route path='/questionmanager' element={<QuestionManager />} />
 
         </Routes>
       </BrowserRouter>
