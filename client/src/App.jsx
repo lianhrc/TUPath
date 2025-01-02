@@ -20,6 +20,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgotPassword from './components/pages/Login/ForgotPassword.jsx';
 import ResetPassword from './components/pages/Login/ResetPassword.jsx';
 import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
+import AdminSignup from './components/pages/admin/AdminSignup.jsx';
 
 
 function App() {
@@ -80,6 +81,8 @@ function App() {
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
           <Route path='/adminlogin' element={<AdminLogin />} />
           <Route path='/admindashboard' element={<AdminDashboard />} />
+          <Route path='/adminsignup' element={<AdminSignup />} />
+
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
