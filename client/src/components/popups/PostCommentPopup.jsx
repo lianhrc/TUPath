@@ -173,17 +173,21 @@ const PostCommentPopup = ({ post, toggleComments }) => {
           alt="Profile Icon"
           className="comment-profile"
         />
-        <input
-          type="text"
-          placeholder="Type your comment..."
-          value={commentText}
-          onChange={(e) => {
-            setCommentText(e.target.value);
-            e.target.style.height = "auto";
-            e.target.style.height = `${e.target.scrollHeight}px`;
-          }}
-          onKeyPress={handleKeyPress}
-        />
+        <textarea
+        placeholder="Type your comment..."
+        value={commentText}
+        onChange={(e) => {
+          setCommentText(e.target.value);
+          e.target.style.height = "auto"; // Reset height to recalculate
+          e.target.style.height = `${e.target.scrollHeight}px`; // Adjust height based on content
+        }}
+        onKeyPress={handleKeyPress}
+        style={{
+          overflow: "hidden", // Hide scrollbar
+          resize: "none", // Disable manual resizing
+        }}
+      />
+      
       </div>
       <div className="comments-list">
         {comments.map((comment, index) => (
