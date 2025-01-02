@@ -159,11 +159,11 @@ function Inboxpage() {
                   onClick={() => handleSelectMessage(message)}
                 >
                   <div className="inboxprofilecontainerleft">
-                    <img src={message.profileImage || profileicon} alt={`${message.receiver}'s profile`} />
+                    <img src={message.profileImage || profileicon} alt={`${message.sender}'s profile`} />
                   </div>
                   <div className="inboxdetailscontainerright">
                     <div className="topdetailscontainer">
-                      <h5>{message.receiver}</h5>
+                      <h5>{message.sender}</h5> {/* Display the sender's name */}
                       <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                     </div>
                     <div className="bottomdetailscontainer">
@@ -211,10 +211,10 @@ function Inboxpage() {
             ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.receiverreceiver}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.sender}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.receiver}</h4>
+                  <h4>{selectedMessage.sender}</h4> {/* Display the sender's name */}
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
                 <p className="message-content">{selectedMessage.text}</p>
