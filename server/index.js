@@ -103,11 +103,22 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
-    senderId: String,
-    receiverId: String,
-    sender: String,
-    receiver: String,
-    text: String, // Store the message as a string
+    timestamp: { type: Date, default: Date.now },
+    sender: [{
+      profileImg: String,
+      senderId: String,
+      sender: String,
+      text: String,
+      timestamp: { type: Date, default: Date.now },
+    }],
+    receiver: [{
+      
+      profileImg: String,
+      receiverId: String,
+      receiver: String,
+      text: String,
+      timestamp: { type: Date, default: Date.now },
+    }],
     timestamp: { type: Date, default: Date.now },
   });
   const Message = mongoose.model("Message", messageSchema);
@@ -129,7 +140,7 @@ app.get('/api/users', verifyToken, async (req, res) => {
   app.get("/api/messages", verifyToken, async (req, res) => {
     try {
       const userId = req.user.id; // Extract userId from the token
-      const messages = await Message.find({ receiverId: userId }).sort({ timestamp: 1 });
+      const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
       res.json(messages);
     } catch (err) {
       console.error("Error fetching messages:", err);
@@ -141,7 +152,7 @@ app.get('/api/users', verifyToken, async (req, res) => {
 app.get("/api/sent-messages", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ senderId: userId }).sort({ timestamp: 1 });
+    const messages = await Message.find({ "sender.senderId": userId }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (err) {
     console.error("Error fetching sent messages:", err);
@@ -469,11 +480,20 @@ const Post = mongoose.model("Post", postSchema);
           }
   
           const message = new Message({
-            senderId: userId,
-            receiverId: data.receiverId,
-            sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
-            receiver: data.receiver,
-            text: data.text, // Store the message content as a string
+            sender: [{
+              profileImg: senderUser.profileDetails.profileImg,
+              senderId: userId,
+              sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              text: data.text,
+              timestamp: data.timestamp,
+            }],
+            receiver: [{
+              profileImg: data.receiverProfileImg,
+              receiverId: data.receiverId,
+              receiver: data.receiver,
+              text: data.text,
+              timestamp: data.timestamp,
+            }],
             timestamp: data.timestamp,
           });
           await message.save();

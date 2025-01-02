@@ -107,6 +107,7 @@ function Inboxpage() {
         text: newMessageContent,
         timestamp: new Date().toISOString(),
         token: token, // Include the token in the message data
+        receiverProfileImg: recipientUser.profileDetails.profileImg, // Include receiver profile image
       };
 
       // Send message to the server via socket without adding it to the messages state
@@ -167,26 +168,33 @@ function Inboxpage() {
         <div className="inboxmain">
           <div className="inboxmain-left">
             <div className="inboxlists">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className="inboxlist-container"
-                  onClick={() => handleSelectMessage(message)}
-                >
-                  <div className="inboxprofilecontainerleft">
-                    <img src={message.profileImage || profileicon} alt={`${message.sender}'s profile`} />
-                  </div>
-                  <div className="inboxdetailscontainerright">
-                    <div className="topdetailscontainer">
-                      <h5>{message.sender}</h5> {/* Display the sender's name */}
-                      <p>{new Date(message.timestamp).toLocaleDateString()}</p>
+              {messages.map((message, index) => {
+                const isSender = message.sender[0].senderId === localStorage.getItem('receiverId' || 'senderId');
+                const profileImg = isSender ? message.receiver[0].profileImg : message.sender[0].profileImg;
+                const name = isSender ? message.receiver[0].receiver : message.sender[0].sender;
+                const text = isSender ? message.sender[0].text : message.receiver[0].text;
+
+                return (
+                  <div
+                    key={index}
+                    className="inboxlist-container"
+                    onClick={() => handleSelectMessage(message)}
+                  >
+                    <div className="inboxprofilecontainerleft">
+                      <img src={profileImg || profileicon} alt={`${name}'s profile`} />
                     </div>
-                    <div className="bottomdetailscontainer">
-                      <p>{message.text}</p>
+                    <div className="inboxdetailscontainerright">
+                      <div className="topdetailscontainer">
+                        <h5>{name}</h5> {/* Display the name */}
+                        <p>{new Date(message.timestamp).toLocaleDateString()}</p>
+                      </div>
+                      <div className="bottomdetailscontainer">
+                        <p>{text}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           <div className="inboxmain-right">
@@ -210,7 +218,6 @@ function Inboxpage() {
                       </li>
                     ))}
                   </ul>
-                  
                 )}
                 <label>Message:</label>
                 <textarea
@@ -226,13 +233,13 @@ function Inboxpage() {
             ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.sender}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.receiver[0].profileImg || profileicon} alt={`${selectedMessage.receiver[0].receiver}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.sender}</h4> {/* Display the sender's name */}
+                  <h4>{selectedMessage.receiver[0].receiver}</h4> {/* Display the receiver's name */}
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
-                <p className="message-content">{selectedMessage.text}</p>
+                <p className="message-content">{selectedMessage.receiver[0].text}</p>
               </div>
             ) : (
               <p>Select a message to view its content</p>
