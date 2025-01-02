@@ -23,6 +23,7 @@ function HeaderHomepage() {
     JSON.parse(localStorage.getItem('recentSearches')) || []
   );
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState([]);
 
   // Debounced search function to delay API calls
   const debouncedSearch = _debounce(async (query) => {
@@ -75,6 +76,21 @@ function HeaderHomepage() {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await axiosInstance.get('/api/unread-messages');
+        if (response.data) {
+          setUnreadMessages(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    fetchUnreadMessages();
+  }, []);
+
   const handleSearch = (event) => {
     const query = event.target.value;
     setSearchQuery(query);
@@ -112,6 +128,23 @@ function HeaderHomepage() {
       setRecentSearches(updatedSearches);
       localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
     }
+  };
+
+  const handleNotificationClick = async (message) => {
+    // Mark the message as read
+    try {
+      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setUnreadMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== message._id));
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+    }
+
+    // Navigate to the inbox and select the message
+    window.location.href = `/Inboxpage?messageId=${message._id}`;
   };
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
@@ -232,6 +265,9 @@ function HeaderHomepage() {
               </Link>
               <div className="dropdown" onClick={toggleNotifDropdown}>
                 <img src={notificon} alt="Notifications" className="nav-icon" />
+                {unreadMessages.length > 0 && (
+                  <span className="notification-badge">{unreadMessages.length}</span>
+                )}
                 {isNotifOpen && (
                   <motion.div
                     className="dropdown-menu notifications-menu"
@@ -241,6 +277,15 @@ function HeaderHomepage() {
                     exit="exit"
                   >
                     <h3>Notifications</h3>
+                    {unreadMessages.map((message, index) => (
+                      <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
+                        <img src={message.sender[0].profileImg || profileicon} alt={`${message.sender[0].sender}'s profile`} />
+                        <div>
+                          <p><strong>{message.sender[0].sender}</strong></p>
+                          <p>{message.sender[0].text}</p>
+                        </div>
+                      </div>
+                    ))}
                   </motion.div>
                 )}
               </div>

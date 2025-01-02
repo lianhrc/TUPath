@@ -118,6 +118,7 @@ mongoose.connect(
       receiver: String,
       text: String,
       timestamp: { type: Date, default: Date.now },
+      read: { type: Boolean, default: false },
     }],
     timestamp: { type: Date, default: Date.now },
   });
@@ -156,6 +157,44 @@ app.get("/api/sent-messages", verifyToken, async (req, res) => {
     res.json(messages);
   } catch (err) {
     console.error("Error fetching sent messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REST endpoint to fetch unread messages
+app.get("/api/unread-messages", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract userId from the token
+    const messages = await Message.find({ "receiver.receiverId": userId, "receiver.read": false }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error("Error fetching unread messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REST endpoint to mark a message as read
+app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const userId = req.user.id; // Extract userId from the token
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: "Message not found" });
+    }
+
+    const receiver = message.receiver.find(r => r.receiverId === userId);
+    if (!receiver) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    receiver.read = true;
+    await message.save();
+
+    res.status(200).json({ success: true, message: "Message marked as read" });
+  } catch (err) {
+    console.error("Error marking message as read:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
@@ -493,6 +532,7 @@ const Post = mongoose.model("Post", postSchema);
               receiver: data.receiver,
               text: data.text,
               timestamp: data.timestamp,
+              read: false, // Mark message as unread
             }],
             timestamp: data.timestamp,
           });

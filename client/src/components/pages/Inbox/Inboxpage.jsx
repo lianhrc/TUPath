@@ -76,9 +76,28 @@ function Inboxpage() {
     };
   }, []);
 
-  const handleSelectMessage = (message) => {
+  const handleSelectMessage = async (message) => {
     setSelectedMessage(message);
     setShowNewMessageSection(false);
+  
+    // Mark the message as read
+    if (!message.receiver[0].read) {
+      try {
+        await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        message.receiver[0].read = true;
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => (msg._id === message._id ? { ...msg, receiver: [{ ...msg.receiver[0], read: true }] } : msg))
+        );
+      } catch (error) {
+        console.error("Error marking message as read:", error);
+      }
+    }
   };
 
   const handleSendNewMessage = () => {
@@ -154,7 +173,7 @@ function Inboxpage() {
       <div className="inbox-container">
         <div className="inboxhead">
           <div className="headtitle">
-            <p>Messaging</p>
+            <p>Email</p>
           </div>
           <div className="headicons">
             <button>
@@ -200,7 +219,7 @@ function Inboxpage() {
           <div className="inboxmain-right">
             {showNewMessageSection ? (
               <div className="new-message-section">
-                <h6>New Message</h6>
+                <h6>New Email</h6>
                 <label>To:</label>
                 <input
                   className='recieptinput'
@@ -242,7 +261,7 @@ function Inboxpage() {
                 <p className="message-content">{selectedMessage.receiver[0].text}</p>
               </div>
             ) : (
-              <p>Select a message to view its content</p>
+              <p>Select a Email to view its content</p>
             )}
           </div>
         </div>
