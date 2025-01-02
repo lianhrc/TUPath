@@ -1,4 +1,4 @@
-  const express = require("express");
+const express = require("express");
   const mongoose = require("mongoose");
   const cors = require("cors");
   const jwt = require("jsonwebtoken");
@@ -103,17 +103,41 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
+    senderId: String,
+    receiverId: String,
     sender: String,
-    text: String,
+    receiver: String,
+    text: String, // Store the encrypted message as a string
     timestamp: { type: Date, default: Date.now },
   });
   const Message = mongoose.model("Message", messageSchema);
+  // Add this endpoint to fetch users
+  
+app.get('/api/users', verifyToken, async (req, res) => {
+  try {
+    const students = await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const employers = await Employer_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const users = [...students, ...employers];
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
   // REST endpoint to fetch chat messages
-  app.get("/api/messages", async (req, res) => {
+  app.get("/api/messages", verifyToken, async (req, res) => {
     try {
-      const messages = await Message.find().sort({ timestamp: 1 });
-      res.json(messages);
+      const userId = req.user.id; // Extract userId from the token
+      const messages = await Message.find({ receiverId: userId }).sort({ timestamp: 1 });
+
+      // Decrypt the message content for the designated receiver
+      const decryptedMessages = messages.map(message => ({
+        ...message._doc,
+        text: decrypt(message.text)
+      }));
+
+      res.json(decryptedMessages);
     } catch (err) {
       console.error("Error fetching messages:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
@@ -410,20 +434,74 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 
+  // Encryption and decryption functions
+const algorithm = 'aes-256-cbc';
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
+
+const encrypt = (text) => {
+  let cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return JSON.stringify({ iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') });
+};
+
+const decrypt = (text) => {
+  const parsedText = JSON.parse(text);
+  let iv = Buffer.from(parsedText.iv, 'hex');
+  let encryptedText = Buffer.from(parsedText.encryptedData, 'hex');
+  let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+};
+
   // Socket.IO events for real-time chat
   io.on("connection", (socket) => {
     // console.log(`User connected: ${socket.id}`);
 
     socket.on("send_message", async (data) => {
       try {
-        const message = new Message(data);
-        await message.save();
-        io.emit("receive_message", data);
+        const token = data.token; // Extract token from the data
+        if (!token) {
+          console.error("Token not provided");
+          return;
+        }
+  
+        jwt.verify(token, JWT_SECRET, async (err, user) => {
+          if (err) {
+            console.error("Token verification failed:", err);
+            return;
+          }
+  
+          const userId = user.id; // Extract userId from the token
+          console.log("Sender ID:", userId); // Log the senderId for debugging
+  
+          const senderUser = await Tupath_usersModel.findById(userId) || await Employer_usersModel.findById(userId);
+  
+          if (!senderUser) {
+            console.error("User not found for ID:", userId); // Log the userId if user is not found
+            return;
+          }
+  
+          const encryptedMessage = encrypt(data.text); // Encrypt the message content
+  
+          const message = new Message({
+            senderId: userId,
+            receiverId: data.receiverId,
+            sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+            receiver: data.receiver,
+            text: encryptedMessage, // Store the encrypted message as a string
+            timestamp: data.timestamp,
+          });
+          await message.save();
+          io.emit("receive_message", message);
+        });
       } catch (err) {
         console.error("Error saving message:", err);
       }
     });
-
+  
     socket.on("disconnect", () => {
      // console.log(`User disconnected: ${socket.id}`);
     });

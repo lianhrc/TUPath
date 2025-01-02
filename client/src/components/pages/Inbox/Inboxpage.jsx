@@ -16,20 +16,37 @@ function Inboxpage() {
   const [newMessageRecipient, setNewMessageRecipient] = useState('');
   const [newMessageContent, setNewMessageContent] = useState('');
   const [showNewMessageSection, setShowNewMessageSection] = useState(false);
-  const [messages, setMessages] = useState([
-    { id: 1, name: '', date: '', text: '', profileImage: profileicon },
-    { id: 2, name: '', date: '', text: '', profileImage: profileicon2 },
-    { id: 3, name: '', date: '', text: '', profileImage: profileicon },
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/messages')
+    fetch('http://localhost:3001/api/messages', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
       .then(response => response.json())
       .then(data => {
         const sortedMessages = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setMessages(sortedMessages);
       })
       .catch(error => console.error("Error fetching messages:", error));
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/api/users', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          setUsers(data.users);
+        }
+      })
+      .catch(error => console.error("Error fetching users:", error));
   }, []);
 
   useEffect(() => {
@@ -51,26 +68,68 @@ function Inboxpage() {
 
   const handleSendNewMessage = () => {
     if (newMessageRecipient && newMessageContent) {
+      const recipientUser = users.find(user => 
+        `${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase() === newMessageRecipient.toLowerCase()
+      );
+
+      if (!recipientUser) {
+        console.error("Recipient not found");
+        return;
+      }
+
+      const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
+      const username = localStorage.getItem('username'); // Assuming username is stored in localStorage
+      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+
+      console.log("Sender ID:", userId); // Log the senderId for debugging
+      console.log("Sender Username:", username); // Log the sender username for debugging
+
       const newMessage = {
-        sender: newMessageRecipient,
+        senderId: userId,
+        receiverId: recipientUser._id,
+        sender: username,
+        receiver: newMessageRecipient,
         text: newMessageContent,
         timestamp: new Date().toISOString(),
+        token: token, // Include the token in the message data
       };
-  
+
       // Send message to the server via socket without adding it to the messages state
       socket.emit('send_message', newMessage);
-  
+
       // Clear inputs and hide the new message section
       setNewMessageRecipient('');
       setNewMessageContent('');
       setShowNewMessageSection(false);
     }
   };
-  
 
   const toggleNewMessageSection = () => {
     setShowNewMessageSection(true);
     setSelectedMessage(null);
+  };
+
+  const handleRecipientChange = (e) => {
+    const value = e.target.value.toLowerCase();
+    setNewMessageRecipient(value);
+    if (value) {
+      const filtered = users.filter(user =>
+        user.profileDetails &&
+        user.profileDetails.firstName &&
+        user.profileDetails.lastName &&
+        (`${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase().includes(value) ||
+         user.profileDetails.firstName.toLowerCase().includes(value) ||
+         user.profileDetails.lastName.toLowerCase().includes(value))
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers([]);
+    }
+  };
+
+  const handleUserSelect = (user) => {
+    setNewMessageRecipient(`${user.profileDetails.firstName} ${user.profileDetails.lastName}`);
+    setFilteredUsers([]);
   };
 
   return (
@@ -104,7 +163,7 @@ function Inboxpage() {
                   </div>
                   <div className="inboxdetailscontainerright">
                     <div className="topdetailscontainer">
-                      <h5>{message.sender}</h5>
+                      <h5>{message.sender}</h5> {/* Display the sender's name */}
                       <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                     </div>
                     <div className="bottomdetailscontainer">
@@ -124,9 +183,20 @@ function Inboxpage() {
                   className='recieptinput'
                   type="text"
                   value={newMessageRecipient}
-                  onChange={(e) => setNewMessageRecipient(e.target.value)}
+                  onChange={handleRecipientChange}
                   placeholder="Recipient's name"
                 />
+                {filteredUsers.length > 0 && (
+                  <ul className="dropdown">
+                    {filteredUsers.map((user, index) => (
+                      <li key={index} onClick={() => handleUserSelect(user)}>
+                        <img src={user.profileDetails.profileImg || profileicon} alt={`${user.profileDetails.firstName} ${user.profileDetails.lastName}`} />
+                        {user.profileDetails.firstName} {user.profileDetails.lastName}
+                      </li>
+                    ))}
+                  </ul>
+                  
+                )}
                 <label>Message:</label>
                 <textarea
                   className='Messageinputbox'
@@ -144,7 +214,7 @@ function Inboxpage() {
                   <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.sender}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.sender}</h4>
+                  <h4>{selectedMessage.sender}</h4> {/* Display the sender's name */}
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
                 <p className="message-content">{selectedMessage.text}</p>
