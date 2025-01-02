@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import ProjectAssessmentModal from "./ProjectAssessmentModal";
 import "../popups/ProjectUpModal.css";
 import axiosInstance from "../../services/axiosInstance";
+import { toast } from "react-toastify"; // Import toastify
+import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
 
 const predefinedTags = [
@@ -152,6 +154,8 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const handleToolRemove = (toolToRemove) => {
     setTools(tools.filter((tool) => tool !== toolToRemove));
   };
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -382,7 +386,14 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
           onFinalSubmit={() => {
             setShowAssessmentModal(false);
             setReadyToSubmit(true);
-            alert("Assessment completed successfully!");
+            toast.success('Assessment completed successfully!', {
+              position: "top-center",
+              autoClose: 3000,  // Toast will disappear in 3 seconds
+              hideProgressBar: false,
+              theme: "light",
+            });
+            
+            
           }}
         />
       )}

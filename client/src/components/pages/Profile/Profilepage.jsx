@@ -254,7 +254,15 @@ function ProfilePage() {
 
 
         {/* Modals */}
-        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} onProjectUpload={addProjectToState} />
+        <ProjectUploadModal
+        key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+        show={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onProjectUpload={addProjectToState}
+      />
+      
+      
+
         <EditDescriptionModal 
                     show={showEditDescriptionModal} 
                     onClose={() => setShowEditDescriptionModal(false)} 

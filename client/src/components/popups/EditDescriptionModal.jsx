@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import "./EditDescriptionModal.css";
 import axiosInstance from "../../services/axiosInstance";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   const [formData, setFormData] = useState(profileData);
@@ -26,21 +28,32 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   };
 
 
-
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Preview the selected image
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload a valid image file.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5 MB limit
+        toast.error("Image size should not exceed 5MB.", {
+          position: "top-center",
+          autoClose: 3000,  // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
+        return;
+      }
+  
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-
-      // Upload the image to the server
+  
       const formDataToSend = new FormData();
       formDataToSend.append("profileImg", file);
-
+  
       try {
         const response = await axiosInstance.post("/api/uploadProfileImage", formDataToSend, {
           headers: {
@@ -48,46 +61,77 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
             "Content-Type": "multipart/form-data",
           },
         });
-
+  
         if (response.data.success) {
+          toast.success("Profile image uploaded successfully!", {
+            position: "top-center",
+            autoClose: 3000,  // Toast will disappear in 3 seconds
+            hideProgressBar: false,
+            theme: "light",
+          });
           setFormData((prev) => ({
             ...prev,
-            profileImg: response.data.profileImg, // Update with server path
+            profileImg: response.data.profileImg,
           }));
+        } else {
+          toast.error("Failed to upload profile image.", {
+            position: "top-center",
+            autoClose: 3000,  // Toast will disappear in 3 seconds
+            hideProgressBar: false,
+            theme: "light",
+          });
         }
       } catch (error) {
-        console.error("Error uploading profile image:", error);
+        toast.error("Error uploading profile image.", {
+          position: "top-center",
+          autoClose: 3000,  // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
       }
     }
   };
 
 
-  const handleSave = async () => {
-    const updatedData = { ...formData };
   
-    // Preserve the current projects (if they exist) in the updated data
-    const projects = profileData.projects || [];  // Use existing projects if no new ones are provided
-    updatedData.projects = projects;  // Include projects in the update data
-  
-    try {
-      const response = await axiosInstance.put("/api/updateProfile", updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+const handleSave = async () => {
+  const updatedData = { ...formData };
+  const projects = profileData.projects || [];
+  updatedData.projects = projects;
+
+  try {
+    const response = await axiosInstance.put("/api/updateProfile", updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.success) {
+      toast.success("Profile updated successfully!",{
+        position: "top-center",
+        autoClose: 3000,  // Toast will disappear in 3 seconds
+        hideProgressBar: false,
+        theme: "light",
       });
-  
-      if (response.data.success) {
-        // After successful update, pass the updated profile including projects
-        const updatedProfile = { ...updatedData, projects };
-        onSave(updatedProfile); // Pass the updated profile data with preserved projects
-        onClose(); // Close the modal
-      } else {
-        console.error("Failed to save profile data");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+      onSave(updatedData);
+      onClose();
+    } else {
+      toast.error("Failed to save profile data.", {
+        position: "top-center",
+        autoClose: 3000,  // Toast will disappear in 3 seconds
+        hideProgressBar: false,
+        theme: "light",
+      });
     }
-  };
+  } catch (error) {
+    toast.error("Error updating profile.", {
+      position: "top-center",
+      autoClose: 3000,  // Toast will disappear in 3 seconds
+      hideProgressBar: false,
+      theme: "light",
+    });
+  }
+};
   
   
   
