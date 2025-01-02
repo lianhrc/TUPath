@@ -13,6 +13,8 @@ import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
+import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
+import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notifications
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
