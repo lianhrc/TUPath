@@ -208,7 +208,7 @@ const Homepage = () => {
   
         const response = await axiosInstance.post('/api/posts', newPost);
         if (response.data.success) {
-          toast.success("Post added successfully!");  // Success toast
+          toast.success("Posted Successfully!");  // Success toast
           setPostSuccess(true);  // Indicate post was successful
           handleClosePopup();
           setNewPostContent('');
@@ -356,19 +356,29 @@ const Homepage = () => {
   
         <div className="postcontent">
           {editingPostId === post._id ? (
-            <div>
+            <div className='postcontenttxtareacontainer'>
               <textarea
                 value={editingContent}
                 onChange={(e) => setEditingContent(e.target.value)}
               />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleEditImageChange}
-              />
+             <div className="editbuttonpostcontainer">
+             <label htmlFor="file-input" className="icon-label">
+              <img src={mediaupload} alt="" />
+            </label>
+            <input
+              id="file-input"
+              type="file"
+              accept="image/*"
+              onChange={handleEditImageChange}
+              style={{ display: "none" }}
+           />
+              <div className="editbuttonscontainer">
+                  <button onClick={saveEdit}>Save</button>
+                  <button onClick={cancelEdit}>Cancel</button>
+              </div>
+             </div>
               {editingImage && <img src={editingImage} alt="Preview" className="post-image" />}
-              <button onClick={saveEdit}>Save</button>
-              <button onClick={cancelEdit}>Cancel</button>
+             
             </div>
           ) : (
             <>

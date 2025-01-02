@@ -15,20 +15,20 @@
   margin-bottom: 30px;
   font-size: 12px;
   gap: 10px;
+  overflow: auto;
 
 }
 
 .comment-input textarea {
   width: 100%;
-  padding: 5px;
+  min-height: 40px;
   border: 1px solid #ccc;
-  border-radius: 4px; /* Rounded corners */
-  resize: none; /* Disable manual resizing */
-  overflow: hidden; /* Prevent scrollbars */
-  font-size: 12px; /* Match input font size */
-  line-height: 1.5; /* Better line spacing */
-  box-sizing: border-box; /* Include padding and border in width/height calculations */
-  transition: height 0.2s ease-in-out; /* Smooth height change */
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-wrap: wrap;
+  overflow: auto; /* Prevent scrollbars */
 }
 
 
@@ -47,8 +47,8 @@
 
 /* Comment */
 .comment {
-  display: flex; /* Flexible layout */
-  width: 100%; /* Full width */
+  display:flex;
+  width: auto; /* Full width */
   gap: 10px;
   
 }
@@ -70,7 +70,7 @@
   padding: 15px 5px 10px 5px;
   margin-bottom: 3px;
   border-radius: 20px;
-  width: 800px;
+  width:100%;
   background-color: rgb(244, 244, 244);
 }
 
@@ -172,4 +172,19 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+
+.saveedit-comment textarea {
+  display: flex;
+  width: 100%;
+  border:none; /* Default border */
+  outline: none;         /* Remove the outline when focused */
+  transition: border 0.3s; /* Smooth transition for border changes */
+  padding: 10px;
+ 
+}
+
+.saveedit-comment textarea:focus{
+  border: none;
+
 }

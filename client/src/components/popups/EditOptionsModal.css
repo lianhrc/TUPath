@@ -42,13 +42,32 @@
   
   /* Modal */
   .edit-options-modal {
+    
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
     width: 100px;
-    padding: 10px 10px;
+    margin-top: 10px;
+    padding: 10px 0;
     border-radius: 10px;
     border: solid 1px rgb(195, 195, 195);
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .edit-options-modal div{
+    display: flex;
+    flex-direction: column;
+    
+    width: 100%;
+
+  }
+  .edit-options-modal div button{
+    width: 100%;
+    border: none;
+    background: none;
+
+    padding: 5px;
+  }
+  .edit-options-modal div button:hover{
+    background-color: #f0f0f0;
   }
   
   .edit-options-modal h6 {

@@ -186,7 +186,14 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'>
+                    <h3>Preferred Roles</h3>
+                    <p>
+                      {Array.isArray(profileData.preferredRoles)
+                        ? profileData.preferredRoles.join(', ')
+                        : 'Not Available'}
+                    </p>
+                  </div>
                 <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
                 <div className='profile-section'>
                 <h3>Preferred Skills</h3>
