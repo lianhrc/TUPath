@@ -35,8 +35,8 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
         toast.error("Please upload a valid image file.");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5 MB limit
-        toast.error("Image size should not exceed 5MB.", {
+      if (file.size > 20 * 1024 * 1024) { // 20 MB limit
+        toast.error("Image size should not exceed 20MB.", {
           position: "top-center",
           autoClose: 3000,  // Toast will disappear in 3 seconds
           hideProgressBar: false,

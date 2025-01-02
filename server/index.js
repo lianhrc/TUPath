@@ -20,11 +20,13 @@
   const path = require("path");
 
   // Middleware setup
-  app.use(express.json());
   app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
+
+  app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // Middleware for setting COOP headers
   app.use((req, res, next) => {
@@ -59,7 +61,8 @@ mongoose.connect(
     });
    
     const upload = multer({ 
-      storage: storage 
+      storage: storage,
+      limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
     });
     
 
