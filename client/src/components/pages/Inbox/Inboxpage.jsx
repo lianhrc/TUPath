@@ -21,17 +21,32 @@ function Inboxpage() {
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/messages', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    const fetchMessages = async () => {
+      try {
+        const [receivedResponse, sentResponse] = await Promise.all([
+          fetch('http://localhost:3001/api/messages', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }),
+          fetch('http://localhost:3001/api/sent-messages', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          })
+        ]);
+
+        const receivedMessages = await receivedResponse.json();
+        const sentMessages = await sentResponse.json();
+
+        const allMessages = [...receivedMessages, ...sentMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setMessages(allMessages);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
       }
-    })
-      .then(response => response.json())
-      .then(data => {
-        const sortedMessages = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setMessages(sortedMessages);
-      })
-      .catch(error => console.error("Error fetching messages:", error));
+    };
+
+    fetchMessages();
   }, []);
 
   useEffect(() => {

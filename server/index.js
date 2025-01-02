@@ -104,7 +104,7 @@ mongoose.connect(
     receiverId: String,
     sender: String,
     receiver: String,
-    text: String, // Store the encrypted message as a string
+    text: String, // Store the message as a string
     timestamp: { type: Date, default: Date.now },
   });
   const Message = mongoose.model("Message", messageSchema);
@@ -127,19 +127,24 @@ app.get('/api/users', verifyToken, async (req, res) => {
     try {
       const userId = req.user.id; // Extract userId from the token
       const messages = await Message.find({ receiverId: userId }).sort({ timestamp: 1 });
-
-      // Decrypt the message content for the designated receiver
-      const decryptedMessages = messages.map(message => ({
-        ...message._doc,
-        text: decrypt(message.text)
-      }));
-
-      res.json(decryptedMessages);
+      res.json(messages);
     } catch (err) {
       console.error("Error fetching messages:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+
+// REST endpoint to fetch sent messages
+app.get("/api/sent-messages", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract userId from the token
+    const messages = await Message.find({ senderId: userId }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error("Error fetching sent messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
   // Add a comment to a post
 app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
@@ -431,27 +436,6 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 
-  // Encryption and decryption functions
-const algorithm = 'aes-256-cbc';
-const key = crypto.randomBytes(32);
-const iv = crypto.randomBytes(16);
-
-const encrypt = (text) => {
-  let cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return JSON.stringify({ iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') });
-};
-
-const decrypt = (text) => {
-  const parsedText = JSON.parse(text);
-  let iv = Buffer.from(parsedText.iv, 'hex');
-  let encryptedText = Buffer.from(parsedText.encryptedData, 'hex');
-  let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
-};
 
   // Socket.IO events for real-time chat
   io.on("connection", (socket) => {
@@ -481,14 +465,12 @@ const decrypt = (text) => {
             return;
           }
   
-          const encryptedMessage = encrypt(data.text); // Encrypt the message content
-  
           const message = new Message({
             senderId: userId,
             receiverId: data.receiverId,
             sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
             receiver: data.receiver,
-            text: encryptedMessage, // Store the encrypted message as a string
+            text: data.text, // Store the message content as a string
             timestamp: data.timestamp,
           });
           await message.save();
