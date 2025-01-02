@@ -101,8 +101,8 @@ mongoose.connect(
   // Chat message schema
   const messageSchema = new mongoose.Schema({
     senderId: String,
-    sender: String,
     receiverId: String,
+    sender: String,
     receiver: String,
     text: String,
     timestamp: { type: Date, default: Date.now },
@@ -429,14 +429,44 @@ const Post = mongoose.model("Post", postSchema);
 
     socket.on("send_message", async (data) => {
       try {
-        const message = new Message(data);
-        await message.save();
-        io.emit("receive_message", data);
+        const token = data.token; // Extract token from the data
+        if (!token) {
+          console.error("Token not provided");
+          return;
+        }
+  
+        jwt.verify(token, JWT_SECRET, async (err, user) => {
+          if (err) {
+            console.error("Token verification failed:", err);
+            return;
+          }
+  
+          const userId = user.id; // Extract userId from the token
+          console.log("Sender ID:", userId); // Log the senderId for debugging
+  
+          const senderUser = await Tupath_usersModel.findById(userId) || await Employer_usersModel.findById(userId);
+  
+          if (!senderUser) {
+            console.error("User not found for ID:", userId); // Log the userId if user is not found
+            return;
+          }
+  
+          const message = new Message({
+            senderId: userId,
+            receiverId: data.receiverId,
+            sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+            receiver: data.receiver,
+            text: data.text,
+            timestamp: data.timestamp,
+          });
+          await message.save();
+          io.emit("receive_message", message);
+        });
       } catch (err) {
         console.error("Error saving message:", err);
       }
     });
-
+  
     socket.on("disconnect", () => {
      // console.log(`User disconnected: ${socket.id}`);
     });

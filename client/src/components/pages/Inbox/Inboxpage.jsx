@@ -77,13 +77,21 @@ function Inboxpage() {
         return;
       }
 
+      const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
+      const username = localStorage.getItem('username'); // Assuming username is stored in localStorage
+      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+
+      console.log("Sender ID:", userId); // Log the senderId for debugging
+      console.log("Sender Username:", username); // Log the sender username for debugging
+
       const newMessage = {
-        senderId: localStorage.getItem('userId'), // Assuming userId is stored in localStorage
+        senderId: userId,
         receiverId: recipientUser._id,
-        sender: localStorage.getItem('username'), // Assuming username is stored in localStorage
+        sender: username,
         receiver: newMessageRecipient,
         text: newMessageContent,
         timestamp: new Date().toISOString(),
+        token: token, // Include the token in the message data
       };
 
       // Send message to the server via socket without adding it to the messages state
@@ -130,7 +138,7 @@ function Inboxpage() {
       <div className="inbox-container">
         <div className="inboxhead">
           <div className="headtitle">
-            <p>Email</p>
+            <p>Messaging</p>
           </div>
           <div className="headicons">
             <button>
@@ -169,7 +177,7 @@ function Inboxpage() {
           <div className="inboxmain-right">
             {showNewMessageSection ? (
               <div className="new-message-section">
-                <h6>New Email</h6>
+                <h6>New Message</h6>
                 <label>To:</label>
                 <input
                   className='recieptinput'
@@ -189,7 +197,7 @@ function Inboxpage() {
                   </ul>
                   
                 )}
-                <label>Email:</label>
+                <label>Message:</label>
                 <textarea
                   className='Messageinputbox'
                   value={newMessageContent}
@@ -212,7 +220,7 @@ function Inboxpage() {
                 <p className="message-content">{selectedMessage.text}</p>
               </div>
             ) : (
-              <p>Select a Email to view its content</p>
+              <p>Select a message to view its content</p>
             )}
           </div>
         </div>
