@@ -13,6 +13,8 @@ import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
+import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
+import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notifications
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
@@ -254,7 +256,15 @@ function ProfilePage() {
 
 
         {/* Modals */}
-        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} onProjectUpload={addProjectToState} />
+        <ProjectUploadModal
+        key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+        show={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onProjectUpload={addProjectToState}
+      />
+      
+      
+
         <EditDescriptionModal 
                     show={showEditDescriptionModal} 
                     onClose={() => setShowEditDescriptionModal(false)} 
@@ -289,7 +299,7 @@ function ProfilePage() {
           }}
         />
 
-<CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+      <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
         <MessagePop />
       </div>
     </div>

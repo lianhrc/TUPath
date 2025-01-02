@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import ProjectAssessmentModal from "./ProjectAssessmentModal";
 import "../popups/ProjectUpModal.css";
 import axiosInstance from "../../services/axiosInstance";
+import { toast } from "react-toastify"; // Import toastify
+import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
 
 const predefinedTags = [
@@ -153,29 +155,30 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     setTools(tools.filter((tool) => tool !== toolToRemove));
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!projectName.trim()) {
       alert("Project name is required.");
       return;
     }
-
+  
     if (!description.trim()) {
       alert("Description is required.");
       return;
     }
-
+  
     if (!tag) {
       alert("Please select a tag.");
       return;
     }
-
+  
     if (assessmentQuestions.length > 0 && !readyToSubmit) {
       setShowAssessmentModal(true);
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
@@ -199,15 +202,23 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
     }
-
+  
     try {
       const response = await axiosInstance.post("/api/uploadProject", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       if (response.data.success) {
+        // Show success toast notification
+        toast.success('Project uploaded successfully!', {
+          position: "top-center",
+          autoClose: 3000, // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
+        
         onProjectUpload(response.data.project);
         onClose();
       } else {
@@ -217,6 +228,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
       console.error("Error uploading project:", error);
     }
   };
+  
 
   return (
     <>
@@ -356,7 +368,8 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
               />
 
               <label>Project URL:</label>
-              <input
+              <input 
+                className="projecturlinput"
                 type="url"
                 value={projectUrl}
                 onChange={(e) => setProjectUrl(e.target.value)}
@@ -381,7 +394,14 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
           onFinalSubmit={() => {
             setShowAssessmentModal(false);
             setReadyToSubmit(true);
-            alert("Assessment completed successfully!");
+            toast.success('Assessment completed successfully!', {
+              position: "top-center",
+              autoClose: 3000,  // Toast will disappear in 3 seconds
+              hideProgressBar: false,
+              theme: "light",
+            });
+            
+            
           }}
         />
       )}

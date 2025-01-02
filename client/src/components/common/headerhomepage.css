@@ -47,12 +47,14 @@
 
 .search-input {
   height: 30px;
-  width: 50%;
+  margin-top: -10px;
+  width: 40%;
   padding: 10px;
   z-index: 10000;
   border: 1px solid #ccc;
  border-radius: 35px;
   margin-right: -2px;
+  position: absolute;
 }
 
 .search-input::placeholder {
@@ -184,11 +186,11 @@ cursor: pointer;
   background: white;
   border: 1px solid #ddd;
   width: 100%;
-  max-width: 568px;
+  max-width: 540px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 49.5%;
+  left: 49.9%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-bottom-right-radius: 20px;
@@ -229,12 +231,11 @@ cursor: pointer;
   position: absolute;
   background: white;
   border: 1px solid #ddd;
-  width: 100%;
-  max-width: 568px;
+  width: 540px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 49.5%;
+  left: 49.9%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-bottom-right-radius: 20px;

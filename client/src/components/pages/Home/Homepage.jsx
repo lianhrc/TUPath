@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './Homepage.css';
 import Headerhomepage from '../../common/headerhomepage';
 import mediaupload from '../../../assets/mediaupload.png';
@@ -37,6 +39,7 @@ const Homepage = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
   const [editingImage, setEditingImage] = useState(null);
+  const [postSuccess, setPostSuccess] = useState(null); // New state to track post submission status
   const navigate = useNavigate();
 
   const formatTimeAgo = (timestamp) => {
@@ -202,18 +205,27 @@ const Homepage = () => {
           content: newPostContent,
           postImg: newPostImage,
         };
-
+  
         const response = await axiosInstance.post('/api/posts', newPost);
         if (response.data.success) {
+          toast.success("Post added successfully!");  // Success toast
+          setPostSuccess(true);  // Indicate post was successful
           handleClosePopup();
+          setNewPostContent('');
+          setNewPostImage(null);
         } else {
+          toast.error("Failed to add post. Please try again.");  // Error toast
+          setPostSuccess(false); // Indicate post failed
           console.error('Failed to add post:', response.data.message);
         }
       } catch (err) {
+        toast.error("Failed to add post. Please try again.");  // Error toast
+        setPostSuccess(false); // Indicate post failed
         console.error('Error adding post:', err);
       }
     }
   };
+
 
   const toggleEditModal = (postId) => {
     setActivePostId((prevId) => (prevId === postId ? null : postId));
@@ -264,14 +276,16 @@ const Homepage = () => {
                 : post
             )
           );
+          toast.success("Post updated successfully!");  // Success toast
           setEditingPostId(null);
           setEditingContent('');
           setEditingImage(null); // Reset the editing image state
         } else {
-          console.error('Failed to save edit:', response.data.message);
+          toast.error("Failed to update post. Please try again.");  // Error toast
         }
-      } catch (error) {
-        console.error('Error saving edit:', error);
+      } catch (err) {
+        toast.error("Failed to update post. Please try again.");  // Error toast
+        console.error("Error updating post:", err);
       }
     }
   };
@@ -284,9 +298,15 @@ const Homepage = () => {
   };
 
   const renderPost = (post, index) => {
-    const userId = 'user_id_from_auth';
+    // Construct the current user's full name
+    const userFullName = `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim();
+  
+    // Check if the post creator's name matches the logged-in user's name
+    const isPostOwner = post.name === userFullName;
+  
+    const userId = 'user_id_from_auth'; // Adjust as needed to get the actual user ID
     const hasUpvoted = post.votedUsers.includes(userId);
-
+  
     return (
       <div className="post" key={post._id || index}>
         <div className="toppostcontent">
@@ -307,28 +327,33 @@ const Homepage = () => {
               <p>{formatTimeAgo(post.timestamp)}</p>
             </div>
           </div>
-          <div className="editdots-container">
-            <img
-              className="editdots"
-              src={dots}
-              alt="Options"
-              onClick={() => toggleEditModal(post._id)}
-            />
-            {activePostId === post._id && (
-              <EditPostOption
-                isOpen={activePostId === post._id}
-                onClose={() => setActivePostId(null)}
-                onDelete={() => handleDeletePost(post._id)}
-                onEditMode={() => {
-                  setEditingPostId(post._id);
-                  setEditingContent(post.content);
-                  setEditingImage(post.postImg);
-                  setActivePostId(null);
-                }}
+  
+          {/* Show the edit and delete options only if the user is the post creator */}
+          {isPostOwner && (
+            <div className="editdots-container">
+              <img
+                className="editdots"
+                src={dots}
+                alt="Options"
+                onClick={() => toggleEditModal(post._id)}
               />
-            )}
-          </div>
+              {activePostId === post._id && (
+                <EditPostOption
+                  isOpen={activePostId === post._id}
+                  onClose={() => setActivePostId(null)}
+                  onDelete={() => handleDeletePost(post._id)}
+                  onEditMode={() => {
+                    setEditingPostId(post._id);
+                    setEditingContent(post.content);
+                    setEditingImage(post.postImg);
+                    setActivePostId(null);
+                  }}
+                />
+              )}
+            </div>
+          )}
         </div>
+  
         <div className="postcontent">
           {editingPostId === post._id ? (
             <div>
@@ -352,6 +377,7 @@ const Homepage = () => {
             </>
           )}
         </div>
+  
         <div className="downpostcontent">
           <button
             onClick={() => handleUpvote(post._id)}
@@ -363,6 +389,7 @@ const Homepage = () => {
             <img src={commenticon} alt="Comment" /> {post.comments.length}
           </button>
         </div>
+  
         {post.showComments && (
           <PostCommentPopup
             post={post}
@@ -373,6 +400,7 @@ const Homepage = () => {
       </div>
     );
   };
+  
 
   return (
     <div className="Homepage-container">
@@ -389,13 +417,17 @@ const Homepage = () => {
           </div>
         </aside>
         <main className="feed">
-          <div className="post-input" onClick={() => setIsPopupOpen(true)}>
+      
+        {/* Notification for post success or failure */}
+         
+
+          <div className="post-input">
             <div className="postinputimg-container">
               <img src={profileImageUrl} alt="Profile Icon" />
             </div>
             <div className="subpost-input">
-              <input type="text" placeholder="Start a post" readOnly />
-              <button className="media-btn">
+              <input  onClick={() => setIsPopupOpen(true)} type="text" placeholder="Start a post" readOnly />
+              <button className="media-btn"  onClick={() => setIsPopupOpen(true)}>
                 <img src={mediaupload} alt="Media Upload" /> Media
               </button>
             </div>

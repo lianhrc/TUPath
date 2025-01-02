@@ -2,35 +2,19 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './CertUpModal.css';
 import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
-import ProjectAssessmentModal from './ProjectAssessmentModal';
 
-const ProjectUploadModal = ({ show, onClose }) => {
+const CertUpModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [thumbnail, setThumbnail] = useState(null);
   const fileInputRef = useRef(null);
+  const thumbnailInputRef = useRef(null);
+
 
   if (!show) return null;
 
   // Handle file selection
   const handleFileChange = async (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
 
-    const formData = new FormData();
-    files.forEach(file => formData.append("projectFiles", file));
-
-    try {
-      const response = await axiosInstance.post('/api/uploadProject', formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (response.data.success) {
-        console.log("Project files uploaded successfully!");
-      } else {
-        console.error("Failed to upload project files");
-      }
-    } catch (error) {
-      console.error("Error uploading project files:", error);
-    }
   };
 
 
@@ -47,18 +31,18 @@ const ProjectUploadModal = ({ show, onClose }) => {
     fileInputRef.current.click();
   };
 
-  // Handle submit (open assessment modal)
+  // Handle submit (open  modal)
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowAssessmentModal(true);
   };
 
-  // Handle final submission after assessment
-  const handleFinalSubmit = () => {
-    console.log("Project submitted successfully!");
-    setShowAssessmentModal(false);
-    onClose();  // Close both modals
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnail(file);
+    }
   };
+
 
   const modalVariants = {
     hidden: {
@@ -101,7 +85,7 @@ const ProjectUploadModal = ({ show, onClose }) => {
           <form id="projup-form">
             <div className="leftprojup-container">
               <div className="top">
-                <label>Project Name:</label>
+                <label>Title:</label>
                 <input type="text" name="projectName" />
               </div>
               <div className="mid">
@@ -111,61 +95,45 @@ const ProjectUploadModal = ({ show, onClose }) => {
             </div>
 
             <div className="rightprojup-container">
-              <div className="upload-area">
-                {selectedFiles.length > 0 ? (
-                  <div className="file-preview-container">
-                    {selectedFiles.map((file, index) => (
-                      <div key={index} className="file-preview">
-                        {file.type.startsWith("image/") ? (
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`Preview ${index + 1}`}
-                            className="preview-image"
-                          />
-                        ) : (
-                          <p>{file.name}</p>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleFileRemove(file)}
-                          className="remove-file-btn"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="file-dropzone">
-                    <p>Drag & drop your files here or</p>
-                    <button type="button" onClick={handleChooseFileClick} className="choose-file-btn">Upload files</button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      multiple
-                      onChange={handleFileChange}  // Trigger upload on file selection
-                      style={{ display: 'none' }}
+            <label>Thumbnail:</label>
+            <div className="thumbnail-container">
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  ref={thumbnailInputRef}
+                  onChange={handleThumbnailChange}
+                />
+                {thumbnail && (
+                  <div className="thumbnail-preview">
+                    <img
+                      src={URL.createObjectURL(thumbnail)}
+                      alt="Thumbnail Preview"
+                      width={60}
+                      height={60}
                     />
                   </div>
                 )}
-              </div>
             </div>
+            <label>Attach Files:</label>
+            <input
+              type="file"
+              multiple
+              accept=".zip,.rar,.pdf,.docx,.jpg,.png"
+            />
+
+        
+          </div>
           </form>
 
           <div className="submit-btn-container">
-            <button type="submit" onClick={handleSubmit}>Submit</button>
+            <button type="submit" >Submit</button>
           </div>
         </motion.div>
       </div>
 
-      {/* Project Assessment Modal */}
-      <ProjectAssessmentModal
-        show={showAssessmentModal}
-        onClose={() => setShowAssessmentModal(false)}
-        onFinalSubmit={handleFinalSubmit}
-      />
+     
     </>
   );
 };
 
-export default ProjectUploadModal;
+export default CertUpModal;
