@@ -156,30 +156,29 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   };
 
   
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!projectName.trim()) {
       alert("Project name is required.");
       return;
     }
-
+  
     if (!description.trim()) {
       alert("Description is required.");
       return;
     }
-
+  
     if (!tag) {
       alert("Please select a tag.");
       return;
     }
-
+  
     if (assessmentQuestions.length > 0 && !readyToSubmit) {
       setShowAssessmentModal(true);
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
@@ -203,15 +202,23 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
     }
-
+  
     try {
       const response = await axiosInstance.post("/api/uploadProject", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       if (response.data.success) {
+        // Show success toast notification
+        toast.success('Project uploaded successfully!', {
+          position: "top-center",
+          autoClose: 3000, // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
+        
         onProjectUpload(response.data.project);
         onClose();
       } else {
@@ -221,6 +228,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
       console.error("Error uploading project:", error);
     }
   };
+  
 
   return (
     <>
