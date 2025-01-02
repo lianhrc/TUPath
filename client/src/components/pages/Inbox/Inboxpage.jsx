@@ -68,15 +68,27 @@ function Inboxpage() {
 
   const handleSendNewMessage = () => {
     if (newMessageRecipient && newMessageContent) {
+      const recipientUser = users.find(user => 
+        `${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase() === newMessageRecipient.toLowerCase()
+      );
+
+      if (!recipientUser) {
+        console.error("Recipient not found");
+        return;
+      }
+
       const newMessage = {
-        sender: newMessageRecipient,
+        senderId: localStorage.getItem('userId'), // Assuming userId is stored in localStorage
+        receiverId: recipientUser._id,
+        sender: localStorage.getItem('username'), // Assuming username is stored in localStorage
+        receiver: newMessageRecipient,
         text: newMessageContent,
         timestamp: new Date().toISOString(),
       };
-  
+
       // Send message to the server via socket without adding it to the messages state
       socket.emit('send_message', newMessage);
-  
+
       // Clear inputs and hide the new message section
       setNewMessageRecipient('');
       setNewMessageContent('');
@@ -118,7 +130,7 @@ function Inboxpage() {
       <div className="inbox-container">
         <div className="inboxhead">
           <div className="headtitle">
-            <p>Messaging</p>
+            <p>Email</p>
           </div>
           <div className="headicons">
             <button>
@@ -139,11 +151,11 @@ function Inboxpage() {
                   onClick={() => handleSelectMessage(message)}
                 >
                   <div className="inboxprofilecontainerleft">
-                    <img src={message.profileImage || profileicon} alt={`${message.sender}'s profile`} />
+                    <img src={message.profileImage || profileicon} alt={`${message.receiver}'s profile`} />
                   </div>
                   <div className="inboxdetailscontainerright">
                     <div className="topdetailscontainer">
-                      <h5>{message.sender}</h5>
+                      <h5>{message.receiver}</h5>
                       <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                     </div>
                     <div className="bottomdetailscontainer">
@@ -157,7 +169,7 @@ function Inboxpage() {
           <div className="inboxmain-right">
             {showNewMessageSection ? (
               <div className="new-message-section">
-                <h6>New Message</h6>
+                <h6>New Email</h6>
                 <label>To:</label>
                 <input
                   className='recieptinput'
@@ -177,7 +189,7 @@ function Inboxpage() {
                   </ul>
                   
                 )}
-                <label>Message:</label>
+                <label>Email:</label>
                 <textarea
                   className='Messageinputbox'
                   value={newMessageContent}
@@ -191,16 +203,16 @@ function Inboxpage() {
             ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.sender}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.profileImage || profileicon} alt={`${selectedMessage.receiverreceiver}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.sender}</h4>
+                  <h4>{selectedMessage.receiver}</h4>
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
                 <p className="message-content">{selectedMessage.text}</p>
               </div>
             ) : (
-              <p>Select a message to view its content</p>
+              <p>Select a Email to view its content</p>
             )}
           </div>
         </div>

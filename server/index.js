@@ -100,7 +100,10 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
+    senderId: String,
     sender: String,
+    receiverId: String,
+    receiver: String,
     text: String,
     timestamp: { type: Date, default: Date.now },
   });
