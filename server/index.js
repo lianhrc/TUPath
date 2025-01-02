@@ -759,33 +759,44 @@ const Post = mongoose.model("Post", postSchema);
   // Profile fetching endpoint
   app.get('/api/profile', verifyToken, async (req, res) => {
     try {
-      const userId = req.user.id;
-      const role = req.user.role; // Extract role from the token
-  
-      const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-      const user = await userModel.findById(userId)
-      .select('email role profileDetails createdAt googleSignup')
-      .populate('profileDetails.projects', 'projectName description tags tools thumbnail projectUrl'); // Populate project details selectively
-  
-      if (!user) {
-        return res.status(404).json({ success: false, profile: 'User not Found' });
-      }
-  
-      // Return profile details tailored to the role
-      const profile = {
-        email: user.email,
-        role: user.role,
-        profileDetails: user.profileDetails,
-        createdAt: user.createdAt,
-        googleSignup: user.googleSignup,
-      };
-  
-      res.status(200).json({ success: true, profile });
+        const userId = req.user.id;
+        const role = req.user.role; // Extract role from the token
+
+        const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
+        const user = await userModel.findById(userId)
+            .select('email role profileDetails createdAt googleSignup')
+            .populate({
+                path: 'profileDetails.projects',
+                select: 'projectName description tags tools thumbnail projectUrl',
+                strictPopulate: false, // Allow flexible population
+            });
+
+        if (!user) {
+            return res.status(404).json({ success: false, profile: 'User not Found' });
+        }
+
+        // Return profile details tailored to the role
+        const profile = {
+            email: user.email,
+            role: user.role,
+            profileDetails: user.role === 'student' ? user.profileDetails : {
+                ...user.profileDetails,
+                companyName: user.profileDetails.companyName || null,
+                industry: user.profileDetails.industry || null,
+                aboutCompany: user.profileDetails.aboutCompany || null,
+                preferredRoles: user.profileDetails.preferredRoles || [],
+                internshipOpportunities: user.profileDetails.internshipOpportunities || false,
+            },
+            createdAt: user.createdAt,
+            googleSignup: user.googleSignup,
+        };
+
+        res.status(200).json({ success: true, profile });
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
-  });
+});
 
 
 

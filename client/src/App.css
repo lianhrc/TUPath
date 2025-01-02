@@ -1,0 +1,15 @@
+.Toastify__toast {
+    z-index: 99999 !important;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: Poppins;
+    font-size: 12px;
+  }
+  .Toastify__toast--success {
+    background-color: white;
+    
+}
+  .Toastify__toast--error {
+    background-color: white;
+  }
+  
