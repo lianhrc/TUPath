@@ -1,3 +1,4 @@
+import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import StudentSignup from './components/pages/Signup/StudentSignup.jsx';
@@ -19,18 +20,21 @@ import Settings from './components/pages/Settings/settings';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgotPassword from './components/pages/Login/ForgotPassword.jsx';
 import ResetPassword from './components/pages/Login/ResetPassword.jsx';
+import './App.css'
 import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
 
 
 function App() {
   return (
     <GoogleOAuthProvider clientId="625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com">
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+    {/* Place ToastContainer here */}
+    
+    <ToastContainer />
+    <Routes>
           <Route path='/' element={<Landingpage />} />  
           <Route path="/profile/:id" element={<UserProfile />} />
-          {/* Protected Routes */}
-       
+          {/* Protected Routes */}       
           <Route 
             path='/homepage' 
             element={
@@ -41,33 +45,31 @@ function App() {
           />
 
           <Route 
-          path='/Inboxpage' 
-          element={
-            <ProtectedRoute>
-              <Inboxpage />
-            </ProtectedRoute>
-          } 
-        />
+            path='/Inboxpage' 
+            element={
+              <ProtectedRoute>
+                <Inboxpage />
+              </ProtectedRoute>
+            } 
+          />
 
           <Route 
-          path='/Profile' 
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } 
-        />
-
-     
-
+            path='/Profile' 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
+         
           <Route 
-          path='/Settings' 
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } 
-        />
+            path='/Settings' 
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path='/employerlandpage' element={<Employerlandpage />} />

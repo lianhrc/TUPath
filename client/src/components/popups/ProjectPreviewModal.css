@@ -107,11 +107,16 @@
 }
 
 
+.project-assessment-details h4 {
+  font-size: 12px;
+}
+
 
 .project-assessment-details p,
 .project-assessment-details .assessment-rating-stars p,
 .project-assessment-details  .assessment-item p{
   color: black;
+  font-weight: normal;
 }
 
 .projprev-right p{
@@ -130,6 +135,7 @@
   gap: 5px;
   flex-wrap: wrap;
   margin: 10px 0px;
+  font-weight: normal;
 }
 
 .projprev-right h6{
@@ -269,7 +275,8 @@
 }
 
 .tag-item,
-.tool-item {
+.tool-item,
+.role-item {
   padding: 8px 15px;
   border-radius: 20px;
   background-color: #9D0E0F;

@@ -1,17 +1,76 @@
 import React, { useState } from 'react';
 import './ProjectPreviewModal.css';
 import ProjectAssessmentModal from '../popups/ProjectAssessmentModal';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function ProjectPreviewModal({ show, onClose, project, onDelete }) {
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
   if (!show || !project) return null;
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      await onDelete(project._id); // Wait for deletion to complete
-      onClose(); // Close the modal only after successful deletion
-    }
+  const handleDelete = () => {
+    // Display a confirmation toast
+    const toastId = toast.loading('Are you sure you want to delete this project?', {
+      position: 'top-center',
+      autoClose: 5000, // Keeps the toast open
+      closeButton: false,
+      draggable: false,
+      theme: 'light',
+    });
+  
+    // Show confirmation buttons inside the toast
+    toast.update(toastId, {
+      render: (
+        <div>
+          <p>Click to confirm or cancel deletion.</p>
+          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+            <button 
+              onClick={() => { 
+                onDelete(project._id); // Delete the project
+                toast.success('Project deleted successfully!', {
+                  position: 'top-center',
+                   autoClose: 3000,  // Toast will disappear in 1 seconds
+                  closeButton: false,
+                  draggable: false,
+                  theme: 'light',
+                });
+                toast.dismiss(toastId); // Close the toast after confirming
+                onClose(); // Close the modal after confirmation
+              }}
+              style={{ padding: '5px 10px', backgroundColor: '#9D0E0F', color: 'white' , border: 'none',borderRadius: '5px'}}
+            >
+              Confirm
+            </button>
+            <button 
+              onClick={() => { 
+                toast.info('Project deletion canceled.', {
+                  position: 'top-center',
+                  autoClose: 3000, // Keeps the toast open
+                  closeButton: false,
+                  draggable: false,
+                  theme: 'light',
+                });
+                toast.dismiss(toastId,{
+                  position: 'top-center',
+                  autoClose: 3000, // Keeps the toast open
+                  closeButton: false,
+                  draggable: false,
+                  theme: 'light',
+                }); // Close the toast after canceling
+              }}
+              style={{  padding: '5px 10px', backgroundColor: '#9D0E0F', color: 'white' , border: 'none',borderRadius: '5px'}}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      autoClose: 3000, // Prevent auto-close
+      closeButton: false,
+      draggable: false,
+      theme: 'light',
+    });
   };
   
 
@@ -34,7 +93,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
     <div className="projprev-overlay">
       <div className="projprev-content">
         <div className="projprevheader">
-        {project.thumbnail ? (
+          {project.thumbnail ? (
             <img 
               src={project.thumbnail.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail} 
               alt="Thumbnail" 
@@ -63,18 +122,32 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               </p>
             )}
 
-          
           </div>
 
           <div className="projprev-right">
             <div className="projprevtags">
-            <div className="tag-item">{project.tag}</div>
+              {project.tag ? (
+                <div className="tag-item">{project.tag}</div>
+              ) : (
+                <p>No tag available</p>
+              )}
+              {project.tools && project.tools.length > 0 ? (
+                project.tools.map((tool, index) => (
+                  <div key={index} className="tool-item">{tool}</div>
+                ))
+              ) : (
+                <p>No tools available</p>  
+              )}
+
+              {project.roles && project.roles.length > 0 ? (
+                project.roles.map((role, index) => (
+                  <div key={index} className="role-item">{role}</div>
+                ))
+              ) : (
+                <p>No roles specified.</p>
+              )}
             </div>
-            <div className="projprevtools">
-              {project.tools.map(tool => (
-                <div key={tool} className="tool-item">{tool}</div>
-              ))}
-            </div>
+
             <div className="projpreviewfiles">
               <p><strong>{getFileName(project.files)}</strong></p>
             </div>
@@ -104,7 +177,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
           ) : (
             <p>No assessment data available.</p>
           )}
-      </div>
+        </div>
 
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>

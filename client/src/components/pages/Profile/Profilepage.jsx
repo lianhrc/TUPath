@@ -13,6 +13,8 @@ import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
+import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
+import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notifications
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
@@ -35,34 +37,35 @@ function ProfilePage() {
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
   
   
+ // Fetch profile data
+ useEffect(() => {
+  const fetchProfileData = async () => {
+    try {
+      const profileResponse = await axiosInstance.get('/api/profile');
+      if (profileResponse.data.success) {
+        const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
-  // Fetch profile data
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const profileResponse = await axiosInstance.get('/api/profile');
-        if (profileResponse.data.success) {
-          const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
-          const { projects, ...profileWithoutProjects } = profileDetails;
+        // Ensure both profileDetails and projects are set correctly
+        const { projects, ...profileWithoutProjects } = profileDetails;
 
-          setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
+                  setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
            });
-          setUserRole(role);
-          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-          setProjects(profileDetails?.projects || []);
-          
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
+        setUserRole(role);
+        setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+
+        // Ensure that projects are also set correctly
+        setProjects(profileDetails?.projects || []); // Set projects if available
       }
-    };
-  
-    fetchProfileData();
-  }, [userRole, profileData.techSkills, profileData.softSkills]);
-   // Re-fetch if userRole changes
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfileData();
+}, [userRole]); // Re-fetch if userRole changes
   
   
   
@@ -253,7 +256,15 @@ function ProfilePage() {
 
 
         {/* Modals */}
-        <ProjectUploadModal show={showUploadModal} onClose={() => setShowUploadModal(false)} onProjectUpload={addProjectToState} />
+        <ProjectUploadModal
+        key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+        show={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onProjectUpload={addProjectToState}
+      />
+      
+      
+
         <EditDescriptionModal 
                     show={showEditDescriptionModal} 
                     onClose={() => setShowEditDescriptionModal(false)} 
@@ -288,7 +299,7 @@ function ProfilePage() {
           }}
         />
 
-<CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+      <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
         <MessagePop />
       </div>
     </div>
