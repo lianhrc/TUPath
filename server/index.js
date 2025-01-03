@@ -1306,7 +1306,13 @@ app.get('/api/search', verifyToken, async (req, res) => {
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await Tupath_usersModel.findById(id).populate('profileDetails.projects') || await Employer_usersModel.findById(id).populate('profileDetails.projects');
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    }) || await Employer_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
