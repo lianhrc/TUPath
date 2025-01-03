@@ -261,16 +261,6 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 
 
 
-
-
-
-
-
-
-
-
-
-
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);

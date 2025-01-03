@@ -1,0 +1,199 @@
+.admin-question-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  gap: 20px;
+  font-family: 'Arial', sans-serif;
+  background: url(../../../assets/loadersbg.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-blend-mode: overlay;
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 100vh;
+  box-sizing: border-box; /* Ensure padding is included in width/height */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.adminques-header {
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.admin-question-container .main {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  gap: 20px;
+}
+
+.adminques-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: white;
+}
+
+.leftquestioncontainer {
+  width: 40%;
+  max-width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
+}
+
+.leftquestioncontainer form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.leftquestioncontainer label {
+  color: white;
+  margin-bottom: 5px;
+}
+
+.leftquestioncontainer input,
+.leftquestioncontainer select,
+.leftquestioncontainer button {
+  padding: 10px;
+  border: 1px solid #9D0E0F;
+  border-radius: 5px;
+  width: 100%;
+  background-color: white;
+  color: black;
+}
+
+
+.leftquestioncontainer textarea{
+  padding: 10px;
+}
+.leftquestioncontainer button {
+  cursor: pointer;
+  background-color: #9D0E0F;
+  color: white;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.leftquestioncontainer button:hover {
+  background-color: #6d0a0a;
+}
+
+.rightquestioncontainer {
+  width: 60%;
+  height: auto; /* Allow content to determine height */
+  overflow-y: auto; /* Enable vertical scrolling if content exceeds height */
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box; /* Ensure padding is included in width/height */
+}
+
+.rightquestioncontainer .question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Add spacing between question items */
+}
+
+.rightquestioncontainer .question-item {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  flex-wrap: wrap; /* Allow wrapping within the item */
+  word-wrap: break-word; /* Ensure long words will wrap properly */
+  overflow-wrap: break-word; /* Ensures text will break to the next line when needed */
+}
+
+.rightquestioncontainer .question-text {
+  flex: 1; /* Allow the text to take up available space */
+  white-space: normal; /* Allow wrapping of text */
+  word-wrap: break-word; /* Ensure long words wrap */
+  overflow: hidden; /* Prevent overflowing of text */
+}
+
+
+.rightquestioncontainer .question-actions button {
+  padding: 5px 10px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #9D0E0F;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.rightquestioncontainer .question-actions button:hover {
+background-color: #800d0d;
+}
+
+.rightquestioncontainer h6 {
+  margin-bottom: 15px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.topquestioncontainer{
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box; /* Ensure padding is included in width/height */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+
+.bottomquestioncontainer {
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box; /* Ensure padding is included in width/height */
+}
+
+.bottomquestioncontainer .div{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bottomquestioncontainer .divtop{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.resultscorediv{
+  display: flex;
+  justify-content: center;
+
+  align-items: center;
+}
+.resultscorediv ul{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.resultscorediv ul li{
+  color: white;
+  font-size: 14px;
+}

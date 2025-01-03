@@ -13,6 +13,7 @@ const QuestionManager = () => {
     categoryName: "",
     scoring: {}, // Added scoring field
   });
+  
   const [isEditing, setIsEditing] = useState(false);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [scoringKey, setScoringKey] = useState(""); // Temporary scoring key input
@@ -99,89 +100,117 @@ const QuestionManager = () => {
   };
 
   return (
-    <div>
-      <h1>Manage Questions</h1>
+    <div className="admin-question-container">
+      <header className="adminques-header">
+              <h1>Question Manager</h1>
+      </header>
+    <div className="main">
+    
+          <div className="leftquestioncontainer">
+          
+                {/* Form */}
+            <form onSubmit={handleSubmit}>
+              
+            <div className="topquestioncontainer">
+            <label>Text:</label>
+            <textarea
+              name="text"
+              value={form.text}
+              onChange={handleChange}
+              rows="4" // Optional: Sets the height of the textarea
+              required
+              style={{
+                resize: "vertical", // Allow resizing only vertically (optional)
+                width: "100%", // Make it responsive
+              }}
+            />
+            
+            </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Text:</label>
-          <input
-            name="text"
-            value={form.text}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Type:</label>
-          <select name="type" value={form.type} onChange={handleChange}>
-            <option value="rating">Rating</option>
-            <option value="indicator">Indicator</option>
-          </select>
-        </div>
-        <div>
-          <label>Category:</label>
-          <input
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Category Name:</label>
-          <input
-            name="categoryName"
-            value={form.categoryName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Scoring:</label>
-          <div>
+            <div className="bottomquestioncontainer">
+            <div className="divtop">
+            <label>Type:</label>
+            <select name="type" value={form.type} onChange={handleChange}>
+              <option value="rating">Rating</option>
+              <option value="indicator">Indicator</option>
+            </select>
+
+            <label>Category:</label>
             <input
-              placeholder="Key (e.g., 1)"
-              value={scoringKey}
-              onChange={(e) => setScoringKey(e.target.value)}
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
             />
-            <input
-              placeholder="Value (e.g., 10)"
-              value={scoringValue}
-              onChange={(e) => setScoringValue(e.target.value)}
-            />
-            <button type="button" onClick={addScoringEntry}>
-              Add
-            </button>
+            </div>
+
+             
+              <div className="div">
+              <label>Category Name:</label>
+              <input
+                name="categoryName"
+                value={form.categoryName}
+                onChange={handleChange}
+                required
+              />
+              <label>Scoring:</label>
+              <input
+                placeholder="Key (e.g., 1)"
+                value={scoringKey}
+                onChange={(e) => setScoringKey(e.target.value)}
+              />
+              <input
+                placeholder="Value (e.g., 10)"
+                value={scoringValue}
+                onChange={(e) => setScoringValue(e.target.value)}
+              />
+              <button type="button" onClick={addScoringEntry}>
+                Add
+              </button>
+              <button type="submit">{isEditing ? "Update" : "Create"} Question</button>
+              {isEditing && <button onClick={resetForm}>Cancel</button>}
+            
+
+              <div className="resultscorediv">
+              <ul>
+              {Object.entries(form.scoring).map(([key, value]) => (
+                <li key={key}>
+                  {key} : {value}
+                </li>
+              ))}
+            </ul>
+              </div>
+         
+              </div>
+             
+            </div>
+        </form>
+
           </div>
-          <ul>
-            {Object.entries(form.scoring).map(([key, value]) => (
-              <li key={key}>
-                {key}: {value}
-              </li>
-            ))}
-          </ul>
+          <div className="rightquestioncontainer">
+          {/* Question List */}
+          <h6>Questions</h6>
+          {questions.length === 0 ? (
+            <p>No questions available.</p>
+          ) : (
+            <div className="question-list">
+              {questions.map((question) => (
+                <div className="question-item" key={question._id}>
+                  <div className="question-text">
+                    {question.text} - {question.type}
+                  </div>
+                  <div className="question-actions">
+                    <button onClick={() => handleEdit(question)}>Edit</button>
+                    <button onClick={() => handleDelete(question._id)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <button type="submit">{isEditing ? "Update" : "Create"} Question</button>
-        {isEditing && <button onClick={resetForm}>Cancel</button>}
-      </form>
+        
+      </div>
 
-      {/* Question List */}
-      <h2>Questions</h2>
-      {questions.length === 0 ? (
-        <p>No questions available.</p>
-      ) : (
-        <ul>
-          {questions.map((question) => (
-            <li key={question._id}>
-              {question.text} - {question.type}
-              <button onClick={() => handleEdit(question)}>Edit</button>
-              <button onClick={() => handleDelete(question._id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };
