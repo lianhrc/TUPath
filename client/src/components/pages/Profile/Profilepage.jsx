@@ -223,14 +223,19 @@ function ProfilePage() {
                   </div>
 
                 {/* Display Projects */}
-                  {projects.map((project) => (
+                {projects.length > 0 ? (
+                  projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                       {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
+                      <p>Rating: {project.totalScore}</p> {/* Display the user rating */}
                     </div>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <p>No projects available</p>
+                )}
               </div>
+            </div>
 
                   <div className="achievementscontainer">
                     <h3>My Certificates</h3>
@@ -240,6 +245,16 @@ function ProfilePage() {
                         <p>+</p>
                         <p>Add a Certificate</p>
                       </div>
+                      {/* Display Certificates */}
+                {profileData.certificatePhotos && profileData.certificatePhotos.length > 0 ? (
+                  profileData.certificatePhotos.map((certificate, index) => (
+                    <div key={index} className="project-card">
+                      <img src={`http://localhost:3001${certificate}`} alt="Certificate" />
+                    </div>
+                  ))
+                ) : (
+                  <p>No certificates available</p>
+                )}
                     </div>
                   </div>
                 </div>
