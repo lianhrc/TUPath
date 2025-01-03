@@ -6,10 +6,21 @@ const express = require("express");
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
-  require('dotenv').config()
+  
+
+  //require('dotenv').config()
+
+  const users = require("./routes/users");
+  const adminsignup = require("./routes/adminsignup");
+  const adminLogin = require("./routes/adminLogin");
+  const questions = require("./routes/questions")
+  const userStats = require("./routes/userStats")
+  const studentTags = require("./routes/studentTags");
+  
+  
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -25,6 +36,17 @@ const express = require("express");
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
 
+
+  //ROUTES
+  app.use('/', users );
+  app.use('/', adminsignup);
+  app.use('/', adminLogin);
+  app.use('/', questions);
+  app.use('/', userStats);
+  app.use('/', studentTags);
+  
+ 
+
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -35,14 +57,14 @@ const express = require("express");
     next();
   });
 
-/*
-  // MongoDB connection
-  mongoose
-    .connect("mongodb://127.0.0.1:27017/tupath_users")
-    .then(() => console.log("MongoDB connected successfully"))
-    .catch((err) => console.error("MongoDB connection error:", err));
- */
 
+//   // MongoDB connection
+//   mongoose
+//     .connect("mongodb://127.0.0.1:27017/tupath_users")
+//     .then(() => console.log("MongoDB connected successfully"))
+//     .catch((err) => console.error("MongoDB connection error:", err));
+ 
+// /*
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
@@ -50,7 +72,7 @@ mongoose.connect(
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-    // Configure multer for file uploads
+  // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
         cb(null, 'uploads/'); // Define where to store the files
@@ -1440,6 +1462,9 @@ app.post("/api/reset-password/:token", async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
+
+
+
 
 
   // Server setup

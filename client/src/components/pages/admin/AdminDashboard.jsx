@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
-import { FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa'; // Importing icons
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing icons
+import { Pie, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
+import axiosInstance from '../../../services/axiosInstance';
 
+ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
 
 const AdminDashboard = () => {
-  const [activeSection, setActiveSection] = useState('Users'); // State to track the active section
+  const [activeSection, setActiveSection] = useState('Users'); // Track active section
 
   return (
     <div className="admin-dashboard-container">
@@ -14,15 +25,28 @@ const AdminDashboard = () => {
       <div className="adminsidebar">
         <nav>
           <ul>
-            <li onClick={() => setActiveSection('Users')} className={activeSection === 'Users' ? 'active' : ''}>
+            <li
+              onClick={() => setActiveSection('Users')}
+              className={activeSection === 'Users' ? 'active' : ''}
+            >
               <FaUsers className="icon" />
               <span className="text">Users</span>
             </li>
-            <li onClick={() => setActiveSection('Reports')} className={activeSection === 'Reports' ? 'active' : ''}>
+            <li
+              onClick={() => setActiveSection('Reports')}
+              className={activeSection === 'Reports' ? 'active' : ''}
+            >
               <FaChartBar className="icon" />
               <span className="text">Reports</span>
             </li>
-            <li >
+            <li
+              onClick={() => setActiveSection('Tags')}
+              className={activeSection === 'Tags' ? 'active' : ''}
+            >
+              <FaTags className="icon" />
+              <span className="text">Tags</span>
+            </li>
+            <li>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
@@ -34,7 +58,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Reports' && <ReportsSection />}
-        {activeSection === 'LogOut' && <LogOutSection />}
+        {activeSection === 'Tags' && <TagChart />}
       </div>
     </div>
   );
@@ -42,276 +66,210 @@ const AdminDashboard = () => {
 
 // Users Section Component
 const UsersSection = () => {
-    const [selectedType, setSelectedType] = useState('Students'); // State to track the selected user type
-    
-    const handleDropdownChange = (event) => {
-      setSelectedType(event.target.value); // Update the selected type based on dropdown choice
+  const [selectedType, setSelectedType] = useState('Students'); // Track user type
+  const [usersData, setUsersData] = useState([]); // Store fetched users
+  const [loading, setLoading] = useState(false); // Loading state
+
+  const handleDropdownChange = (event) => {
+    setSelectedType(event.target.value);
+  };
+
+  // Fetch users whenever the selected type changes
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
+        if (response.data.success) {
+          setUsersData(response.data.users);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  
-    // Sample data for Students and Employers
-    const studentsData = [
-      { name: 'John Doe', email: 'john.doe@example.com' },
-      { name: 'Jane Smith', email: 'jane.smith@example.com' },
-    ];
-  
-    const employersData = [
-      { companyName: 'TechCorp', email: 'contact@techcorp.com', contact: '123-456-7890' },
-      { companyName: 'DevSolutions', email: 'info@devsolutions.com', contact: '987-654-3210' },
-    ];
-  
-    // Function to render the Students table
-    const renderStudentsTable = () => {
+
+    fetchUsers();
+  }, [selectedType]);
+
+  // Render table dynamically based on selected type
+  const renderTable = () => {
+    if (loading) return <p>Loading...</p>;
+
+    if (usersData.length === 0) return <p>No users found.</p>;
+
+    if (selectedType === 'Students') {
       return (
         <table>
           <thead>
             <tr>
               <th>Name</th>
               <th>Email</th>
-              <th></th> {/* Column header for action (Delete button) */}
-            </tr>
-          </thead>
-          <tbody className=''>
-            {studentsData.map((student, index) => (
-              <tr key={index}>
-                <td>{student.name}</td>
-                <td>{student.email}</td>
-                <td>
-                  {/* Delete Button */}
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete('student', index)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
-    };
-  
-    // Function to render the Employers table
-    const renderEmployersTable = () => {
-      return (
-        <table>
-          <thead>
-            <tr>
-              <th>Company Name</th>
-              <th>Email</th>
-              <th>Contact</th>
-              <th></th> {/* Column header for action (Delete button) */}
             </tr>
           </thead>
           <tbody>
-            {employersData.map((employer, index) => (
-              <tr key={index}>
-                <td>{employer.companyName}</td>
-                <td>{employer.email}</td>
-                <td>{employer.contact}</td>
-                <td>
-                  {/* Delete Button */}
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete('employer', index)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {usersData.map((user, index) => {
+              const firstName = user?.profileDetails?.firstName || 'N/A';
+              const lastName = user?.profileDetails?.lastName || 'N/A';
+              return (
+                <tr key={index}>
+                  <td>{`${firstName} ${lastName}`}</td>
+                  <td>{user?.email || 'N/A'}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       );
-    };
-  
-    // Handle the delete action
-    const handleDelete = (type, index) => {
-      if (type === 'student') {
-        // Handle student deletion logic
-        alert(`Deleted student at index ${index}`);
-      } else if (type === 'employer') {
-        // Handle employer deletion logic
-        alert(`Deleted employer at index ${index}`);
-      }
-    };
-  
+    }
+
     return (
-      <div className="usersadminsection">
-        <h2>Users</h2>
-        <p>Manage and view all users here.</p>
-  
-        {/* Dropdown for selecting user type */}
-        <div className="dropdown-container">
-          <label htmlFor="user-type-dropdown" className="dropdown-label">
-            Select User Type:
-          </label>
-          <select
-            id="user-type-dropdown"
-            className="user-type-dropdown"
-            value={selectedType}
-            onChange={handleDropdownChange}
-          >
-            <option value="Students">Students</option>
-            <option value="Employers">Employers</option>
-          </select>
-        </div>
-  
-        {/* Users List Container */}
-        <div className="userslistcontainer">
-          {selectedType === 'Students' ? renderStudentsTable() : renderEmployersTable()}
-        </div>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Company Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {usersData.map((user, index) => {
+            const companyName = user?.profileDetails?.companyName || 'N/A';
+            const contact = user?.profileDetails?.contact || 'N/A';
+            return (
+              <tr key={index}>
+                <td>{companyName}</td>
+                <td>{user?.email || 'N/A'}</td>
+                <td>{contact}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     );
   };
-  
 
-  
-// Register necessary components for Pie Chart
-ChartJS.register(ArcElement, Title, Tooltip, Legend);
+  return (
+    <div className="usersadminsection">
+      <h2>Users</h2>
+      <label>Select User Type:</label>
+      <select value={selectedType} onChange={handleDropdownChange}>
+        <option value="Students">Students</option>
+        <option value="Employers">Employers</option>
+      </select>
+      <div className="userslistcontainer">{renderTable()}</div>
+    </div>
+  );
+};
 
 // Reports Section Component
 const ReportsSection = () => {
-    const [userType, setUserType] = useState('Students'); // Track selected user type (students/employers)
-  
-    // Sample data for demonstration
-    const data = {
-      Students: {
-        totalUsers: 200,   // Total users
-        newUsers: 50,      // New users
-      },
-      Employers: {
-        totalUsers: 100,   // Total employers
-        newUsers: 30,      // New employers
-      },
+  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user-stats');
+        if (response.data.success) {
+          setUserStats({
+            studentCount: response.data.studentCount,
+            employerCount: response.data.employerCount,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  
-    // Pie chart data based on the selected user type
-    const chartData = {
-      labels: [`Total ${userType}`, `New ${userType}`],
-      datasets: [
-        {
-          data: [data[userType].totalUsers, data[userType].newUsers],
-          backgroundColor: ['rgba(75,192,192,0.6)', 'rgba(255,99,132,0.6)'],
-          hoverBackgroundColor: ['rgba(75,192,192,0.8)', 'rgba(255,99,132,0.8)'],
-        },
-      ],
-    };
-  
-    return (
-      <div className='reportsadminsection'>
-        <div className="reportsleftsection">
-            <h2>Reports</h2>
-            <p>View reports here.</p>
-    
-            {/* Radio buttons for selecting user type */}
-            <div className="radio-buttons">
-            <label>
-                <input
-                type="radio"
-                name="userType"
-                value="Students"
-                checked={userType === 'Students'}
-                onChange={() => setUserType('Students')}
-                />
-                Students
-            </label>
-            <label>
-                <input
-                type="radio"
-                name="userType"
-                value="Employers"
-                checked={userType === 'Employers'}
-                onChange={() => setUserType('Employers')}
-                />
-                Employers
-            </label>
-            </div>
-            {/* Pie chart to display the data */}
-            <div className="chart-container">
-            <Pie data={chartData} options={{ responsive: true, plugins: { title: { display: true, text: `User Stats for ${userType}` } } }} />
-            </div>
-        </div>
 
-        <div className="reports-section__right">
-            <div className="reports-section__search">
-                <label htmlFor="">Search</label>    
-                <input type="search" />
-            </div>
-            <div className="reports-section__table-wrapper">
-                <div className="reports-section__table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Scores</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>John Doe</td>
-                        <td>john.doe@example.com</td>
-                        <td>10</td>
-                    </tr>
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>10</td>
+    fetchUserStats();
+  }, []);
 
-                    </tr>
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>10</td>
-
-                    </tr>
-
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>9</td>
-                    </tr>
-
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>9</td>
-                    </tr>
-
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>8</td>
-                    </tr>
-
-                     <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>8</td>
-                    </tr>
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>7</td>
-                    </tr>
-
-                     <tr>
-                        <td>Jane Smith</td>
-                        <td>jane.smith@example.com</td>
-                        <td>7</td>
-                    </tr>
-                   
-                    </tbody>
-                </table>
-                </div>
-            </div>
-            </div>
-
-
-      </div>
-    );
+  const chartData = {
+    labels: ['Students', 'Employers'],
+    datasets: [
+      {
+        data: [userStats.studentCount, userStats.employerCount],
+        backgroundColor: ['#36A2EB', '#FF6384'],
+      },
+    ],
   };
 
+  return (
+    <div className="reportsadminsection">
+      <h2>Reports</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="chart-container">
+          <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Tags Section Component
+const TagChart = () => {
+  const [tagData, setTagData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTagData = async () => {
+      try {
+        const response = await axiosInstance.get('/api/student-tags');
+        if (response.data.success) {
+          setTagData(response.data.tags);
+        }
+      } catch (error) {
+        console.error('Error fetching tag data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTagData();
+  }, []);
+
+  const chartData = {
+    labels: tagData.map((tag) => tag._id), // Tag names
+    datasets: [
+      {
+        label: 'Number of Students Excelling',
+        data: tagData.map((tag) => tag.count), // Number of students
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  return (
+    <div>
+      <h2>Students Excelling in Different Tags</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <Bar
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: 'Students Excelling by Tag' },
+            },
+            scales: {
+              x: { title: { display: true, text: 'Tags' } },
+              y: { title: { display: true, text: 'Number of Students' } },
+            },
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 export default AdminDashboard;
