@@ -98,14 +98,24 @@
 
 .inboxprofilecontainerleft img {
     width: 60px;
+    height: 60px;
+    background: none;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .inboxdetailscontainerright {
-    width: 70%; /* Adjusted to give more space for text */
-    overflow: hidden; /* Hide overflow */
+    width: 70%;
+    overflow: auto;
     display: flex;
-    flex-direction: column; /* Ensure items stack vertically */
+    flex-direction: column;
+   white-space: pre-wrap;
+    overflow-wrap: break-word; 
+    white-space: pre-wrap; /* Preserve spaces and line breaks */
 }
+
+
+
 
 .topdetailscontainer {
     width: 100%;

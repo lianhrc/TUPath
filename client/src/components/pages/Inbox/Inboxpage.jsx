@@ -208,7 +208,7 @@ function Inboxpage() {
                         <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                       </div>
                       <div className="bottomdetailscontainer">
-                        <p>{text}</p>
+                         <p className="text-content">{text}</p>
                       </div>
                     </div>
                   </div>

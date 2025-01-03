@@ -20,6 +20,7 @@
   display: flex;
 }
 
+
 /* Logo */
 .homepagelogo {
   width: 150px;
@@ -99,9 +100,15 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: auto;
-  padding: 15px;
+  height: auto;
+  max-height: 500px;
+  padding: 10px 0;
   z-index: 1000;
   display: none;
+  overflow: auto;
+
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
 }
 
 
@@ -124,11 +131,12 @@
 }
 
 /* Notifications dropdown */
-.notifications-menu h3 {
+.notifdropdownheader {
   margin: 0;
-  padding-bottom: 10px;
   border-bottom: 1px solid #eee;
   font-size: 12px;
+  padding-left: 10px;
+  display: flex;
 }
 
 .notification-item {
@@ -137,10 +145,27 @@
   align-items: center;
   margin-top: 10px;
   text-decoration: none;
+  padding: 10px;
+  height: 50px;
+  overflow: hidden;
+  gap: 10px;
+}
+
+
+.notification-badge{
+  text-align: center;
+  color: white;
+  width: 20px;
+  height: 20px;
+  position: fixed;
+  border-radius: 50%;
+  top: 20px;
+  right:65px;
+  background-color: #9D0E0F;
 }
 
 .notification-item:hover{
-background-color: #f7f7f7;
+background-color: #eaeaea;
 cursor: pointer;
 
 }
@@ -159,10 +184,38 @@ cursor: pointer;
   height: 20px;
 }
 
-.notification-item p {
+.notification-item .notifitemright p {
   margin: 0;
   font-size: 12px;
   color: #333;
+  overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis */
+    display: -webkit-box; /* Use flexbox for line clamping */
+    -webkit-box-orient: vertical; /* Set orientation to vertical */
+    -webkit-line-clamp: 1; /* Limit to two lines */
+  
+}
+
+.notifitemleft{
+  width:20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+}
+
+.notifitemright{
+ width: 80%;
+}
+
+.notifitemleft img{
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  font-size: 5px;
+  border-radius: 50%;
+  background: none;
+
 }
 
 /* Profile dropdown */
@@ -172,6 +225,10 @@ cursor: pointer;
   color: #333;
   font-size: 12px;
   text-decoration: none;
+}
+
+.profile-menu{
+  height: 110px;
 }
 
 

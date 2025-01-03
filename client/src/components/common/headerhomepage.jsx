@@ -151,30 +151,30 @@ function HeaderHomepage() {
     ? `http://localhost:3001${profileData.profileImg}`
     : profileData.profileImg || profileicon;
 
-  const dropdownVariants = {
-    hidden: {
-      opacity: 0,
-      scale: 0.9,
-      y: -10,
-    },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        ease: 'easeInOut',
+    const dropdownVariants = {
+      hidden: {
+        opacity: 0,
+        y: -20,
       },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.9,
-      y: -10,
-      transition: {
-        duration: 0.2,
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+          type: 'spring',
+          stiffness: 300,
+          damping: 15,
+        },
       },
-    },
-  };
+      exit: {
+        opacity: 0,
+        y: -20,
+        transition: {
+          duration: 0.2,
+        },
+      },
+    };
+    
+    
 
   return (
     <>
@@ -276,11 +276,16 @@ function HeaderHomepage() {
                     animate="visible"
                     exit="exit"
                   >
-                    <h3>Notifications</h3>
+                    <div className="notifdropdownheader">
+                      <h3>Notifications</h3>
+                    </div>
                     {unreadMessages.map((message, index) => (
                       <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
-                        <img src={message.sender[0].profileImg || profileicon} alt={`${message.sender[0].sender}'s profile`} />
-                        <div>
+                        <div className="notifitemleft">
+                           <img src={message.sender[0].profileImg || profileicon} alt={`${message.sender[0].sender}'s profile`} />
+
+                        </div> 
+                      <div className='notifitemright'>
                           <p><strong>{message.sender[0].sender}</strong></p>
                           <p>{message.sender[0].text}</p>
                         </div>

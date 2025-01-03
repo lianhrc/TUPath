@@ -57,7 +57,7 @@ function UserProfile() {
         <div className="profile-card">
           <div className="profile-header">
             <img src={profileImageUrl} alt="User Profile" className="avatar" />
-            <h3>{`${profile.firstName || ''} ${profile.middleName || ''} ${profile.lastName || ''}`.trim()}</h3>
+            <h3>{`${profile.profileDetails.firstName || ''} ${profile.profileDetails.middleName || ''} ${profile.profileDetails.lastName || ''}`.trim()}</h3>
             <p>
               {profile.role === 'student'
                 ? profile.profileDetails?.studentId || 'Student ID Not Available'
@@ -170,7 +170,7 @@ function UserProfile() {
 
         {/* Project Section (for students only) */}
         {profile.role === 'student' && (
-          <div className="project-section">
+          <div className="userproject-section">
             <h3>My Projects</h3>
             <div className="projects-grid">
               {projects.map((project) => (
