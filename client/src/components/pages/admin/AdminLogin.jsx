@@ -76,7 +76,11 @@ const AdminLogin = () => {
               onChange={handleChange}
               required
             />
-            <button type="submit">Login</button>
+            <div className="adminloginbtn">
+              <button type="submit">Login</button>
+              <button type="submit">Register</button>
+            </div>
+
           </form>
           <p className="footer-note">Only authorized personnel are allowed to access this panel.</p>
         </div>
