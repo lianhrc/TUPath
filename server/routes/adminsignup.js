@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
 
+// Middleware to parse JSON bodies
+router.use(express.json());
+
 router.post('/api/admin/signup', async (req, res) => {
   const { username, email, password } = req.body;
 
