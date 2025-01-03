@@ -56,21 +56,21 @@
   });
 
 
-  // MongoDB connection
-  mongoose
-    .connect("mongodb://127.0.0.1:27017/tupath_users")
-    .then(() => console.log("MongoDB connected successfully"))
-    .catch((err) => console.error("MongoDB connection error:", err));
+//   // MongoDB connection
+//   mongoose
+//     .connect("mongodb://127.0.0.1:27017/tupath_users")
+//     .then(() => console.log("MongoDB connected successfully"))
+//     .catch((err) => console.error("MongoDB connection error:", err));
  
-/*
+// /*
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-*/
-    // Configure multer for file uploads
+
+  // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
         cb(null, 'uploads/'); // Define where to store the files
