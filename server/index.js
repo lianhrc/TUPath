@@ -6,7 +6,7 @@
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   
@@ -17,6 +17,7 @@
   const adminsignup = require("./routes/adminsignup");
   const adminLogin = require("./routes/adminLogin");
   const questions = require("./routes/questions")
+  const tagchart = require("./routes/tagExcellence")
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -39,6 +40,7 @@
   app.use('/', adminsignup);
   app.use('/', adminLogin);
   app.use('/', questions);
+  app.use('/', tagchart); 
 
   // Middleware for setting COOP headers
   app.use((req, res, next) => {
