@@ -81,7 +81,7 @@ function Inboxpage() {
     setShowNewMessageSection(false);
   
     // Mark the message as read
-    if (!message.receiver[0].read) {
+    if (!message.status.read) {
       try {
         await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
           method: 'PUT',
@@ -90,9 +90,9 @@ function Inboxpage() {
             'Content-Type': 'application/json'
           }
         });
-        message.receiver[0].read = true;
+        message.status.read = true;
         setMessages((prevMessages) =>
-          prevMessages.map((msg) => (msg._id === message._id ? { ...msg, receiver: [{ ...msg.receiver[0], read: true }] } : msg))
+          prevMessages.map((msg) => (msg._id === message._id ? { ...msg, status: { ...msg.status, read: true } } : msg))
         );
       } catch (error) {
         console.error("Error marking message as read:", error);
@@ -119,14 +119,24 @@ function Inboxpage() {
       console.log("Sender Username:", username); // Log the sender username for debugging
 
       const newMessage = {
-        senderId: userId,
-        receiverId: recipientUser._id,
-        sender: username,
-        receiver: newMessageRecipient,
-        text: newMessageContent,
+        sender: {
+          senderId: userId,
+          name: username,
+          profileImg: localStorage.getItem('profileImg') // Assuming profileImg is stored in localStorage
+        },
+        receiverId: recipientUser._id, // Use receiverId instead of receiver
+        receiverName: newMessageRecipient, // Use receiverName instead of receiver
+        receiverProfileImg: recipientUser.profileDetails.profileImg,
+        messageContent: {
+          text: newMessageContent, // Ensure text is included in messageContent
+          attachments: [] // Add attachments if any
+        },
+        status: {
+          read: false,
+          delivered: true
+        },
         timestamp: new Date().toISOString(),
-        token: token, // Include the token in the message data
-        receiverProfileImg: recipientUser.profileDetails.profileImg, // Include receiver profile image
+        token: token
       };
 
       // Send message to the server via socket without adding it to the messages state
@@ -188,10 +198,10 @@ function Inboxpage() {
           <div className="inboxmain-left">
             <div className="inboxlists">
               {messages.map((message, index) => {
-                const isSender = message.sender[0].senderId === localStorage.getItem('receiverId' || 'senderId');
-                const profileImg = isSender ? message.receiver[0].profileImg : message.sender[0].profileImg;
-                const name = isSender ? message.receiver[0].receiver : message.sender[0].sender;
-                const text = isSender ? message.sender[0].text : message.receiver[0].text;
+                const isSender = message.sender.senderId === localStorage.getItem('userId');
+                const profileImg = isSender ? message.receiver.profileImg : message.sender.profileImg;
+                const name = isSender ? message.receiver.name : message.sender.name;
+                const text = message.messageContent?.text || ''; // Ensure messageContent is defined
 
                 return (
                   <div
@@ -252,13 +262,13 @@ function Inboxpage() {
             ) : selectedMessage ? (
               <div className="message-details">
                 <div className="message-profile">
-                  <img src={selectedMessage.receiver[0].profileImg || profileicon} alt={`${selectedMessage.receiver[0].receiver}'s profile`} className="profile-image" />
+                  <img src={selectedMessage.receiver.profileImg || profileicon} alt={`${selectedMessage.receiver.name}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.receiver[0].receiver}</h4> {/* Display the receiver's name */}
+                  <h4>{selectedMessage.receiver.name}</h4> {/* Display the receiver's name */}
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
-                <p className="message-content">{selectedMessage.receiver[0].text}</p>
+                <p className="message-content">{selectedMessage.messageContent?.text || ''}</p> {/* Ensure messageContent is defined */}
               </div>
             ) : (
               <p>Select a Email to view its content</p>

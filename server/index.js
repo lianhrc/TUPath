@@ -13,7 +13,7 @@ const express = require("express");
 
   //require('dotenv').config()
 
-  const users = require("./routes/users");
+
   const adminsignup = require("./routes/adminsignup");
   const adminLogin = require("./routes/adminLogin");
   const questions = require("./routes/questions")
@@ -38,7 +38,6 @@ const express = require("express");
 
 
   //ROUTES
-  app.use('/', users );
   app.use('/', adminsignup);
   app.use('/', adminLogin);
   app.use('/', questions);
@@ -125,26 +124,36 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
-    timestamp: { type: Date, default: Date.now },
-    sender: [{
-      profileImg: String,
-      senderId: String,
-      sender: String,
-      text: String,
-      timestamp: { type: Date, default: Date.now },
-    }],
-    receiver: [{
-      
-      profileImg: String,
-      receiverId: String,
-      receiver: String,
-      text: String,
-      timestamp: { type: Date, default: Date.now },
+    sender: {
+      senderId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    receiver: {
+      receiverId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    messageContent: {
+      text: { type: String, required: true },
+      attachments: [{ type: String }], // URLs or file paths
+    },
+    status: {
       read: { type: Boolean, default: false },
-    }],
+      delivered: { type: Boolean, default: false },
+    },
     timestamp: { type: Date, default: Date.now },
   });
+  
+  // Add indexes for optimization
+  messageSchema.index({ "sender.senderId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1 });
+  messageSchema.index({ timestamp: -1 });
+  messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+  
   const Message = mongoose.model("Message", messageSchema);
+  
   // Add this endpoint to fetch users
   
 app.get('/api/users', verifyToken, async (req, res) => {
@@ -187,7 +196,7 @@ app.get("/api/sent-messages", verifyToken, async (req, res) => {
 app.get("/api/unread-messages", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ "receiver.receiverId": userId, "receiver.read": false }).sort({ timestamp: 1 });
+    const messages = await Message.find({ "receiver.receiverId": userId, "status.read": false }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (err) {
     console.error("Error fetching unread messages:", err);
@@ -206,12 +215,11 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: "Message not found" });
     }
 
-    const receiver = message.receiver.find(r => r.receiverId === userId);
-    if (!receiver) {
+    if (message.receiver.receiverId !== userId) {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    receiver.read = true;
+    message.status.read = true;
     await message.save();
 
     res.status(200).json({ success: true, message: "Message marked as read" });
@@ -541,21 +549,24 @@ const Post = mongoose.model("Post", postSchema);
           }
   
           const message = new Message({
-            sender: [{
-              profileImg: senderUser.profileDetails.profileImg,
+            sender: {
               senderId: userId,
-              sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
-              text: data.text,
-              timestamp: data.timestamp,
-            }],
-            receiver: [{
-              profileImg: data.receiverProfileImg,
+              name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              profileImg: senderUser.profileDetails.profileImg,
+            },
+            receiver: {
               receiverId: data.receiverId,
-              receiver: data.receiver,
-              text: data.text,
-              timestamp: data.timestamp,
-              read: false, // Mark message as unread
-            }],
+              name: data.receiverName, // Use receiverName instead of receiver
+              profileImg: data.receiverProfileImg,
+            },
+            messageContent: {
+              text: data.messageContent.text, // Ensure text is included in messageContent
+              attachments: data.messageContent.attachments || [],
+            },
+            status: {
+              read: false,
+              delivered: true,
+            },
             timestamp: data.timestamp,
           });
           await message.save();
