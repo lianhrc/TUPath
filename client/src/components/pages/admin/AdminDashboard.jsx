@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa'; // Importing icons
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement} from 'chart.js';
 import axiosInstance from '../../../services/axiosInstance';
+import { FaTags } from 'react-icons/fa';
+ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
+
+
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('Users'); // Track active section
@@ -28,6 +32,13 @@ const AdminDashboard = () => {
               <FaChartBar className="icon" />
               <span className="text">Reports</span>
             </li>
+            <li
+              onClick={() => setActiveSection('Tags')}
+              className={activeSection === 'Tags' ? 'active' : ''}
+            >
+              <FaTags className="icon" />
+              <span className="text">Tags</span>
+            </li>
             <li>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
@@ -40,6 +51,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Reports' && <ReportsSection />}
+        {activeSection === 'Tags' && (console.log('Rendering TagChart'), <TagChart />)}
       </div>
     </div>
   );
@@ -137,54 +149,108 @@ const UsersSection = () => {
 
 // Reports Section Component
 const ReportsSection = () => {
-  const [userType, setUserType] = useState('Students');
+  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 });
+  const [loading, setLoading] = useState(true);
 
-  // Sample data for demonstration
-  const data = {
-    Students: { totalUsers: 200, newUsers: 50 },
-    Employers: { totalUsers: 100, newUsers: 30 },
-  };
+  useEffect(() => {
+      const fetchUserStats = async () => {
+          try {
+              const response = await axiosInstance.get('/api/user-stats');
+              if (response.data.success) {
+                  setUserStats({
+                      studentCount: response.data.studentCount,
+                      employerCount: response.data.employerCount,
+                  });
+              }
+          } catch (error) {
+              console.error('Error fetching user stats:', error);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchUserStats();
+  }, []);
 
   const chartData = {
-    labels: [`Total ${userType}`, `New ${userType}`],
+      labels: ['Students', 'Employers'],
+      datasets: [
+          {
+              data: [userStats.studentCount, userStats.employerCount],
+              backgroundColor: ['#36A2EB', '#FF6384'],
+          },
+      ],
+  };
+
+  return (
+      <div className="reportsadminsection">
+          <h2>Reports</h2>
+          {loading ? (
+              <p>Loading...</p>
+          ) : (
+              <div className="chart-container">
+                  <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+              </div>
+          )}
+      </div>
+  );
+};
+const TagChart = () => {
+  const [tagData, setTagData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTagData = async () => {
+      try {
+        const response = await axiosInstance.get('/api/student-tags');
+        console.log('API Response:', response.data); // Debugging
+        if (response.data.success) {
+          setTagData(response.data.tags);
+        }
+      } catch (error) {
+        console.error('Error fetching tag data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTagData();
+  }, []);
+
+  const chartData = {
+    labels: tagData.map((tag) => tag._id), // Tag names
     datasets: [
       {
-        data: [data[userType].totalUsers, data[userType].newUsers],
-        backgroundColor: ['rgba(75,192,192,0.6)', 'rgba(255,99,132,0.6)'],
+        label: 'Number of Students Excelling',
+        data: tagData.map((tag) => tag.count), // Number of students
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        barThickness: 80, // Set the exact thickness of bars (px)
+        maxBarThickness: 100, // Optional: Limit the maximum thickness
       },
     ],
   };
 
   return (
-    <div className="reportsadminsection">
-      <div className="reportsleftsection">
-        <h2>Reports</h2>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="userType"
-              value="Students"
-              checked={userType === 'Students'}
-              onChange={() => setUserType('Students')}
-            />
-            Students
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="userType"
-              value="Employers"
-              checked={userType === 'Employers'}
-              onChange={() => setUserType('Employers')}
-            />
-            Employers
-          </label>
-        </div>
-        <div className="chart-container">
-          <Pie data={chartData} options={{ responsive: true, plugins: { title: { display: true, text: `User Stats for ${userType}` } } }} />
-        </div>
-      </div>
+    <div>
+      <h2>Students Excelling in Different Tags</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <Bar
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: 'Students Excelling by Tag' },
+            },
+            scales: {
+              x: { title: { display: true, text: 'Tags' } },
+              y: { title: { display: true, text: 'Number of Students' } },
+            },
+          }}
+        />
+      )}
     </div>
   );
 };

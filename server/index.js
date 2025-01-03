@@ -17,7 +17,10 @@
   const adminsignup = require("./routes/adminsignup");
   const adminLogin = require("./routes/adminLogin");
   const questions = require("./routes/questions")
-  const tagchart = require("./routes/tagExcellence")
+  const userStats = require("./routes/userStats")
+  const studentTags = require("./routes/studentTags");
+  
+  
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -40,7 +43,10 @@
   app.use('/', adminsignup);
   app.use('/', adminLogin);
   app.use('/', questions);
-  app.use('/', tagchart); 
+  app.use('/', userStats);
+  app.use('/', studentTags);
+  
+ 
 
   // Middleware for setting COOP headers
   app.use((req, res, next) => {
