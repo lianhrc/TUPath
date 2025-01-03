@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
@@ -12,6 +12,7 @@ const socket = io("http://localhost:3001");
 
 function Inboxpage() {
   const { Inboxpage } = useParams();
+  const location = useLocation();
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [newMessageRecipient, setNewMessageRecipient] = useState('');
   const [newMessageContent, setNewMessageContent] = useState('');
@@ -41,13 +42,23 @@ function Inboxpage() {
 
         const allMessages = [...receivedMessages, ...sentMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setMessages(allMessages);
+
+        // Select the message based on the query parameter
+        const queryParams = new URLSearchParams(location.search);
+        const messageId = queryParams.get('messageId');
+        if (messageId) {
+          const message = allMessages.find(msg => msg._id === messageId);
+          if (message) {
+            setSelectedMessage(message);
+          }
+        }
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
     };
 
     fetchMessages();
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     fetch('http://localhost:3001/api/users', {
