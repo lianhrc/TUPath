@@ -4,6 +4,7 @@ import axiosInstance from '../../../services/axiosInstance';
 import adminheadericon from '../../../assets/logoicon2.png';
 import adminloginicon from '../../../assets/user-gear.png';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const AdminSignup = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,11 @@ const AdminSignup = () => {
       [name]: value,
     });
   };
+  const navigate = useNavigate();
+
+  const handleLoginRedirect = () =>{
+    navigate('/adminlogin');
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -120,7 +126,7 @@ const AdminSignup = () => {
 
         <div className="adminsignupbtn">
         <button type="submit" className="signup-button">Sign Up</button>
-        <button className='btnadminsignup' type="submit">Login</button>
+        <button className='btnadminsignup' type="submit" onClick={handleLoginRedirect}>Login</button>
         </div>
     </form>
   </div>

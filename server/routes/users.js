@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("../models/Tupath_users");
+const { Tupath_usersModel, Employer_usersModel } = require("../models/Tupath_users");
 
 
 router.get('/api/users', async (req, res) => {
