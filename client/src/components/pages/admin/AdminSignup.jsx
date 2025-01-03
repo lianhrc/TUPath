@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import './AdminSignup.css';
 import axiosInstance from '../../../services/axiosInstance';
-
+import adminheadericon from '../../../assets/logoicon2.png';
+import adminloginicon from '../../../assets/user-gear.png';
+import { motion } from 'framer-motion';
 
 const AdminSignup = () => {
   const [formData, setFormData] = useState({
@@ -54,62 +57,75 @@ const AdminSignup = () => {
 
   return (
     <div className="admin-signup-container">
-      <h2>Admin Signup</h2>
-      <form onSubmit={handleSubmit} className="admin-signup-form">
-        {error && <p className="error-message">{error}</p>}
-        {success && <p className="success-message">{success}</p>}
-
-        <div className="form-group">
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
+        <header className="admin-header">
+         <img src={adminheadericon} alt="Admin Header Icon" />
+       </header>
+       <motion.div
+        className=""
+        initial={{ opacity: 0, translateY: 30 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{
+          duration: 0.6,
+          ease: [0.25, 0.1, 0.25, 1],
+        }}
+        viewport={{ once: true, amount: 0.1 }}
+      >
+        <div className="signupboxadmin">
+          <img src={adminloginicon} alt="Admin Login Icon" />
+          <h5>Admin Signup</h5>
         </div>
+        <div className="adminsignup-box">
+        <form onSubmit={handleSubmit} className="admin-signup-form">
+          {error && <p className="error-message">{error}</p>}
+          {success && <p className="success-message">{success}</p>}
 
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
           <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          type="text"
+          placeholder="Username"
+          id="username"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
 
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
+           <input
+              type="email"
+              placeholder="Email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
 
-        <div className="form-group">
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </div>
 
+        <div className="adminsignupbtn">
         <button type="submit" className="signup-button">Sign Up</button>
-      </form>
-    </div>
+        <button className='btnadminsignup' type="submit">Login</button>
+        </div>
+    </form>
+  </div>
+</motion.div>
+</div>
   );
 };
 
