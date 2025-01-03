@@ -570,7 +570,7 @@ const Post = mongoose.model("Post", postSchema);
             timestamp: data.timestamp,
           });
           await message.save();
-          io.emit("receive_message", message);
+          socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
         });
       } catch (err) {
         console.error("Error saving message:", err);

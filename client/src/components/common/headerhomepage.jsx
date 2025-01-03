@@ -151,30 +151,28 @@ function HeaderHomepage() {
     ? `http://localhost:3001${profileData.profileImg}`
     : profileData.profileImg || profileicon;
 
-    const dropdownVariants = {
-      hidden: {
-        opacity: 0,
-        y: -20,
+  const dropdownVariants = {
+    hidden: {
+      opacity: 0,
+      y: -20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 15,
       },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-          type: 'spring',
-          stiffness: 300,
-          damping: 15,
-        },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        duration: 0.2,
       },
-      exit: {
-        opacity: 0,
-        y: -20,
-        transition: {
-          duration: 0.2,
-        },
-      },
-    };
-    
-    
+    },
+  };
 
   return (
     <>
@@ -279,18 +277,19 @@ function HeaderHomepage() {
                     <div className="notifdropdownheader">
                       <h3>Notifications</h3>
                     </div>
-                    {unreadMessages.map((message, index) => (
-                      <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
-                        <div className="notifitemleft">
-                           <img src={message.sender[0].profileImg || profileicon} alt={`${message.sender[0].sender}'s profile`} />
-
-                        </div> 
-                      <div className='notifitemright'>
-                          <p><strong>{message.sender[0].sender}</strong></p>
-                          <p>{message.sender[0].text}</p>
+                    {unreadMessages
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
+                      .map((message, index) => (
+                        <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
+                          <div className="notifitemleft">
+                            <img src={message.sender.profileImg || profileicon} alt={`${message.sender.name}'s profile`} />
+                          </div>
+                          <div className='notifitemright'>
+                            <p><strong>{message.sender.name}</strong></p>
+                            <p>{message.messageContent.text}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </motion.div>
                 )}
               </div>
