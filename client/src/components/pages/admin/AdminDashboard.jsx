@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
-import { FaUsers, FaChartBar, FaSignOutAlt } from 'react-icons/fa'; // Importing icons
+import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing icons
 import { Pie, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, BarElement} from 'chart.js';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
 import axiosInstance from '../../../services/axiosInstance';
-import { FaTags } from 'react-icons/fa';
+
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
-
-
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('Users'); // Track active section
@@ -51,7 +58,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Reports' && <ReportsSection />}
-        {activeSection === 'Tags' && (console.log('Rendering TagChart'), <TagChart />)}
+        {activeSection === 'Tags' && <TagChart />}
       </div>
     </div>
   );
@@ -68,28 +75,29 @@ const UsersSection = () => {
   };
 
   // Fetch users whenever the selected type changes
-  React.useEffect(() => {
-    setLoading(true);
-    axiosInstance
-      .get(`/api/users?type=${selectedType}`)
-      .then((response) => {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
         if (response.data.success) {
           setUsersData(response.data.users);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error fetching users:', error);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchUsers();
   }, [selectedType]);
 
   // Render table dynamically based on selected type
   const renderTable = () => {
-    if (loading) {
-      return <p>Loading...</p>;
-    }
+    if (loading) return <p>Loading...</p>;
+
+    if (usersData.length === 0) return <p>No users found.</p>;
 
     if (selectedType === 'Students') {
       return (
@@ -101,12 +109,16 @@ const UsersSection = () => {
             </tr>
           </thead>
           <tbody>
-            {usersData.map((user, index) => (
-              <tr key={index}>
-                <td>{`${user.profileDetails.firstName} ${user.profileDetails.lastName}`}</td>
-                <td>{user.email}</td>
-              </tr>
-            ))}
+            {usersData.map((user, index) => {
+              const firstName = user?.profileDetails?.firstName || 'N/A';
+              const lastName = user?.profileDetails?.lastName || 'N/A';
+              return (
+                <tr key={index}>
+                  <td>{`${firstName} ${lastName}`}</td>
+                  <td>{user?.email || 'N/A'}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       );
@@ -122,13 +134,17 @@ const UsersSection = () => {
           </tr>
         </thead>
         <tbody>
-          {usersData.map((user, index) => (
-            <tr key={index}>
-              <td>{user.profileDetails.companyName}</td>
-              <td>{user.email}</td>
-              <td>{user.profileDetails.contact}</td>
-            </tr>
-          ))}
+          {usersData.map((user, index) => {
+            const companyName = user?.profileDetails?.companyName || 'N/A';
+            const contact = user?.profileDetails?.contact || 'N/A';
+            return (
+              <tr key={index}>
+                <td>{companyName}</td>
+                <td>{user?.email || 'N/A'}</td>
+                <td>{contact}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     );
@@ -153,47 +169,50 @@ const ReportsSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      const fetchUserStats = async () => {
-          try {
-              const response = await axiosInstance.get('/api/user-stats');
-              if (response.data.success) {
-                  setUserStats({
-                      studentCount: response.data.studentCount,
-                      employerCount: response.data.employerCount,
-                  });
-              }
-          } catch (error) {
-              console.error('Error fetching user stats:', error);
-          } finally {
-              setLoading(false);
-          }
-      };
-      fetchUserStats();
+    const fetchUserStats = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user-stats');
+        if (response.data.success) {
+          setUserStats({
+            studentCount: response.data.studentCount,
+            employerCount: response.data.employerCount,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserStats();
   }, []);
 
   const chartData = {
-      labels: ['Students', 'Employers'],
-      datasets: [
-          {
-              data: [userStats.studentCount, userStats.employerCount],
-              backgroundColor: ['#36A2EB', '#FF6384'],
-          },
-      ],
+    labels: ['Students', 'Employers'],
+    datasets: [
+      {
+        data: [userStats.studentCount, userStats.employerCount],
+        backgroundColor: ['#36A2EB', '#FF6384'],
+      },
+    ],
   };
 
   return (
-      <div className="reportsadminsection">
-          <h2>Reports</h2>
-          {loading ? (
-              <p>Loading...</p>
-          ) : (
-              <div className="chart-container">
-                  <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
-              </div>
-          )}
-      </div>
+    <div className="reportsadminsection">
+      <h2>Reports</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="chart-container">
+          <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+        </div>
+      )}
+    </div>
   );
 };
+
+// Tags Section Component
 const TagChart = () => {
   const [tagData, setTagData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -202,7 +221,6 @@ const TagChart = () => {
     const fetchTagData = async () => {
       try {
         const response = await axiosInstance.get('/api/student-tags');
-        console.log('API Response:', response.data); // Debugging
         if (response.data.success) {
           setTagData(response.data.tags);
         }
@@ -212,6 +230,7 @@ const TagChart = () => {
         setLoading(false);
       }
     };
+
     fetchTagData();
   }, []);
 
@@ -224,8 +243,6 @@ const TagChart = () => {
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 2,
-        barThickness: 80, // Set the exact thickness of bars (px)
-        maxBarThickness: 100, // Optional: Limit the maximum thickness
       },
     ],
   };
@@ -254,8 +271,5 @@ const TagChart = () => {
     </div>
   );
 };
-
-// Register Pie chart components
-ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
 export default AdminDashboard;

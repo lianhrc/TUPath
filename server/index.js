@@ -6,7 +6,7 @@ const express = require("express");
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
  // require('dotenv').config()
@@ -37,6 +37,16 @@ const express = require("express");
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
+
+
+  //ROUTES
+  app.use('/', adminsignup);
+  app.use('/', adminLogin);
+  app.use('/', questions);
+  app.use('/', userStats);
+  app.use('/', studentTags);
+  
+ 
 
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -129,26 +139,36 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
-    timestamp: { type: Date, default: Date.now },
-    sender: [{
-      profileImg: String,
-      senderId: String,
-      sender: String,
-      text: String,
-      timestamp: { type: Date, default: Date.now },
-    }],
-    receiver: [{
-      
-      profileImg: String,
-      receiverId: String,
-      receiver: String,
-      text: String,
-      timestamp: { type: Date, default: Date.now },
+    sender: {
+      senderId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    receiver: {
+      receiverId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    messageContent: {
+      text: { type: String, required: true },
+      attachments: [{ type: String }], // URLs or file paths
+    },
+    status: {
       read: { type: Boolean, default: false },
-    }],
+      delivered: { type: Boolean, default: false },
+    },
     timestamp: { type: Date, default: Date.now },
   });
+  
+  // Add indexes for optimization
+  messageSchema.index({ "sender.senderId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1 });
+  messageSchema.index({ timestamp: -1 });
+  messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+  
   const Message = mongoose.model("Message", messageSchema);
+  
   // Add this endpoint to fetch users
   
 app.get('/api/users', verifyToken, async (req, res) => {
@@ -191,7 +211,7 @@ app.get("/api/sent-messages", verifyToken, async (req, res) => {
 app.get("/api/unread-messages", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ "receiver.receiverId": userId, "receiver.read": false }).sort({ timestamp: 1 });
+    const messages = await Message.find({ "receiver.receiverId": userId, "status.read": false }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (err) {
     console.error("Error fetching unread messages:", err);
@@ -210,12 +230,11 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: "Message not found" });
     }
 
-    const receiver = message.receiver.find(r => r.receiverId === userId);
-    if (!receiver) {
+    if (message.receiver.receiverId !== userId) {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    receiver.read = true;
+    message.status.read = true;
     await message.save();
 
     res.status(200).json({ success: true, message: "Message marked as read" });
@@ -545,25 +564,28 @@ const Post = mongoose.model("Post", postSchema);
           }
   
           const message = new Message({
-            sender: [{
-              profileImg: senderUser.profileDetails.profileImg,
+            sender: {
               senderId: userId,
-              sender: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
-              text: data.text,
-              timestamp: data.timestamp,
-            }],
-            receiver: [{
-              profileImg: data.receiverProfileImg,
+              name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              profileImg: senderUser.profileDetails.profileImg,
+            },
+            receiver: {
               receiverId: data.receiverId,
-              receiver: data.receiver,
-              text: data.text,
-              timestamp: data.timestamp,
-              read: false, // Mark message as unread
-            }],
+              name: data.receiverName, // Use receiverName instead of receiver
+              profileImg: data.receiverProfileImg,
+            },
+            messageContent: {
+              text: data.messageContent.text, // Ensure text is included in messageContent
+              attachments: data.messageContent.attachments || [],
+            },
+            status: {
+              read: false,
+              delivered: true,
+            },
             timestamp: data.timestamp,
           });
           await message.save();
-          io.emit("receive_message", message);
+          socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
         });
       } catch (err) {
         console.error("Error saving message:", err);
@@ -1310,7 +1332,13 @@ app.get('/api/search', verifyToken, async (req, res) => {
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await Tupath_usersModel.findById(id).populate('profileDetails.projects') || await Employer_usersModel.findById(id).populate('profileDetails.projects');
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    }) || await Employer_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    });
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -1466,6 +1494,9 @@ app.post("/api/reset-password/:token", async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
+
+
+
 
 
   // Server setup
