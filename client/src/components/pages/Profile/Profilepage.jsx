@@ -9,6 +9,7 @@ import MessagePop from '../../popups/messagingpop';
 import EditDescriptionModal from '../../popups/EditDescriptionModal';
 import ProjectUploadModal from '../../popups/ProjectUpModal';
 import ProjectPreviewModal from '../../popups/ProjectPreviewModal';
+import CertPreviewModal from '../../popups/CertPreviewModal';
 import GenericModal from '../../popups/GenericModal';
 import CertUpModal from '../../popups/CertUpModal';
 import edit from '../../../assets/writemessage.png';
@@ -36,7 +37,9 @@ function ProfilePage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditDescriptionModal, setShowEditDescriptionModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showcertPreviewModal, setshowcertPreviewModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedCert, setselectedCert] = useState(null);
   const [skillsModalOpen, setSkillsModalOpen] = useState(false);
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
 
@@ -234,6 +237,7 @@ function ProfilePage() {
                 ) : (
                   <p>No projects available</p>
                 )}
+
               </div>
             </div>
 
@@ -241,16 +245,15 @@ function ProfilePage() {
               <h3>My Certificates</h3>
               <hr />
               <div className="projects-grid">
-                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
+                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(certificates)}>
                   <p>+</p>
                   <p>Add a Certificate</p>
                 </div>
+
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
-                    <div key={cert._id} className="project-card">
-                      <h4>{cert.Certificate.CertName}</h4>
-                      <p>{cert.Certificate.CertDescription}</p>
+                    <div key={cert._id} className="project-card" onClick={() => { setSelectedProject(cert); setshowcertPreviewModal(true); }}>
                       {cert.Certificate.CertThumbnail && (
                         <img
                           src={`http://localhost:3001${cert.Certificate.CertThumbnail}`}
@@ -258,25 +261,14 @@ function ProfilePage() {
                           className="certificate-thumbnail"
                         />
                       )}
-                      {cert.Certificate.Attachments.length > 0 && (
-                        <div className="attachments">
-                          <h5>Attachments:</h5>
-                          <ul>
-                            {cert.Certificate.Attachments.map((attachment, index) => (
-                              <li key={index}>
-                                <a href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
-                                  {attachment.split('/').pop()}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                      <p>{cert.Certificate.CertName}</p>
+                     
                     </div>
                   ))
                 ) : (
                   <p>No certificates available</p>
                 )}
+                
               </div>
             </div>
           </div>
@@ -309,6 +301,7 @@ function ProfilePage() {
         />
 
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
+        <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
         <GenericModal
           show={skillsModalOpen}
           onClose={() => setSkillsModalOpen(false)}
