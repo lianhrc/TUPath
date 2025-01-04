@@ -619,6 +619,7 @@ app.post("/api/uploadCertificate", verifyToken, upload.fields([
 ]), async (req, res) => {
   try {
     const userId = req.user.id;
+    const userName = req.user.name; // Ensure user name is extracted from the token
     const { CertName, CertDescription } = req.body;
 
     if (!CertName || !CertDescription) {
@@ -630,7 +631,7 @@ app.post("/api/uploadCertificate", verifyToken, upload.fields([
 
     const newCertificate = new StudentCertificate({
       StudId: userId,
-      StudName: req.user.name,
+      StudName: userName, // Use the extracted user name
       Certificate: {
         CertName,
         CertDescription,
@@ -644,11 +645,21 @@ app.post("/api/uploadCertificate", verifyToken, upload.fields([
     res.status(201).json({ success: true, message: "Certificate uploaded successfully", certificate: newCertificate });
   } catch (error) {
     console.error("Error uploading certificate:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 });
 
-
+// Endpoint to fetch certificates for a user
+app.get('/api/certificates', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const certificates = await StudentCertificate.find({ StudId: userId });
+    res.status(200).json({ success: true, certificates });
+  } catch (error) {
+    console.error('Error fetching certificates:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
 
   // Login endpoint

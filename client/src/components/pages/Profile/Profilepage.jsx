@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toas
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
   const [projects, setProjects] = useState([]); // State for projects
+  const [certificates, setCertificates] = useState([]); // State for certificates
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
@@ -26,7 +27,10 @@ function ProfilePage() {
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
   };
-  
+
+  const addCertificateToState = (newCertificate) => {
+    setCertificates((prevCertificates) => [...prevCertificates, newCertificate]);
+  };
 
   // Modals
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -35,69 +39,76 @@ function ProfilePage() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [skillsModalOpen, setSkillsModalOpen] = useState(false);
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
-  
-  
- // Fetch profile data
- useEffect(() => {
-  const fetchProfileData = async () => {
-    try {
-      const profileResponse = await axiosInstance.get('/api/profile');
-      if (profileResponse.data.success) {
-        const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
-        // Ensure both profileDetails and projects are set correctly
-        const { projects, ...profileWithoutProjects } = profileDetails;
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const profileResponse = await axiosInstance.get('/api/profile');
+        if (profileResponse.data.success) {
+          const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
-                  setProfileData({ ...profileWithoutProjects, createdAt, email, softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
+          // Ensure both profileDetails and projects are set correctly
+          const { projects, ...profileWithoutProjects } = profileDetails;
+
+          setProfileData({
+            ...profileWithoutProjects,
+            createdAt,
+            email,
+            softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
-           });
-        setUserRole(role);
-        setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
+          });
+          setUserRole(role);
+          setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
 
-        // Ensure that projects are also set correctly
-        setProjects(profileDetails?.projects || []); // Set projects if available
+          // Ensure that projects are also set correctly
+          setProjects(profileDetails?.projects || []); // Set projects if available
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching profile data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchProfileData();
-}, [userRole]); // Re-fetch if userRole changes
-  
-  
-  
+    const fetchCertificates = async () => {
+      try {
+        const response = await axiosInstance.get('/api/certificates');
+        if (response.data.success) {
+          setCertificates(response.data.certificates);
+        }
+      } catch (error) {
+        console.error('Error fetching certificates:', error);
+      }
+    };
+
+    fetchProfileData();
+    fetchCertificates();
+  }, [userRole]); // Re-fetch if userRole changes
 
   if (loading) {
     return <Loader />;
   }
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
-  ? `http://localhost:3001${profileData.profileImg}`
-  : profileData.profileImg || avatar;
+    ? `http://localhost:3001${profileData.profileImg}`
+    : profileData.profileImg || avatar;
 
-  
-    // delete function to handle project removal
-    const deleteProject = async (projectId) => {
-      try {
-        const response = await axiosInstance.delete(`/api/projects/${projectId}`);
-        if (response.data.success) {
-          // Update the UI state to reflect the deletion
-          setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
-          console.log('Project deleted successfully.');
-        } else {
-          console.error('Failed to delete project:', response.data.message);
-        }
-      } catch (error) {
-        console.error('Error occurred while deleting the project:', error);
+  // delete function to handle project removal
+  const deleteProject = async (projectId) => {
+    try {
+      const response = await axiosInstance.delete(`/api/projects/${projectId}`);
+      if (response.data.success) {
+        // Update the UI state to reflect the deletion
+        setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
+        console.log('Project deleted successfully.');
+      } else {
+        console.error('Failed to delete project:', response.data.message);
       }
-    };
-    
-    
-  
-    
+    } catch (error) {
+      console.error('Error occurred while deleting the project:', error);
+    }
+  };
 
   return (
     <div className='Profilepage-container'>
@@ -117,19 +128,16 @@ function ProfilePage() {
               <div className='profile-header-right'>
                 <p>{profileData.address || profileData.location || 'Location Not Available'}</p>
                 <p>
-                {profileData.createdAt
-                  ? (() => {
-                      const date = new Date(profileData.createdAt);
-                      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const year = date.getFullYear();
-                      return `${month}-${day}-${year}`;
-                    })()
-                  : 'Date Not Available'}
-              </p>
-
-
-
+                  {profileData.createdAt
+                    ? (() => {
+                        const date = new Date(profileData.createdAt);
+                        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${month}-${day}-${year}`;
+                      })()
+                    : 'Date Not Available'}
+                </p>
               </div>
             </div>
           </div>
@@ -138,16 +146,12 @@ function ProfilePage() {
           <div className='profile-main'>
             <div className="profile-section">
               <div className="div">
-              <a href="#" onClick={() => {
-                console.log('Opening edit modal');
-                setShowEditDescriptionModal(true);
-                
-              }} > <img src={edit} alt="" /> </a>
-                  
-              </div>        
-            
-          </div>
-            
+                <a href="#" onClick={() => {
+                  console.log('Opening edit modal');
+                  setShowEditDescriptionModal(true);
+                }} > <img src={edit} alt="" /> </a>
+              </div>
+            </div>
 
             {/* Student Profile Details */}
             {userRole === 'student' && (
@@ -157,22 +161,21 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Year Level</h3><p>{profileData.yearLevel || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'>
-  <h3>Technical Skills</h3>
-  <p>
-    {Array.isArray(profileData.techSkills)
-      ? profileData.techSkills.join(', ')
-      : 'No tech skills added yet.'}
-  </p>
-</div>
-<div className='profile-section'>
-  <h3>Soft Skills</h3>
-  <p>
-    {Array.isArray(profileData.softSkills)
-      ? profileData.softSkills.join(', ')
-      : 'No soft skills added yet.'}
-  </p>
-</div>
-
+                  <h3>Technical Skills</h3>
+                  <p>
+                    {Array.isArray(profileData.techSkills)
+                      ? profileData.techSkills.join(', ')
+                      : 'No tech skills added yet.'}
+                  </p>
+                </div>
+                <div className='profile-section'>
+                  <h3>Soft Skills</h3>
+                  <p>
+                    {Array.isArray(profileData.softSkills)
+                      ? profileData.softSkills.join(', ')
+                      : 'No soft skills added yet.'}
+                  </p>
+                </div>
               </>
             )}
 
@@ -187,40 +190,38 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
                 <div className='profile-section'>
-                    <h3>Preferred Roles</h3>
-                    <p>
-                      {Array.isArray(profileData.preferredRoles)
-                        ? profileData.preferredRoles.join(', ')
-                        : 'Not Available'}
-                    </p>
-                  </div>
+                  <h3>Preferred Roles</h3>
+                  <p>
+                    {Array.isArray(profileData.preferredRoles)
+                      ? profileData.preferredRoles.join(', ')
+                      : 'Not Available'}
+                  </p>
+                </div>
                 <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
                 <div className='profile-section'>
-                <h3>Preferred Skills</h3>
-                <p>{Array.isArray(profileData.preferredSkills) ? profileData.preferredSkills.join(', ') : 'Not Available'}</p>
-              </div>
+                  <h3>Preferred Skills</h3>
+                  <p>{Array.isArray(profileData.preferredSkills) ? profileData.preferredSkills.join(', ') : 'Not Available'}</p>
+                </div>
               </>
-              
             )}
-            
 
             {/* Common Profile Details */}
             <div className='profile-section'><h3>Gender</h3><p>{profileData.gender || 'Not Available'}</p></div>
             <div className='profile-section'><h3>Contact</h3><p>{profileData.contact || profileData.phoneNumber || 'Not Available'}</p></div>
-            </div>
+          </div>
         </div>
 
-          {/* Project Section */}
-          {userRole === 'student' && (
-            <div className="project-section">
-              <div className="projectscontainer">
-                <h3>My Projects</h3>
-                <hr />
-                <div className="projects-grid">
-                  <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
-                    <p>+</p>
-                    <p>Add a Project</p>
-                  </div>
+        {/* Project Section */}
+        {userRole === 'student' && (
+          <div className="project-section">
+            <div className="projectscontainer">
+              <h3>My Projects</h3>
+              <hr />
+              <div className="projects-grid">
+                <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
+                  <p>+</p>
+                  <p>Add a Project</p>
+                </div>
 
                 {/* Display Projects */}
                 {projects.length > 0 ? (
@@ -236,64 +237,78 @@ function ProfilePage() {
               </div>
             </div>
 
-                  <div className="achievementscontainer">
-                    <h3>My Certificates</h3>
-                    <hr />
-                    <div className="projects-grid">
-                      <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
-                        <p>+</p>
-                        <p>Add a Certificate</p>
-                      </div>
-                      {/* Display Certificates */}
-                {profileData.certificatePhotos && profileData.certificatePhotos.length > 0 ? (
-                  profileData.certificatePhotos.map((certificate, index) => (
-                    <div key={index} className="project-card">
-                      <img src={`http://localhost:3001${certificate}`} alt="Certificate" />
+            <div className="achievementscontainer">
+              <h3>My Certificates</h3>
+              <hr />
+              <div className="projects-grid">
+                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
+                  <p>+</p>
+                  <p>Add a Certificate</p>
+                </div>
+                {/* Display Certificates */}
+                {certificates.length > 0 ? (
+                  certificates.map((cert) => (
+                    <div key={cert._id} className="project-card">
+                      <h4>{cert.Certificate.CertName}</h4>
+                      <p>{cert.Certificate.CertDescription}</p>
+                      {cert.Certificate.CertThumbnail && (
+                        <img
+                          src={`http://localhost:3001${cert.Certificate.CertThumbnail}`}
+                          alt="Certificate Thumbnail"
+                          className="certificate-thumbnail"
+                        />
+                      )}
+                      {cert.Certificate.Attachments.length > 0 && (
+                        <div className="attachments">
+                          <h5>Attachments:</h5>
+                          <ul>
+                            {cert.Certificate.Attachments.map((attachment, index) => (
+                              <li key={index}>
+                                <a href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
+                                  {attachment.split('/').pop()}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
                   <p>No certificates available</p>
                 )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
+            </div>
+          </div>
+        )}
 
-
-              {/* Project and Certificate Sections */}
-              {userRole === 'employer' && (
-                <div className="project-section">
-                  <div className="projectscontainer">
-                    <h3>About Company</h3>
-                    <hr />
-                    <div className='profile-section'><p>{profileData.aboutCompany || 'Not Available'}</p></div>
-
-                  </div>
-
-                  
-                </div>
-              )}
-
-
+        {/* Project and Certificate Sections */}
+        {userRole === 'employer' && (
+          <div className="project-section">
+            <div className="projectscontainer">
+              <h3>About Company</h3>
+              <hr />
+              <div className='profile-section'><p>{profileData.aboutCompany || 'Not Available'}</p></div>
+            </div>
+          </div>
+        )}
 
         {/* Modals */}
         <ProjectUploadModal
-        key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
-        show={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onProjectUpload={addProjectToState}
-      />
-      
-      
+          key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+          show={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onProjectUpload={addProjectToState}
+        />
 
-        <EditDescriptionModal 
-                    show={showEditDescriptionModal} 
-                    onClose={() => setShowEditDescriptionModal(false)} 
-                    profileData={profileData} 
-                    onSave={(updatedData) => setProfileData(updatedData)} 
-                />
-        
-        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject}/>
+        <EditDescriptionModal
+          show={showEditDescriptionModal}
+          onClose={() => setShowEditDescriptionModal(false)}
+          profileData={profileData}
+          onSave={(updatedData) => setProfileData(updatedData)}
+        />
+
+        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
         <GenericModal
           show={skillsModalOpen}
           onClose={() => setSkillsModalOpen(false)}
@@ -320,7 +335,7 @@ function ProfilePage() {
           }}
         />
 
-      <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} />
+        <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} onCertificateUpload={addCertificateToState} />
         <MessagePop />
       </div>
     </div>

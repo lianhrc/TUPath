@@ -50,7 +50,7 @@ const CertUpModal = ({ show, onClose }) => {
       }
     } catch (error) {
       console.error("Error uploading certificate:", error);
-      alert("An error occurred while uploading the certificate");
+      alert(`An error occurred while uploading the certificate: ${error.response?.data?.message || error.message}`);
     }
   };
 
