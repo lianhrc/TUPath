@@ -666,6 +666,25 @@ app.get('/api/certificates', verifyToken, async (req, res) => {
   }
 });
 
+// Endpoint to delete a certificate
+app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
+  try {
+    const certificateId = req.params.id;
+    const userId = req.user.id;
+
+    const certificate = await StudentCertificate.findOneAndDelete({ _id: certificateId, StudId: userId });
+
+    if (!certificate) {
+      return res.status(404).json({ success: false, message: "Certificate not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Certificate deleted successfully" });
+  } catch (error) {
+    console.error('Error deleting certificate:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
   // Login endpoint
   app.post("/login", async (req, res) => {

@@ -113,6 +113,22 @@ function ProfilePage() {
     }
   };
 
+  // delete function to handle certificate removal
+  const deleteCertificate = async (certificateId) => {
+    try {
+      const response = await axiosInstance.delete(`/api/certificates/${certificateId}`);
+      if (response.data.success) {
+        // Update the UI state to reflect the deletion
+        setCertificates((prevCertificates) => prevCertificates.filter((cert) => cert._id !== certificateId));
+        console.log('Certificate deleted successfully.');
+      } else {
+        console.error('Failed to delete certificate:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error occurred while deleting the certificate:', error);
+    }
+  };
+
   return (
     <div className='Profilepage-container'>
       <HeaderHomepage />
@@ -301,7 +317,7 @@ function ProfilePage() {
         />
 
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
-        <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
+        <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedProject} onDelete={deleteCertificate} />
         <GenericModal
           show={skillsModalOpen}
           onClose={() => setSkillsModalOpen(false)}

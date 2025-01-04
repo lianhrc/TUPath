@@ -26,7 +26,7 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             <button 
               onClick={() => { 
-                onDelete(project._id); // Delete the project
+                onDelete(project._id); // Delete the certificate
                 toast.success('Certificate deleted successfully!', {
                   position: 'top-center',
                    autoClose: 3000,  // Toast will disappear in 1 seconds
@@ -50,7 +50,7 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
                   draggable: false,
                   theme: 'light',
                 });
-                toast.dismiss(toastId,{
+                toast.dismiss(toastId, {
                   position: 'top-center',
                   autoClose: 3000, // Keeps the toast open
                   closeButton: false,
@@ -89,15 +89,31 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
     <div className="projprev-overlay">
       <div className="projprev-content">
         <div className="projprevheader">
-          
+          <h3>{project.Certificate.CertName}</h3>
         </div>
 
         <div className="projprevcontentmain">
-          
+          <p>{project.Certificate.CertDescription}</p>
+          {project.Certificate.CertThumbnail && (
+            <img
+              src={`http://localhost:3001${project.Certificate.CertThumbnail}`}
+              alt="Certificate Thumbnail"
+              className="certificate-thumbnail"
+            />
+          )}
+          <div className="attachments">
+            <h4>Attachments:</h4>
+            {project.Certificate.Attachments.length > 0 ? (
+              project.Certificate.Attachments.map((attachment, index) => (
+                <a key={index} href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
+                  {getFileName(attachment)}
+                </a>
+              ))
+            ) : (
+              <p>No attachments available</p>
+            )}
+          </div>
         </div>
-
- 
-        
 
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>
