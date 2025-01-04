@@ -19,6 +19,7 @@
   const questions = require("./routes/questions")
   const userStats = require("./routes/userStats")
   const studentTags = require("./routes/studentTags");
+  const studentByTags = require("./routes/studentsByTag")
   
   
 
@@ -45,6 +46,7 @@
   app.use('/', questions);
   app.use('/', userStats);
   app.use('/', studentTags);
+  app.use('/', studentByTags);
   
  
 

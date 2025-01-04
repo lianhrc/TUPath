@@ -6,6 +6,7 @@ import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, Li
 import axiosInstance from '../../../services/axiosInstance';
 import { FaTags } from 'react-icons/fa';
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
+import StudentListModal from '../../popups/StudentListModal';
 
 
 
@@ -197,61 +198,95 @@ const ReportsSection = () => {
 const TagChart = () => {
   const [tagData, setTagData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchTagData = async () => {
-      try {
-        const response = await axiosInstance.get('/api/student-tags');
-        console.log('API Response:', response.data); // Debugging
-        if (response.data.success) {
-          setTagData(response.data.tags);
-        }
-      } catch (error) {
-        console.error('Error fetching tag data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTagData();
+      const fetchTagData = async () => {
+          try {
+              const response = await axiosInstance.get('/api/student-tags');
+              if (response.data.success) {
+                  setTagData(response.data.tags);
+              }
+          } catch (error) {
+              console.error('Error fetching tag data:', error);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchTagData();
   }, []);
 
+  const handleBarClick = async (event, elements) => {
+      console.log('Bar clicked', elements); // Debugging
+
+      if (elements.length > 0) {
+          const index = elements[0].index; // Index of the clicked bar
+          const tag = tagData[index]._id; // Get tag from clicked bar
+          console.log('Selected tag:', tag); // Debugging
+          setSelectedTag(tag);
+
+          setStudentsLoading(true);
+          try {
+              const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
+              if (response.data.success) {
+                  console.log('API response for students:', response.data); // Debugging
+                  setStudents(response.data.students);
+              }
+          } catch (error) {
+              console.error('Error fetching students:', error);
+          } finally {
+              setStudentsLoading(false);
+          }
+      }
+  };
+
   const chartData = {
-    labels: tagData.map((tag) => tag._id), // Tag names
-    datasets: [
-      {
-        label: 'Number of Students Excelling',
-        data: tagData.map((tag) => tag.count), // Number of students
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 2,
-        barThickness: 80, // Set the exact thickness of bars (px)
-        maxBarThickness: 100, // Optional: Limit the maximum thickness
-      },
-    ],
+      labels: tagData.map((tag) => tag._id),
+      datasets: [{
+          label: 'Number of Students Excelling',
+          data: tagData.map((tag) => tag.count),
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 2,
+          barThickness: 80,
+          maxBarThickness: 100,
+      }],
   };
 
   return (
-    <div>
-      <h2>Students Excelling in Different Tags</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <Bar
-          data={chartData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: { display: true, text: 'Students Excelling by Tag' },
-            },
-            scales: {
-              x: { title: { display: true, text: 'Tags' } },
-              y: { title: { display: true, text: 'Number of Students' } },
-            },
-          }}
+      <div>
+          <h2>Students Excelling in Different Tags</h2>
+          {loading ? (
+              <p>Loading...</p>
+          ) : (
+              <Bar
+                  data={chartData}
+                  options={{
+                      responsive: true,
+                      plugins: {
+                          legend: { display: false },
+                          title: { display: true, text: 'Students Excelling by Tag' },
+                      },
+                      scales: {
+                          x: { title: { display: true, text: 'Tags' } },
+                          y: { title: { display: true, text: 'Number of Students' } },
+                      },
+                      onClick: handleBarClick,
+                  }}
+              />
+          )}
+
+    {selectedTag && (
+        <StudentListModal
+            tag={selectedTag}
+            students={students}
+            onClose={() => setSelectedTag(null)}
+            loading={studentsLoading}
         />
-      )}
-    </div>
+    )}
+      </div>
   );
 };
 
