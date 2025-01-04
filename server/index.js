@@ -11,7 +11,7 @@ const express = require("express");
   const crypto = require("crypto");
   
 
- require('dotenv').config()
+ //require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");
@@ -51,6 +51,7 @@ const express = require("express");
     app.use('/', questions);
     app.use('/', userStats);
     app.use('/', studentTags);
+    app.use('/', studentByTags);
 
 
   // Middleware for setting COOP headers
@@ -60,20 +61,24 @@ const express = require("express");
     next();
   });
 
-/*
+
   // MongoDB connection
    mongoose
      .connect("mongodb://127.0.0.1:27017/tupath_users")
      .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
  
- */
+
+/*
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
+
+ */
+
 
   // Configure multer for file uploads
     const storage = multer.diskStorage({
