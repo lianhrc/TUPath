@@ -31,11 +31,14 @@ const AdminDashboard = () => {
       <div className="adminsidebar">
      
       <nav>
-        <div className="imgcontaineradmin">
-            <img src={tupicon} alt="" />
-            <img src={irjpicon} alt="" />
-        </div>
+    
           <ul>
+            <li className='iconli'>
+            <div className="imgcontaineradmin">
+              <img className="irjp" src={irjpicon} alt="" />
+              <img className="tup" src={tupicon} alt="" />
+          </div>
+            </li>
             <li
             
               onClick={() => setActiveSection('Users')}

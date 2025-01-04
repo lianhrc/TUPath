@@ -24,7 +24,6 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    justify-content: center;
 }
 
 .adminsidebar:hover {
@@ -57,10 +56,24 @@
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+
+.adminsidebar nav ul .iconli{
+  margin-bottom: 60px;
+  margin-left: 20px;
+}
+
 .adminsidebar nav ul li:hover {
     background-color: #9D0E0F;
     transform: scale(1.05);
 }
+
+
+.adminsidebar nav ul .iconli:hover{
+  background-color: none;
+  background: none;
+  cursor: none;
+}
+
 
 .adminsidebar nav ul li:focus {
     background-color: #A71A1B;
@@ -379,3 +392,20 @@
     }
   }
   
+  
+  .imgcontaineradmin{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tup{
+    width: 55px;
+  }
+  
+  .irjp{
+    width: 80px;
+    margin-left: 5px;
+  }
