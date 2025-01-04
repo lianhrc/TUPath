@@ -105,6 +105,26 @@ const UsersSection = () => {
     fetchUsers();
   }, [selectedType]);
 
+  const handleDelete = async (userId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    if (!confirmDelete) return;
+  
+    try {
+      const response = await axiosInstance.delete(`/api/manage-users/${userId}?type=${selectedType}`);
+      if (response.data.success) {
+        alert("User deleted successfully!");
+        // Remove the user from the UI
+        setUsersData((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+      } else {
+        alert("Failed to delete the user.");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("An error occurred while deleting the user.");
+    }
+  };
+  
+
   // Render table dynamically based on selected type
   const renderTable = () => {
     if (loading) return <p>Loading...</p>;
@@ -126,12 +146,13 @@ const UsersSection = () => {
             {usersData.map((user, index) => {
               const firstName = user?.profileDetails?.firstName || 'N/A';
               const lastName = user?.profileDetails?.lastName || 'N/A';
+              const contact = user?.profileDetails?.contact || 'N/A';
               return (
                 <tr key={index}>
                   <td>{`${firstName} ${lastName}`}</td>
                   <td>{user?.email || 'N/A'}</td>
-                  <td>{user?.contact || 'N/A'}</td>
-                  <td><button className='delete-btn'>Delete</button></td>
+                  <td>{`${contact}` || 'N/A'}</td>
+                  <td><button className='delete-btn' onClick={() => handleDelete(user._id)}>Delete</button></td>
                 </tr>
               );
             })}
