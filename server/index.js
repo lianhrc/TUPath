@@ -1,4 +1,4 @@
-  const express = require("express");
+const express = require("express");
   const mongoose = require("mongoose");
   const cors = require("cors");
   const jwt = require("jsonwebtoken");
@@ -11,15 +11,16 @@
   const crypto = require("crypto");
   
 
-  //require('dotenv').config()
+ require('dotenv').config()
 
-  const users = require("./routes/users");
+
   const adminsignup = require("./routes/adminsignup");
   const adminLogin = require("./routes/adminLogin");
   const questions = require("./routes/questions")
   const userStats = require("./routes/userStats")
   const studentTags = require("./routes/studentTags");
   const studentByTags = require("./routes/studentsByTag")
+  const users = require("./routes/users");
   
   
 
@@ -32,23 +33,25 @@
   const path = require("path");
 
   // Middleware setup
-  app.use(express.json());
   app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
 
 
-  //ROUTES
-  app.use('/', users );
-  app.use('/', adminsignup);
-  app.use('/', adminLogin);
-  app.use('/', questions);
-  app.use('/', userStats);
-  app.use('/', studentTags);
-  app.use('/', studentByTags);
-  
- 
+  app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+
+    //ROUTES
+   
+    app.use('/', users);
+    app.use('/', adminsignup);
+    app.use('/', adminLogin);
+    app.use('/', questions);
+    app.use('/', userStats);
+    app.use('/', studentTags);
+
 
   // Middleware for setting COOP headers
   app.use((req, res, next) => {
@@ -57,22 +60,22 @@
     next();
   });
 
-
+/*
   // MongoDB connection
-  mongoose
-    .connect("mongodb://127.0.0.1:27017/tupath_users")
-    .then(() => console.log("MongoDB connected successfully"))
+   mongoose
+     .connect("mongodb://127.0.0.1:27017/tupath_users")
+     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
  
-/*
+ */
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-*/
-    // Configure multer for file uploads
+
+  // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
         cb(null, 'uploads/'); // Define where to store the files
@@ -83,7 +86,8 @@ mongoose.connect(
     });
    
     const upload = multer({ 
-      storage: storage 
+      storage: storage,
+      limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
     });
     
 
@@ -124,22 +128,111 @@ mongoose.connect(
 
   // Chat message schema
   const messageSchema = new mongoose.Schema({
-    sender: String,
-    text: String,
+    sender: {
+      senderId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    receiver: {
+      receiverId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    messageContent: {
+      text: { type: String, required: true },
+      attachments: [{ type: String }], // URLs or file paths
+    },
+    status: {
+      read: { type: Boolean, default: false },
+      delivered: { type: Boolean, default: false },
+    },
     timestamp: { type: Date, default: Date.now },
   });
+  
+  // Add indexes for optimization
+  messageSchema.index({ "sender.senderId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1 });
+  messageSchema.index({ timestamp: -1 });
+  messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+  
   const Message = mongoose.model("Message", messageSchema);
+  
+  // Add this endpoint to fetch users
+  
+app.get('/api/userss', verifyToken, async (req, res) => {
+  try {
+    const students = await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const employers = await Employer_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+    const users = [...students, ...employers];
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
   // REST endpoint to fetch chat messages
-  app.get("/api/messages", async (req, res) => {
+  app.get("/api/messages", verifyToken, async (req, res) => {
     try {
-      const messages = await Message.find().sort({ timestamp: 1 });
+      const userId = req.user.id; // Extract userId from the token
+      const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
       res.json(messages);
     } catch (err) {
       console.error("Error fetching messages:", err);
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
+
+// REST endpoint to fetch sent messages
+app.get("/api/sent-messages", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract userId from the token
+    const messages = await Message.find({ "sender.senderId": userId }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error("Error fetching sent messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REST endpoint to fetch unread messages
+app.get("/api/unread-messages", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract userId from the token
+    const messages = await Message.find({ "receiver.receiverId": userId, "status.read": false }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error("Error fetching unread messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REST endpoint to mark a message as read
+app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const userId = req.user.id; // Extract userId from the token
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: "Message not found" });
+    }
+
+    if (message.receiver.receiverId !== userId) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    message.status.read = true;
+    await message.save();
+
+    res.status(200).json({ success: true, message: "Message marked as read" });
+  } catch (err) {
+    console.error("Error marking message as read:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
   // Add a comment to a post
 app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
@@ -431,20 +524,64 @@ const Post = mongoose.model("Post", postSchema);
   });
 
 
+
   // Socket.IO events for real-time chat
   io.on("connection", (socket) => {
     // console.log(`User connected: ${socket.id}`);
 
     socket.on("send_message", async (data) => {
       try {
-        const message = new Message(data);
-        await message.save();
-        io.emit("receive_message", data);
+        const token = data.token; // Extract token from the data
+        if (!token) {
+          console.error("Token not provided");
+          return;
+        }
+  
+        jwt.verify(token, JWT_SECRET, async (err, user) => {
+          if (err) {
+            console.error("Token verification failed:", err);
+            return;
+          }
+  
+          const userId = user.id; // Extract userId from the token
+          console.log("Sender ID:", userId); // Log the senderId for debugging
+  
+          const senderUser = await Tupath_usersModel.findById(userId) || await Employer_usersModel.findById(userId);
+  
+          if (!senderUser) {
+            console.error("User not found for ID:", userId); // Log the userId if user is not found
+            return;
+          }
+  
+          const message = new Message({
+            sender: {
+              senderId: userId,
+              name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              profileImg: senderUser.profileDetails.profileImg,
+            },
+            receiver: {
+              receiverId: data.receiverId,
+              name: data.receiverName, // Use receiverName instead of receiver
+              profileImg: data.receiverProfileImg,
+            },
+            messageContent: {
+              text: data.messageContent.text, // Ensure text is included in messageContent
+              attachments: data.messageContent.attachments || [],
+            },
+            status: {
+              read: false,
+              delivered: true,
+            },
+            timestamp: data.timestamp,
+          });
+          await message.save();
+          socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
+        });
       } catch (err) {
         console.error("Error saving message:", err);
       }
     });
-
+  
     socket.on("disconnect", () => {
      // console.log(`User disconnected: ${socket.id}`);
     });
@@ -1182,19 +1319,25 @@ app.get('/api/search', verifyToken, async (req, res) => {
 });
 
 
-  app.get('/api/profile/:id', verifyToken, async (req, res) => {
-    const { id } = req.params;
-    try {
-      const user = await Tupath_usersModel.findById(id) || await Employer_usersModel.findById(id);
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-      res.status(200).json({ success: true, profile: user });
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+app.get('/api/profile/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    }) || await Employer_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-  });
+    res.status(200).json({ success: true, profile: user });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
   
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {

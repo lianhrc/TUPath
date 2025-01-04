@@ -23,6 +23,7 @@ function HeaderHomepage() {
     JSON.parse(localStorage.getItem('recentSearches')) || []
   );
   const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState([]);
 
   // Debounced search function to delay API calls
   const debouncedSearch = _debounce(async (query) => {
@@ -75,6 +76,21 @@ function HeaderHomepage() {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await axiosInstance.get('/api/unread-messages');
+        if (response.data) {
+          setUnreadMessages(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    fetchUnreadMessages();
+  }, []);
+
   const handleSearch = (event) => {
     const query = event.target.value;
     setSearchQuery(query);
@@ -114,6 +130,23 @@ function HeaderHomepage() {
     }
   };
 
+  const handleNotificationClick = async (message) => {
+    // Mark the message as read
+    try {
+      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setUnreadMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== message._id));
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+    }
+
+    // Navigate to the inbox and select the message
+    window.location.href = `/Inboxpage?messageId=${message._id}`;
+  };
+
   const profileImageUrl = profileData.profileImg?.startsWith('/')
     ? `http://localhost:3001${profileData.profileImg}`
     : profileData.profileImg || profileicon;
@@ -121,22 +154,20 @@ function HeaderHomepage() {
   const dropdownVariants = {
     hidden: {
       opacity: 0,
-      scale: 0.9,
-      y: -10,
+      y: -20,
     },
     visible: {
       opacity: 1,
-      scale: 1,
       y: 0,
       transition: {
-        duration: 0.3,
-        ease: 'easeInOut',
+        type: 'spring',
+        stiffness: 300,
+        damping: 15,
       },
     },
     exit: {
       opacity: 0,
-      scale: 0.9,
-      y: -10,
+      y: -20,
       transition: {
         duration: 0.2,
       },
@@ -232,6 +263,9 @@ function HeaderHomepage() {
               </Link>
               <div className="dropdown" onClick={toggleNotifDropdown}>
                 <img src={notificon} alt="Notifications" className="nav-icon" />
+                {unreadMessages.length > 0 && (
+                  <span className="notification-badge">{unreadMessages.length}</span>
+                )}
                 {isNotifOpen && (
                   <motion.div
                     className="dropdown-menu notifications-menu"
@@ -240,7 +274,22 @@ function HeaderHomepage() {
                     animate="visible"
                     exit="exit"
                   >
-                    <h3>Notifications</h3>
+                    <div className="notifdropdownheader">
+                      <h3>Notifications</h3>
+                    </div>
+                    {unreadMessages
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
+                      .map((message, index) => (
+                        <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
+                          <div className="notifitemleft">
+                            <img src={message.sender.profileImg || profileicon} alt={`${message.sender.name}'s profile`} />
+                          </div>
+                          <div className='notifitemright'>
+                            <p><strong>{message.sender.name}</strong></p>
+                            <p>{message.messageContent.text}</p>
+                          </div>
+                        </div>
+                      ))}
                   </motion.div>
                 )}
               </div>

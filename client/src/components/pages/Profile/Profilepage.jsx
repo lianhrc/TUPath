@@ -186,7 +186,14 @@ function ProfilePage() {
                 <div className='profile-section'><h3>Contact Person</h3><p>{profileData.contactPersonName || 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Date of Birth</h3><p>{profileData.dob ? new Date(profileData.dob).toLocaleDateString() : 'Not Available'}</p></div>
                 <div className='profile-section'><h3>Phone Number</h3><p>{profileData.phoneNumber || 'Not Available'}</p></div>
-                <div className='profile-section'><h3>Preferred Roles</h3><p>{profileData.preferredRoles?.join(', ') || 'Not Available'}</p></div>
+                <div className='profile-section'>
+                    <h3>Preferred Roles</h3>
+                    <p>
+                      {Array.isArray(profileData.preferredRoles)
+                        ? profileData.preferredRoles.join(', ')
+                        : 'Not Available'}
+                    </p>
+                  </div>
                 <div className='profile-section'><h3>Internship Opportunities</h3><p>{profileData.internshipOpportunities ? 'Yes' : 'No'}</p></div>
                 <div className='profile-section'>
                 <h3>Preferred Skills</h3>
@@ -216,14 +223,18 @@ function ProfilePage() {
                   </div>
 
                 {/* Display Projects */}
-                  {projects.map((project) => (
+                {projects.length > 0 ? (
+                  projects.map((project) => (
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                       {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
                     </div>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <p>No projects available</p>
+                )}
               </div>
+            </div>
 
                   <div className="achievementscontainer">
                     <h3>My Certificates</h3>
@@ -233,6 +244,16 @@ function ProfilePage() {
                         <p>+</p>
                         <p>Add a Certificate</p>
                       </div>
+                      {/* Display Certificates */}
+                {profileData.certificatePhotos && profileData.certificatePhotos.length > 0 ? (
+                  profileData.certificatePhotos.map((certificate, index) => (
+                    <div key={index} className="project-card">
+                      <img src={`http://localhost:3001${certificate}`} alt="Certificate" />
+                    </div>
+                  ))
+                ) : (
+                  <p>No certificates available</p>
+                )}
                     </div>
                   </div>
                 </div>

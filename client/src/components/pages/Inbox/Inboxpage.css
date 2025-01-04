@@ -98,14 +98,24 @@
 
 .inboxprofilecontainerleft img {
     width: 60px;
+    height: 60px;
+    background: none;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .inboxdetailscontainerright {
-    width: 70%; /* Adjusted to give more space for text */
-    overflow: hidden; /* Hide overflow */
+    width: 70%;
+    overflow: auto;
     display: flex;
-    flex-direction: column; /* Ensure items stack vertically */
+    flex-direction: column;
+   white-space: pre-wrap;
+    overflow-wrap: break-word; 
+    white-space: pre-wrap; /* Preserve spaces and line breaks */
 }
+
+
+
 
 .topdetailscontainer {
     width: 100%;
@@ -254,3 +264,62 @@
     display: flex;
     justify-content: flex-end;
 }
+
+.new-message-section .dropdown {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .new-message-section .dropdown li {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .new-message-section .dropdown li img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .new-message-section .dropdown li:hover {
+    background-color: #f0f0f0;
+  }
+
+
+  .new-message-section .dropdown {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .new-message-section .dropdown li {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .new-message-section .dropdown li img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .new-message-section .dropdown li:hover {
+    background-color: #f0f0f0;
+  }

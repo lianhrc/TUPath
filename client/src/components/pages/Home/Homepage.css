@@ -249,6 +249,60 @@
   color: #333;
 }
 
+.postcontent .postcontenttxtareacontainer input{
+  display: flex;
+  width: 100%;
+  border: none; /* Default border */
+  outline: none;         /* Remove the outline when focused */
+  transition: border 0.3s; /* Smooth transition for border changes */
+  padding: 10px;
+}
+
+.postcontent .postcontenttxtareacontainer textarea{
+  display: flex;
+  width: 100%;
+  border:none; /* Default border */
+  outline: none;         /* Remove the outline when focused */
+  transition: border 0.3s; /* Smooth transition for border changes */
+  padding: 10px;
+}
+.postcontent .postcontenttxtareacontainer textarea:focus{
+  border: none;
+}
+.postcontent .editbuttonpostcontainer{
+  display: flex;
+  gap: 5px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+}
+.editbuttonscontainer{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.editbuttonpostcontainer img{
+  width: 20px;
+  height: 20px;
+  margin-left: 30px;
+}
+.editbuttonpostcontainer .editbuttonscontainer button{
+  width: 60px;
+  border: none;
+  padding: 5px;
+  background:none;
+
+}
+
+.editbuttonpostcontainer .editbuttonscontainer button:hover{
+  background-color: #f0f0f0;
+}
+
 /* Post Image */
 .postimagecontent {
   width: 100%;
