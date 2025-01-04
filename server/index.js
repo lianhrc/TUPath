@@ -11,7 +11,7 @@ const express = require("express");
   const crypto = require("crypto");
   
 
-  require('dotenv').config()
+ require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");
@@ -37,17 +37,17 @@ const express = require("express");
 
 
 
-  //ROUTES
-  app.use('/', adminsignup);
-  app.use('/', adminLogin);
-  app.use('/', questions);
-  app.use('/', userStats);
-  app.use('/', studentTags);
-  
- 
-
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+
+    //ROUTES
+    app.use('/', adminsignup);
+    app.use('/', adminLogin);
+    app.use('/', questions);
+    app.use('/', userStats);
+    app.use('/', studentTags);
+
 
   // Middleware for setting COOP headers
   app.use((req, res, next) => {
@@ -56,14 +56,14 @@ const express = require("express");
     next();
   });
 
-
-//   // MongoDB connection
-//   mongoose
-//     .connect("mongodb://127.0.0.1:27017/tupath_users")
-//     .then(() => console.log("MongoDB connected successfully"))
-//     .catch((err) => console.error("MongoDB connection error:", err));
+/*
+  // MongoDB connection
+   mongoose
+     .connect("mongodb://127.0.0.1:27017/tupath_users")
+     .then(() => console.log("MongoDB connected successfully"))
+    .catch((err) => console.error("MongoDB connection error:", err));
  
-// /*
+ */
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
