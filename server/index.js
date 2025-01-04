@@ -19,6 +19,7 @@ const express = require("express");
   const questions = require("./routes/questions")
   const userStats = require("./routes/userStats")
   const studentTags = require("./routes/studentTags");
+  const users = require("./routes/users");
   
   
 
@@ -42,6 +43,8 @@ const express = require("express");
 
 
     //ROUTES
+   
+    app.use('/', users);
     app.use('/', adminsignup);
     app.use('/', adminLogin);
     app.use('/', questions);
@@ -156,7 +159,7 @@ mongoose.connect(
   
   // Add this endpoint to fetch users
   
-app.get('/api/users', verifyToken, async (req, res) => {
+app.get('/api/userss', verifyToken, async (req, res) => {
   try {
     const students = await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
     const employers = await Employer_usersModel.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
@@ -167,6 +170,7 @@ app.get('/api/users', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
   // REST endpoint to fetch chat messages
   app.get("/api/messages", verifyToken, async (req, res) => {

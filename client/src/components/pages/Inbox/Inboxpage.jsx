@@ -61,7 +61,7 @@ function Inboxpage() {
   }, [location.search]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/users', {
+    fetch('http://localhost:3001/api/userss', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
