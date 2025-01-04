@@ -6,34 +6,15 @@ import axiosInstance from '../../services/axiosInstance';  // Make sure to impor
 const CertUpModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [thumbnail, setThumbnail] = useState(null);
+  const [certName, setCertName] = useState("");
+  const [certDescription, setCertDescription] = useState("");
   const fileInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
 
-
   if (!show) return null;
 
-  // Handle file selection
-  const handleFileChange = async (e) => {
-
-  };
-
-
-
-  // Handle file removal
-  const handleFileRemove = (fileToRemove) => {
-    setSelectedFiles((prevFiles) =>
-      prevFiles.filter((file) => file !== fileToRemove)
-    );
-  };
-
-  // Open file dialog
-  const handleChooseFileClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // Handle submit (open  modal)
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleFileChange = (e) => {
+    setSelectedFiles([...e.target.files]);
   };
 
   const handleThumbnailChange = (e) => {
@@ -43,6 +24,35 @@ const CertUpModal = ({ show, onClose }) => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("CertName", certName);
+    formData.append("CertDescription", certDescription);
+    if (thumbnail) {
+      formData.append("thumbnail", thumbnail);
+    }
+    selectedFiles.forEach((file) => {
+      formData.append("attachments", file);
+    });
+
+    try {
+      const response = await axiosInstance.post("/api/uploadCertificate", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.data.success) {
+        alert("Certificate uploaded successfully");
+        onClose();
+      } else {
+        alert("Failed to upload certificate");
+      }
+    } catch (error) {
+      console.error("Error uploading certificate:", error);
+      alert("An error occurred while uploading the certificate");
+    }
+  };
 
   const modalVariants = {
     hidden: {
@@ -68,71 +78,68 @@ const CertUpModal = ({ show, onClose }) => {
   };
 
   return (
-    <>
-      <div className="ProjectUploadModal-overlay" onClick={onClose}>
-        <motion.div className="ProjectUploadModal-content" onClick={(e) => e.stopPropagation()}
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+    <div className="ProjectUploadModal-overlay" onClick={onClose}>
+      <motion.div
+        className="ProjectUploadModal-content"
+        onClick={(e) => e.stopPropagation()}
+        variants={modalVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        <div className="upheader">
+          <h3>Upload Your Certificate</h3>
+          <button className="projectup-close-btn" onClick={onClose}>x</button>
+        </div>
 
-        >
-          <div className="upheader">
-            <h3>Upload Your Cetificate</h3>
-            <button className="projectup-close-btn" onClick={onClose}>x</button>
+        <form id="projup-form" onSubmit={handleSubmit}>
+          <div className="leftprojup-container">
+            <div className="top">
+              <label>Title:</label>
+              <input type="text" name="CertName" value={certName} onChange={(e) => setCertName(e.target.value)} required />
+            </div>
+            <div className="mid">
+              <label>Description:</label>
+              <textarea name="CertDescription" value={certDescription} onChange={(e) => setCertDescription(e.target.value)} required></textarea>
+            </div>
           </div>
 
-          <form id="projup-form">
-            <div className="leftprojup-container">
-              <div className="top">
-                <label>Title:</label>
-                <input type="text" name="projectName" />
-              </div>
-              <div className="mid">
-                <label>Description:</label>
-                <textarea name="description"></textarea>
-              </div>
-            </div>
-
-            <div className="rightprojup-container">
+          <div className="rightprojup-container">
             <label>Thumbnail:</label>
             <div className="thumbnail-container">
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png"
-                  ref={thumbnailInputRef}
-                  onChange={handleThumbnailChange}
-                />
-                {thumbnail && (
-                  <div className="thumbnail-preview">
-                    <img
-                      src={URL.createObjectURL(thumbnail)}
-                      alt="Thumbnail Preview"
-                      width={60}
-                      height={60}
-                    />
-                  </div>
-                )}
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                ref={thumbnailInputRef}
+                onChange={handleThumbnailChange}
+              />
+              {thumbnail && (
+                <div className="thumbnail-preview">
+                  <img
+                    src={URL.createObjectURL(thumbnail)}
+                    alt="Thumbnail Preview"
+                    width={60}
+                    height={60}
+                  />
+                </div>
+              )}
             </div>
             <label>Attach Files:</label>
             <input
               type="file"
               multiple
-              accept=".zip,.rar,.pdf,.docx,.jpg,.png"
+              accept=".jpg,.jpeg,.png,.pdf,.docx,.txt"
+              ref={fileInputRef}
+              onChange={handleFileChange}
             />
-
-        
           </div>
-          </form>
 
           <div className="submit-btn-container">
-            <button type="submit" >Submit</button>
+            <button type="submit">Submit</button>
           </div>
-        </motion.div>
-      </div>
-
-     
-    </>
+        </form>
+      </motion.div>
+    </div>
   );
 };
 
