@@ -88,12 +88,8 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
   return (
     <div className="projprev-overlay">
       <div className="projprev-content">
-        <div className="projprevheader">
-          <h3>{project.Certificate.CertName}</h3>
-        </div>
 
-        <div className="projprevcontentmain">
-          <p>{project.Certificate.CertDescription}</p>
+      <div className="projprevheader">
           {project.Certificate.CertThumbnail && (
             <img
               src={`http://localhost:3001${project.Certificate.CertThumbnail}`}
@@ -101,17 +97,33 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
               className="certificate-thumbnail"
             />
           )}
-          <div className="attachments">
-            <h4>Attachments:</h4>
-            {project.Certificate.Attachments.length > 0 ? (
-              project.Certificate.Attachments.map((attachment, index) => (
-                <a key={index} href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
-                  {getFileName(attachment)}
-                </a>
-              ))
-            ) : (
-              <p>No attachments available</p>
-            )}
+    </div>
+
+        <div className="projprevcontentmain">
+
+        <div className="projprev-left">
+             <h3>{project.Certificate.CertName}</h3>
+             <p className='projdesccontainer'><strong>{project.Certificate.CertDescription}</strong></p>
+
+          </div>
+
+          <div className="projprev-right">
+          <h6>Attachments:</h6>
+           
+          <div className="projpreviewfiles">
+          {project.Certificate.Attachments.length > 0 ? (
+            project.Certificate.Attachments.map((attachment, index) => (
+              <a key={index} href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
+                {getFileName(attachment)}
+              </a>
+            ))
+          ) : (
+            <p>No attachments available</p>
+          )}
+
+        </div>
+         
+           
           </div>
         </div>
 

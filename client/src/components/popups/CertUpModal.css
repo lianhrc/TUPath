@@ -1,0 +1,24 @@
+
+
+
+
+
+.projprev-right a{
+  color: black;
+  font-weight: normal;
+text-decoration: none;
+  }
+
+  .projprev-right a:hover{
+    color: blue;
+  }
+
+
+  #certup-form {
+    display: flex;
+    flex-direction: row;    
+    gap: 20px;
+    height: calc(100% - 70px); /* Adjust height to account for the submit button */
+    padding: 20px;
+    overflow-y: auto; /* Allow vertical scrolling if content overflows */
+}

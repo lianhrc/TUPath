@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './CertUpModal.css';
+import { toast } from "react-toastify"; // Import toastify
+import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
+
 import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
 
 const CertUpModal = ({ show, onClose }) => {
@@ -10,6 +13,7 @@ const CertUpModal = ({ show, onClose }) => {
   const [certDescription, setCertDescription] = useState("");
   const fileInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
+  const [newCertificate, setNewCertificate] = useState(null);
 
   if (!show) return null;
 
@@ -43,14 +47,29 @@ const CertUpModal = ({ show, onClose }) => {
         },
       });
       if (response.data.success) {
-        alert("Certificate uploaded successfully");
+        toast.success("Certificate uploaded successfully", {
+          position: "top-center",
+          autoClose: 3000, // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
         onClose();
       } else {
-        alert("Failed to upload certificate");
+        toast.error("Failed to upload certificate", {
+          position: "top-center",
+          autoClose: 3000, // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
       }
     } catch (error) {
       console.error("Error uploading certificate:", error);
-      alert(`An error occurred while uploading the certificate: ${error.response?.data?.message || error.message}`);
+      toast.error(`${error.response?.data?.message || error.message}`, {
+        position: "top-center",
+        autoClose: 3000, // Toast will disappear in 3 seconds
+        hideProgressBar: false,
+        theme: "light",
+      });
     }
   };
 
@@ -92,7 +111,7 @@ const CertUpModal = ({ show, onClose }) => {
           <button className="projectup-close-btn" onClick={onClose}>x</button>
         </div>
 
-        <form id="projup-form" onSubmit={handleSubmit}>
+        <form id="certup-form">
           <div className="leftprojup-container">
             <div className="top">
               <label>Title:</label>
@@ -134,10 +153,10 @@ const CertUpModal = ({ show, onClose }) => {
             />
           </div>
 
+          </form>
           <div className="submit-btn-container">
-            <button type="submit">Submit</button>
+            <button type="submit" onClick={handleSubmit}>Submit</button>
           </div>
-        </form>
       </motion.div>
     </div>
   );
