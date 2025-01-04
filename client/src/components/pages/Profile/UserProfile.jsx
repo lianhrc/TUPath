@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
+import ProjectPreviewModal from '../../popups/ProjectPreviewModal';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
@@ -12,7 +13,11 @@ function UserProfile() {
   const { id } = useParams(); // Extract the user ID from the URL
   const [profile, setProfile] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+
   const [isLoading, setIsLoading] = useState(true);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -173,18 +178,30 @@ function UserProfile() {
           <div className="userproject-section">
             <h3>My Projects</h3>
             <div className="projects-grid">
-              {projects.map((project) => (
-                <div key={project._id} className="project-card">
-                  <img
-                    src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
-                    alt={project.projectName}
-                  />
-                  <p>{project.projectName}</p>
-                </div>
-              ))}
+            {projects.map((project) => (
+              <div
+                key={project._id}
+                className="project-card"
+                onClick={() => {
+                  setSelectedProject(project);
+                  setShowPreviewModal(true); // Open the modal
+                }}
+              >
+                <img
+                  src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
+                  alt={project.projectName}
+                />
+                <p>{project.projectName}</p>
+              </div>
+            ))}
+            
             </div>
           </div>
         )}
+
+
+        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} />
+
       </div>
     </div>
   );

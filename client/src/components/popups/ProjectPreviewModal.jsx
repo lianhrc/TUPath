@@ -154,30 +154,8 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
           </div>
         </div>
 
-        <div className="project-assessment-details">
-          <h4>Assessment Details:</h4>
-          {project.assessment && project.assessment.length > 0 ? (
-            project.assessment.map((item, index) => (
-              <div key={index} className="assessment-item">
-                <p><strong>Question:</strong> {item.question.text}</p>
-                <p><strong>Rating:</strong> {item.rating} / 5</p>
-                <p><strong>Score:</strong> {item.weightedScore} points</p>
-                <div className="assessment-rating-stars">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span
-                      key={i}
-                      className={`star ${i < item.rating ? "filled" : ""}`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>No assessment data available.</p>
-          )}
-        </div>
+ 
+        
 
         <div className="div">
           <button className="delete-btn" onClick={handleDelete}>Delete</button>

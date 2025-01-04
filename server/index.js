@@ -11,7 +11,7 @@ const express = require("express");
   const crypto = require("crypto");
   
 
-  //require('dotenv').config()
+  require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");

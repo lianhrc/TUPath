@@ -228,7 +228,6 @@ function ProfilePage() {
                     <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                       {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
                       <p>{project.projectName}</p>
-                      <p>Rating: {project.totalScore}</p> {/* Display the user rating */}
                     </div>
                   ))
                 ) : (
