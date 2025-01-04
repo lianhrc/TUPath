@@ -9,7 +9,20 @@ const express = require("express");
   const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
-  require('dotenv').config()
+ // require('dotenv').config()
+
+
+
+ const users = require("./routes/users");
+  const adminsignup = require("./routes/adminsignup");
+  const adminLogin = require("./routes/adminLogin");
+  const questions = require("./routes/questions")
+  const userStats = require("./routes/userStats")
+  const studentTags = require("./routes/studentTags");
+
+
+
+ const uploadproject = require('./routes/uploadproject');
 
   const JWT_SECRET = "your-secret-key";
   const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -35,21 +48,34 @@ const express = require("express");
     next();
   });
 
-/*
+
+  app.use('/api', uploadproject);
+  app.use('/', users );
+  app.use('/', adminsignup);
+  app.use('/', adminLogin);
+  app.use('/', questions);
+  app.use('/', userStats);
+  app.use('/', studentTags);
+  
+
+
+
+
   // MongoDB connection
   mongoose
     .connect("mongodb://127.0.0.1:27017/tupath_users")
     .then(() => console.log("MongoDB connected successfully"))
     .catch((err) => console.error("MongoDB connection error:", err));
- */
-
+ 
+/*
 // MongoDB connection
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
+  
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
+*/
     // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -64,7 +90,7 @@ mongoose.connect(
       storage: storage,
       limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
     });
-    
+  
 
   // JWT verification middleware
   // JWT verification middleware with added debugging and error handling
@@ -988,7 +1014,7 @@ const Post = mongoose.model("Post", postSchema);
   });
   
 
-
+/*
   app.post(
     "/api/uploadProject",
     verifyToken,
@@ -1113,7 +1139,7 @@ const Post = mongoose.model("Post", postSchema);
       }
     }
   );
-  
+  */
   
   
   
