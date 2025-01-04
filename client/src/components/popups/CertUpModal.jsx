@@ -39,7 +39,7 @@ const CertUpModal = ({ show, onClose }) => {
     selectedFiles.forEach((file) => {
       formData.append("attachments", file);
     });
-
+  
     try {
       const response = await axiosInstance.post("/api/uploadCertificate", formData, {
         headers: {
@@ -49,15 +49,15 @@ const CertUpModal = ({ show, onClose }) => {
       if (response.data.success) {
         toast.success("Certificate uploaded successfully", {
           position: "top-center",
-          autoClose: 3000, // Toast will disappear in 3 seconds
+          autoClose: 3000,
           hideProgressBar: false,
           theme: "light",
         });
-        onClose();
+        onClose();  // Close the modal and trigger parent state update
       } else {
         toast.error("Failed to upload certificate", {
           position: "top-center",
-          autoClose: 3000, // Toast will disappear in 3 seconds
+          autoClose: 3000,
           hideProgressBar: false,
           theme: "light",
         });
@@ -66,12 +66,13 @@ const CertUpModal = ({ show, onClose }) => {
       console.error("Error uploading certificate:", error);
       toast.error(`${error.response?.data?.message || error.message}`, {
         position: "top-center",
-        autoClose: 3000, // Toast will disappear in 3 seconds
+        autoClose: 3000,
         hideProgressBar: false,
         theme: "light",
       });
     }
   };
+  
 
   const modalVariants = {
     hidden: {

@@ -32,6 +32,7 @@ function ProfilePage() {
   const addCertificateToState = (newCertificate) => {
     setCertificates((prevCertificates) => [...prevCertificates, newCertificate]);
   };
+  
 
   // Modals
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -344,7 +345,18 @@ function ProfilePage() {
           }}
         />
 
-        <CertUpModal show={certificatesModalOpen} onClose={() => setCertificatesModalOpen(false)} onCertificateUpload={addCertificateToState} />
+        <CertUpModal
+        show={certificatesModalOpen}
+        onClose={() => setCertificatesModalOpen(false)}
+        onCertificateUpload={(newCertificate) => {
+          // Add the new certificate to the state to update the UI
+          addCertificateToState(newCertificate);
+          // Close the modal
+          setCertificatesModalOpen(false);
+          toast.success('Certificate uploaded successfully!'); // Optionally display success toast
+        }}
+      />
+      
         <MessagePop />
       </div>
     </div>

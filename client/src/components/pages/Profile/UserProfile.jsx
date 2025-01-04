@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
-import ProjectPreviewModal from '../../popups/ProjectPreviewModal';
+import ProjectPreviewModal2 from '../../popups/ProjectPreviewModal2';
+import CertPreviewModal from '../../popups/CertPreviewModal';
+
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
@@ -10,15 +12,17 @@ import since from '../../../assets/since.png';
 import Loader from '../../common/Loader';
 
 function UserProfile() {
-  const { id } = useParams(); // Extract the user ID from the URL
+  const { id } = useParams();
   const [profile, setProfile] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [showProjectPreviewModal, setShowProjectPreviewModal] = useState(false);
+  const [showCertPreviewModal, setShowCertPreviewModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-
+  // Fetch profile, projects, and certificates
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -26,6 +30,7 @@ function UserProfile() {
         if (response.data.success) {
           setProfile(response.data.profile);
           setProjects(response.data.profile.profileDetails?.projects || []);
+          setCertificates(response.data.profile.profileDetails?.certificates || []);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -178,29 +183,59 @@ function UserProfile() {
           <div className="userproject-section">
             <h3>My Projects</h3>
             <div className="projects-grid">
-            {projects.map((project) => (
-              <div
-                key={project._id}
-                className="project-card"
-                onClick={() => {
-                  setSelectedProject(project);
-                  setShowPreviewModal(true); // Open the modal
-                }}
-              >
-                <img
-                  src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
-                  alt={project.projectName}
-                />
-                <p>{project.projectName}</p>
-              </div>
-            ))}
-            
+              {projects.map((project) => (
+                <div
+                  key={project._id}
+                  className="project-card"
+                  onClick={() => {
+                    setSelectedProject(project);
+                    setShowProjectPreviewModal(true); // Open the modal for projects
+                  }}
+                >
+                  <img
+                    src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
+                    alt={project.projectName}
+                  />
+                  <p>{project.projectName}</p>
+                </div>
+              ))}
             </div>
+
+              <h3>My Certificates</h3>
+              <div className="projects-grid">
+              {certificates && certificates.length > 0 ? (
+                <div className="projects-grid">
+                  {certificates.map((certificate) => (
+                    <div
+                      key={certificate._id}
+                      className="project-card"
+                      onClick={() => {
+                        setSelectedCertificate(certificate);
+                        setShowCertPreviewModal(true);
+                      }}
+                    >
+                      {certificate.Certificate?.CertThumbnail && (
+                        <img
+                          src={`http://localhost:3001${certificate.Certificate.CertThumbnail}`}
+                          alt="Certificate Thumbnail"
+                          className="certificate-thumbnail"
+                        />
+                      )}
+                      <p>{certificate.Certificate?.CertName || 'No Name Available'}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No certificates available</p>
+              )}
+              
+              </div>
           </div>
         )}
 
-
-        <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} />
+        {/* Modals */}
+        <ProjectPreviewModal2 show={showProjectPreviewModal} onClose={() => setShowProjectPreviewModal(false)} project={selectedProject} />
+        <CertPreviewModal show={showCertPreviewModal} onClose={() => setShowCertPreviewModal(false)} certificate={selectedCertificate} /> {/* Update to use the correct state */}
 
       </div>
     </div>
