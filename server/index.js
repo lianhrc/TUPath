@@ -592,6 +592,82 @@ const Post = mongoose.model("Post", postSchema);
     });
   });
 
+
+// Student Certificate Schema
+const StudentCert = new mongoose.Schema({
+  StudId: { type: String, required: true }, // Unique identifier for the student
+  StudName: { type: String, required: true }, // Full name of the student
+  timestamp: { type: Date, default: Date.now }, // Record creation timestamp
+  Certificate: {
+    CertName: { type: String, required: true }, // Name/title of the certificate
+    CertDescription: { type: String, required: true }, // Detailed description of the certificate
+    CertThumbnail: { type: String, default: "" }, // URL or path to the certificate thumbnail
+    Attachments: [{ 
+      type: String, 
+      validate: {
+        validator: function (v) {
+          // Ensure each attachment has an allowed file extension
+          const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
+          return allowedExtensions.test(v);
+        },
+        message: "Attachments must be valid file URLs with extensions jpg, jpeg, png, pdf, docx, or txt.",
+      },
+    }],
+  },
+});
+
+const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
+
+// Endpoint to handle certificate uploads
+app.post("/api/uploadCertificate", verifyToken, upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "attachments", maxCount: 10 }
+]), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userName = req.user.name; // Ensure user name is extracted from the token
+    const { CertName, CertDescription } = req.body;
+
+    if (!CertName || !CertDescription) {
+      return res.status(400).json({ success: false, message: "Certificate name and description are required." });
+    }
+
+    const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : "";
+    const attachments = req.files["attachments"] ? req.files["attachments"].map(file => `/uploads/${file.filename}`) : [];
+
+    const newCertificate = new StudentCertificate({
+      StudId: userId,
+      StudName: userName, // Use the extracted user name
+      Certificate: {
+        CertName,
+        CertDescription,
+        CertThumbnail: thumbnail,
+        Attachments: attachments,
+      },
+    });
+
+    await newCertificate.save();
+
+    res.status(201).json({ success: true, message: "Certificate uploaded successfully", certificate: newCertificate });
+  } catch (error) {
+    console.error("Error uploading certificate:", error);
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+});
+
+// Endpoint to fetch certificates for a user
+app.get('/api/certificates', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const certificates = await StudentCertificate.find({ StudId: userId });
+    res.status(200).json({ success: true, certificates });
+  } catch (error) {
+    console.error('Error fetching certificates:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
   // Login endpoint
   app.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
