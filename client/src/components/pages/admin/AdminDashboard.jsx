@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing icons
 import { Pie, Bar } from 'react-chartjs-2';
+import tupicon from '../../../assets/logo.png';
+import irjpicon from '../../../assets/irjplogo.png';
+import StudentListModal from '../../popups/StudentListModal';
+
 import {
   Chart as ChartJS,
   Title,
@@ -15,7 +19,6 @@ import {
 import axiosInstance from '../../../services/axiosInstance';
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
-import StudentListModal from '../../popups/StudentListModal';
 
 
 
@@ -26,9 +29,15 @@ const AdminDashboard = () => {
     <div className="admin-dashboard-container">
       {/* Sidebar */}
       <div className="adminsidebar">
-        <nav>
+     
+      <nav>
+        <div className="imgcontaineradmin">
+            <img src={tupicon} alt="" />
+            <img src={irjpicon} alt="" />
+        </div>
           <ul>
             <li
+            
               onClick={() => setActiveSection('Users')}
               className={activeSection === 'Users' ? 'active' : ''}
             >
@@ -109,6 +118,8 @@ const UsersSection = () => {
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Contact</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -119,6 +130,8 @@ const UsersSection = () => {
                 <tr key={index}>
                   <td>{`${firstName} ${lastName}`}</td>
                   <td>{user?.email || 'N/A'}</td>
+                  <td>{user?.contact || 'N/A'}</td>
+                  <td><button className='delete-btn'>Delete</button></td>
                 </tr>
               );
             })}
@@ -134,6 +147,7 @@ const UsersSection = () => {
             <th>Company Name</th>
             <th>Email</th>
             <th>Contact</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -145,6 +159,8 @@ const UsersSection = () => {
                 <td>{companyName}</td>
                 <td>{user?.email || 'N/A'}</td>
                 <td>{contact}</td>
+                <td><button className='delete-btn'>Delete</button></td>
+
               </tr>
             );
           })}
@@ -277,7 +293,7 @@ const TagChart = () => {
   };
 
   return (
-      <div>
+      <div className="usersadminsection" >
           <h2>Students Excelling in Different Tags</h2>
           {loading ? (
               <p>Loading...</p>
