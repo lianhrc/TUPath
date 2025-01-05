@@ -53,10 +53,10 @@ function ProfilePage() {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
           // Ensure both profileDetails and projects are set correctly
-          const { projects, ...profileWithoutProjects } = profileDetails;
+          const { projects, certificates, ...profileWithoutProjectsAndCertificates } = profileDetails;
 
           setProfileData({
-            ...profileWithoutProjects,
+            ...profileWithoutProjectsAndCertificates,
             createdAt,
             email,
             softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
@@ -65,8 +65,9 @@ function ProfilePage() {
           setUserRole(role);
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
 
-          // Ensure that projects are also set correctly
+          // Ensure that projects and certificates are also set correctly
           setProjects(profileDetails?.projects || []); // Set projects if available
+          setCertificates(certificates || []); // Set certificates if available
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -75,19 +76,7 @@ function ProfilePage() {
       }
     };
 
-    const fetchCertificates = async () => {
-      try {
-        const response = await axiosInstance.get('/api/certificates');
-        if (response.data.success) {
-          setCertificates(response.data.certificates);
-        }
-      } catch (error) {
-        console.error('Error fetching certificates:', error);
-      }
-    };
-
     fetchProfileData();
-    fetchCertificates();
   }, [userRole]); // Re-fetch if userRole changes
 
   if (loading) {
@@ -270,7 +259,7 @@ function ProfilePage() {
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
-                    <div key={cert._id} className="project-card" onClick={() => { setSelectedProject(cert); setshowcertPreviewModal(true); }}>
+                    <div key={cert._id} className="project-card" onClick={() => { setselectedCert(cert); setshowcertPreviewModal(true); }}>
                       {cert.Certificate.CertThumbnail && (
                         <img
                           src={`http://localhost:3001${cert.Certificate.CertThumbnail}`}
@@ -333,7 +322,7 @@ function ProfilePage() {
       />
 
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
-        <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedProject} onDelete={deleteCertificate} />
+        <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedCert} onDelete={deleteCertificate} />
         <GenericModal
           show={skillsModalOpen}
           onClose={() => setSkillsModalOpen(false)}
