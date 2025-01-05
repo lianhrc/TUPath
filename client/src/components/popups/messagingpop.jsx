@@ -136,7 +136,7 @@ const MessagingPop = () => {
       <button className="message-toggle" onClick={togglePopup}>
         <div>
           <img src={profileImageUrl} alt="Profile" />
-          Messaging
+          Email
         </div>
         <img
           className="writeicon"
@@ -172,11 +172,11 @@ const MessagingPop = () => {
                 </div>
               ))
           ) : (
-            <p>No new messages.</p>
+            <p>No new Email.</p>
           )}
 
             <div className="allmessage">
-              <h4>All Messages</h4>
+              <h4>All Email</h4>
               {messages.length > 0 ? (
                 messages
                   .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
@@ -201,7 +201,7 @@ const MessagingPop = () => {
                     </div>
                   ))
               ) : (
-                <p>No messages available.</p>
+                <p>No Email available.</p>
               )}
             </div>
         </div>
