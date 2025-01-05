@@ -23,30 +23,20 @@ function Inboxpage() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const [receivedResponse, sentResponse] = await Promise.all([
-          fetch('http://localhost:3001/api/messages', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          }),
-          fetch('http://localhost:3001/api/sent-messages', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          })
-        ]);
+        const response = await fetch('http://localhost:3001/api/messages', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
 
-        const receivedMessages = await receivedResponse.json();
-        const sentMessages = await sentResponse.json();
+        const messages = await response.json();
+        setMessages(messages);
 
-        const allMessages = [...receivedMessages, ...sentMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setMessages(allMessages);
-
-        // Select the message based on the query parameter.
+        // Select the message based on the query parameter
         const queryParams = new URLSearchParams(location.search);
         const messageId = queryParams.get('messageId');
         if (messageId) {
-          const message = allMessages.find(msg => msg._id === messageId);
+          const message = messages.find(msg => msg._id === messageId);
           if (message) {
             setSelectedMessage(message);
           }
@@ -222,27 +212,27 @@ function Inboxpage() {
           <div className="inboxmain-left">
             <div className="inboxlists">
               {messages.map((message, index) => {
-                const isSender = message.sender.senderId === localStorage.getItem('userId');
-                const profileImg = isSender ? message.receiver.profileImg : message.sender.profileImg;
-                const name = isSender ? message.receiver.name : message.sender.name;
-                const text = message.messageContent?.text || ''; // Ensure messageContent is defined
+                const isSentMessage = message.direction === 'sent';
+                const displayName = isSentMessage ? message.receiver.name : message.sender.name;
+                const profileImg = isSentMessage ? message.receiver.profileImg : message.sender.profileImg;
+                const text = message.messageContent?.text || '';
 
                 return (
                   <div
                     key={index}
-                    className="inboxlist-container"
+                    className={`inboxlist-container ${message.direction}`}
                     onClick={() => handleSelectMessage(message)}
                   >
                     <div className="inboxprofilecontainerleft">
-                      <img src={profileImg || profileicon} alt={`${name}'s profile`} />
+                      <img src={profileImg || profileicon} alt={`${displayName}'s profile`} />
                     </div>
                     <div className="inboxdetailscontainerright">
                       <div className="topdetailscontainer">
-                        <h5>{name}</h5> {/* Display the name */}
+                        <h5>{message.direction === 'sent' ? 'To:' : 'From:'} {displayName}</h5>
                         <p>{new Date(message.timestamp).toLocaleDateString()}</p>
                       </div>
                       <div className="bottomdetailscontainer">
-                         <p className="text-content">{text}</p>
+                        <p className="text-content">{text}</p>
                       </div>
                     </div>
                   </div>

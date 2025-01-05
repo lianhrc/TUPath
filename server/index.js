@@ -155,6 +155,7 @@ mongoose.connect(
       delivered: { type: Boolean, default: false },
     },
     timestamp: { type: Date, default: Date.now },
+    direction: { type: String, enum: ['sent', 'received'], required: true }, // Add direction field
   });
   
   // Add indexes for optimization
@@ -185,22 +186,25 @@ app.get('/api/userss', verifyToken, async (req, res) => {
 app.get("/api/messages", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
-    res.json(messages);
+    const messages = await Message.find({
+      $or: [
+        { "sender.senderId": userId },
+        { "receiver.receiverId": userId }
+      ]
+    }).sort({ timestamp: -1 });
+
+    // Transform messages to add correct direction for each user
+    const transformedMessages = messages.map(msg => {
+      const isSender = msg.sender.senderId === userId;
+      return {
+        ...msg.toObject(),
+        direction: isSender ? 'sent' : 'received'
+      };
+    });
+
+    res.json(transformedMessages);
   } catch (err) {
     console.error("Error fetching messages:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// REST endpoint to fetch sent messages
-app.get("/api/sent-messages", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ "sender.senderId": userId }).sort({ timestamp: 1 });
-    res.json(messages);
-  } catch (err) {
-    console.error("Error fetching sent messages:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
@@ -538,8 +542,6 @@ const Post = mongoose.model("Post", postSchema);
 
   // Socket.IO events for real-time chat and certificates
   io.on("connection", (socket) => {
-    // console.log(`User connected: ${socket.id}`);
-
     socket.on("send_message", async (data) => {
       try {
         const token = data.token; // Extract token from the data
@@ -564,30 +566,39 @@ const Post = mongoose.model("Post", postSchema);
             return;
           }
   
+          // Create a single message with direction
           const message = new Message({
             sender: {
               senderId: userId,
-              name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              name: `${senderUser.profileDetails.firstName} ${senderUser.profileDetails.lastName}`,
               profileImg: senderUser.profileDetails.profileImg,
             },
             receiver: {
               receiverId: data.receiverId,
-              name: data.receiverName, // Use receiverName instead of receiver
+              name: data.receiverName,
               profileImg: data.receiverProfileImg,
             },
             messageContent: {
-              text: data.messageContent.text, // Ensure text is included in messageContent
+              text: data.messageContent.text,
               attachments: data.messageContent.attachments || [],
             },
             status: {
               read: false,
               delivered: true,
             },
-            timestamp: data.timestamp,
+            timestamp: new Date(),
+            direction: 'sent'
           });
           await message.save();
-          socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
-          io.emit("new_message", message); // Emit to all clients
+  
+          // Only emit to the specific receiver
+          socket.to(data.receiverId).emit("receive_message", {
+            ...message.toObject(),
+            direction: 'received'
+          });
+
+          // Send confirmation back to sender
+          socket.emit("message_sent", message);
         });
       } catch (err) {
         console.error("Error saving message:", err);
@@ -595,10 +606,9 @@ const Post = mongoose.model("Post", postSchema);
     });
   
     socket.on("disconnect", () => {
-     // console.log(`User disconnected: ${socket.id}`);
+      // console.log(`User disconnected: ${socket.id}`);
     });
-  });
-
+  }); // Add this closing bracket
 
 // Student Certificate Schema
 const StudentCert = new mongoose.Schema({
