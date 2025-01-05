@@ -418,13 +418,13 @@ const Homepage = () => {
       <div className="content-container">
         <aside className="sidebar">
           <div className="profile">
-            <img src={profileImageUrl} alt="Profile Icon" />
-            <h2>{`${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim()}</h2>
+            <img onClick={() => navigate('/Profile')} src={profileImageUrl} alt="Profile Icon" style={{ cursor: 'pointer' }} />
+            <h2 onClick={() => navigate('/Profile')} style={{ cursor: 'pointer' }}>{`${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + '.' : ''} ${profileData.lastName}`.trim()}</h2>
             <p>{profileData.studentId}</p>
             <p>{profileData.department || profileData.industry}</p>
             <p>{profileData.yearLevel || profileData.position }</p>
             <p>{profileData.address}</p>
-          </div>
+          </div> 
         </aside>
         <main className="feed">
       
