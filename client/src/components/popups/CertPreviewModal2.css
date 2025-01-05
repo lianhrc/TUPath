@@ -1,0 +1,296 @@
+/* Overlay for the modal */
+.projprev-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Modal content wrapper */
+  .projprev-content {
+    background-color: white;
+    border-radius: 10px;
+    max-width: 1000px;
+    width: 100%;
+    font-weight: lighter;
+    height: 78vh;
+    overflow: auto;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Hide scrollbar */
+  .projprev-content::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Header section with the project thumbnail */
+  .projprevheader {
+    width: 100%;
+    height: 450px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .projprevheader img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  /* Main content area with flex layout */
+  .projprevcontentmain {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 20px 20px ;
+    align-items: flex-start; /* Ensure top alignment */
+  }
+  
+  /* Left side of the content */
+  .projprev-left {
+    
+    flex: 1;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    overflow: hidden;  /* Ensure no overflow occurs */
+    word-wrap: break-word;  /* Ensure long words break and wrap properly */
+  }
+  
+  .projprev-left p {
+    word-wrap: break-word;  /* Make sure long words break properly */
+    overflow-wrap: break-word;  /* Additional property for better compatibility */
+    margin: 0;  /* Remove any default margins */
+  }
+  
+  .projprev-left .projdesccontainer{
+    margin-bottom: 20px;
+  }
+  
+  .projprev-left h2{
+    margin-bottom: 30px;
+  }
+  
+  .projprevtools{
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: 10px 0px;
+  }
+  /* Right side of the content */
+  .projprev-right {
+    
+    flex: 0.8;
+    margin-top: 90px;
+    padding: 20px;
+    border-left: 1px solid rgb(222, 222, 222);
+    height: auto; /* Ensures the height adjusts based on content */
+    overflow: hidden; /* Ensures any overflowing content is hidden */
+  }
+  
+  .project-assessment-details{
+    padding: 20px;
+    color: black;
+  }
+  
+  
+  .project-assessment-details h4 {
+    font-size: 12px;
+  }
+  
+  
+  .project-assessment-details p,
+  .project-assessment-details .assessment-rating-stars p,
+  .project-assessment-details  .assessment-item p{
+    color: black;
+    font-weight: normal;
+  }
+  
+  .projprev-right p{
+    display: inline-block;
+    background-color: #9D0E0F;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px; /* Rounded border */
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap; /* Prevents text from wrapping */
+  }
+  
+  .projprevtags{
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: 10px 0px;
+    font-weight: normal;
+  }
+  
+  .projprev-right h6{
+    font-size: 10px;
+    font-weight: light;
+  }
+  
+  .projprev-status{
+    position: absolute;
+    top: 5%; /* Adjust this value to control the position outside the card */
+    right: 0; /* Adjust this value to control the position outside the card */
+    background-color: #faeed7; /* Bright color for visibility */
+    color: rgb(255, 123, 0);
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    font-size: 10px;
+    padding: 5px 15px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .projprev-status:hover {
+    cursor: pointer;
+    background-color: #fae4b9; /* Bright color for visibility */
+    color: rgb(255, 123, 0);
+    transform: scale(1.1); /* Slight scale effect on hover */
+    transition: transform 0.2s ease, background-color 0.2s ease; /* Animation for scale and background change */
+  }
+  .projpreviewfiles {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;  
+    margin-top: 20px;
+    height: auto;
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  
+  /* Individual file items */
+  .projpreviewfiles p {
+    font-size: 12px;
+    border: 1px solid rgb(231, 231, 231);
+    font-weight: 400;
+    color: #333;
+    background: none;
+    background-color: #f9f9f9;  /* Light background color for clarity */
+    width: 100%;
+    cursor: pointer;
+    white-space: nowrap; /* Prevents text from wrapping */
+    border-radius: 5px;  /* Slightly rounded corners for each file item */
+    transition: background-color 0.3s;  /* Smooth transition for hover effect */
+    overflow-x: hidden;
+  }
+  
+  /* Hover effect for file items */
+  .projpreviewfiles p:hover {
+    background-color: #fbe4e4;
+    font-weight: bold;  /* Make the text bold on hover */
+  }
+  
+  
+  /* Buttons container */
+  .div {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 20px;
+  }
+  
+  /* Delete and Close button styling */
+  .close-btn,
+  .delete-btn {
+    background-color: #9D0E0F;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 80px;
+    transition: background-color 0.3s;
+  }
+  
+  /* Button hover effect */
+  .close-btn:hover,
+  .delete-btn:hover {
+    background-color: darkred;
+  }
+  
+  /* Specific positioning for the buttons */
+  .close-btn {
+    position: relative;
+  }
+  
+  .delete-btn {
+    margin-right: 20px;
+  }
+  .projprev-left a{
+    color: black;
+    font-weight: bold;
+  }
+  .projprev-left a:hover {
+    color: tomato; /* Replace with your hover color */
+    text-decoration: underline; /* Optional: Adds underline on hover */
+  }
+  
+  /* Extra styling for responsive design */
+  @media (max-width: 768px) {
+    .projprevcontentmain {
+        flex-direction: column;
+    }
+  
+    .projprev-left,
+    .projprev-right {
+        flex: 1 1 100%;
+        margin-bottom: 15px;
+    }
+  
+    .close-btn, .delete-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+  }
+  
+  
+  .tag-container,
+  .tool-container {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: wrap;   /* Allow wrapping when content exceeds available space */
+    gap: 10px;         /* Space between items */
+    width: 100%;       /* Ensure they use the full width of their container */
+  }
+  
+  .tag-item,
+  .tool-item,
+  .role-item {
+    padding: 8px 15px;
+    border-radius: 20px;
+    background-color: #9D0E0F;
+    color: white;
+    font-size: 12px;
+    font-weight: normal;
+    white-space: nowrap;  /* Prevent breaking of text within the element */
+    overflow-wrap: break-word;   /* Break long words */
+    word-wrap: break-word;   /* Wrap words if needed */
+    display: inline-flex;   /* Make each tag/tool an inline-flex item */
+    justify-content: center;  /* Center the content inside */
+    align-items: center;      /* Vertically center content */
+    margin-right: 8px;        /* Space between items */
+    margin-bottom: 8px;       /* Space between items in a new row */
+  }
+  
+  
