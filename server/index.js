@@ -34,7 +34,7 @@ const express = require("express");
   const path = require("path");
 
   // Middleware setup
-  app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
+  app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
@@ -62,6 +62,8 @@ const express = require("express");
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // Added CORP header
     next();
   });
+  const cookieParser = require('cookie-parser'); //start to delete this line if trial and error
+  app.use(cookieParser());
 
 
    // MongoDB connection
