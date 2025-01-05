@@ -9,7 +9,10 @@ import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import Loader from '../common/Loader';
 import _debounce from 'lodash.debounce';
+import { io } from 'socket.io-client';
 import './headerhomepage.css';
+
+const socket = io('http://localhost:3001');
 
 function HeaderHomepage() {
   const [isNotifOpen, setNotifOpen] = useState(false);
@@ -89,6 +92,32 @@ function HeaderHomepage() {
     };
 
     fetchUnreadMessages();
+  }, []);
+
+  useEffect(() => {
+    socket.on('receive_message', (message) => {
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('new_message', (message) => {
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('message_read', ({ messageId }) => {
+      setUnreadMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== messageId)
+      );
+    });
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('new_message');
+      socket.off('message_read');
+    };
   }, []);
 
   const handleSearch = (event) => {

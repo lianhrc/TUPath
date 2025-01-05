@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import './messagingpop.css';
 import writemessage from '../../assets/writemessage.png'; // Replace with actual icon path
 import profileicon from '../../assets/profileicon.png'; // Replace with actual icon path
 import NewMessageModal from './NewMessageModal'; // Import the new modal component
 import axiosInstance from '../../services/axiosInstance'; // Import axios instance for API calls
+
+const socket = io('http://localhost:3001');
 
 const MessagingPop = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +63,41 @@ const MessagingPop = () => {
     };
 
     fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    socket.on('receive_message', (message) => {
+      setMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('new_message', (message) => {
+      setMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('message_read', ({ messageId }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
+      );
+      setUnreadMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== messageId)
+      );
+    });
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('new_message');
+      socket.off('message_read');
+    };
   }, []);
 
   const togglePopup = () => {
