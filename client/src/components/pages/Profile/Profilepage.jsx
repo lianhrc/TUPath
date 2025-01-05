@@ -303,14 +303,14 @@ function ProfilePage() {
 
         {/* Modals */}
         <ProjectUploadModal
-          key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+          key={showUploadModal ? 'project-open' : 'project-closed'} // Change key to force re-render
           show={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onProjectUpload={addProjectToState}
         />
 
         <CertUpModal
-          key={certificatesModalOpen ? 'open' : 'closed'} // Change key to force re-render
+          key={certificatesModalOpen ? 'cert-open' : 'cert-closed'} // Change key to force re-render
           show={certificatesModalOpen}
           onClose={() => setCertificatesModalOpen(false)}
           onCertificateUpload={(addCertificateToState)}

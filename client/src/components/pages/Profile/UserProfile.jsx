@@ -158,6 +158,10 @@ function UserProfile() {
                   <h3>Internship Opportunities</h3>
                   <p>{profile.profileDetails?.internshipOpportunities ? 'Yes' : 'No'}</p>
                 </div>
+                <div className="profile-section">
+                  <h3>About Company</h3>
+                  <p>{profile.profileDetails?.aboutCompany || 'Not Available'}</p>
+                </div>
               </>
             )}
 
