@@ -26,25 +26,32 @@ function HeaderHomepage() {
 
     // Debounced search function
     const debouncedSearch = _debounce(async (query) => {
-        setIsSearching(true);
-        try {
-            const response = await axiosInstance.get('/api/search', { params: { query } });
-            if (response.data.success) {
-                const sortedResults = response.data.results.sort((a, b) => {
-                    const scoreA = a.bestTagScores?.[query] || 0;
-                    const scoreB = b.bestTagScores?.[query] || 0;
-
-                    if (scoreA === scoreB) return 0; // Equal scores remain unchanged
-                    return scoreB - scoreA;
-                });
-                setSearchResults(sortedResults);
-            }
-        } catch (error) {
-            console.error('Error during search:', error);
-        } finally {
-            setIsSearching(false);
-        }
-    }, 500);
+      setIsSearching(true);
+      try {
+          const response = await axiosInstance.get('/api/search', { params: { query } });
+          if (response.data.success) {
+              const sortedResults = response.data.results.sort((a, b) => {
+                  const scoreA = parseFloat(a.bestTagScores?.[query]) || 0;
+                  const scoreB = parseFloat(b.bestTagScores?.[query]) || 0;
+                  
+                  if (scoreA === scoreB) {
+                      const nameA = `${a.profileDetails?.firstName || ''} ${a.profileDetails?.lastName || ''}`.toLowerCase();
+                      const nameB = `${b.profileDetails?.firstName || ''} ${b.profileDetails?.lastName || ''}`.toLowerCase();
+                      return nameA.localeCompare(nameB);
+                  }
+                  
+                  return scoreB - scoreA;
+              });
+              console.log("Sorted Results:", sortedResults); // Log final sorted results
+              setSearchResults(sortedResults);
+          }
+      } catch (error) {
+          console.error('Error during search:', error);
+      } finally {
+          setIsSearching(false);
+      }
+  }, 500);
+  
 
     const handleLogout = () => {
         setIsLoading(true);
@@ -161,38 +168,38 @@ function HeaderHomepage() {
                         {isSearching ? (
                             <p>Searching...</p>
                         ) : searchResults.length > 0 ? (
-                            <div className="search-results">
-                                <h3>Search Results</h3>
-                                {searchResults.map((result, index) => (
-                                    <Link
-                                        to={`/profile/${result._id}`}
-                                        key={index}
-                                        className="search-result-item"
-                                        onClick={() => handleAddToRecentSearches(result)}
-                                    >
-                                        <img
-                                            src={result.profileDetails?.profileImg || profileicon}
-                                            alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
-                                            className="search-result-image"
-                                        />
-                                        <div>
-                                            <p>
-                                                <strong>
-                                                    {`${result.profileDetails.firstName} ${
-                                                        result.profileDetails.middleName || ''
-                                                    } ${result.profileDetails.lastName}`.trim()}
-                                                </strong>
-                                            </p>
-                                            {result.bestTag && (
-                                                <p className="best-tag">
-                                                    Best Tag: <span>{result.bestTag}</span>
-                                                </p>
-                                            )}
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
+                          <div className="search-results">
+                          <h3>Search Results</h3>
+                          {searchResults.map((result, index) => (
+                              <Link
+                                  to={`/profile/${result._id}`}
+                                  key={index}
+                                  className="search-result-item"
+                                  onClick={() => handleAddToRecentSearches(result)}
+                              >
+                                  <img
+                                      src={result.profileDetails?.profileImg || profileicon}
+                                      alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
+                                      className="search-result-image"
+                                  />
+                                  <div>
+                                      <p>
+                                          <strong>
+                                              {`${result.profileDetails.firstName} ${result.profileDetails.middleName || ''} ${result.profileDetails.lastName}`.trim()}
+                                          </strong>
+                                      </p>
+                                      {result.bestTag && (
+                                          <p className="best-tag">
+                                              <span>{`${index + 1}.`}</span> 
+                                              <i className="fa fa-star" style={{ color: 'gold', marginLeft: '5px' }}></i>
+                                              Best Tag: <span>{result.bestTag}</span>
+                                          </p>
+                                      )}
+                                  </div>
+                              </Link>
+                          ))}
+                      </div>
+                                              ) : (
                             isSearchFieldClicked && <p className="no-results">No results found for "{searchQuery}".</p>
                         )}
 
