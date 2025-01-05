@@ -533,7 +533,7 @@ const Post = mongoose.model("Post", postSchema);
 
 
 
-  // Socket.IO events for real-time chat
+  // Socket.IO events for real-time chat and certificates
   io.on("connection", (socket) => {
     // console.log(`User connected: ${socket.id}`);
 
@@ -651,6 +651,9 @@ app.post("/api/uploadCertificate", verifyToken, upload.fields([
 
     await newCertificate.save();
 
+    // Emit the new certificate event
+    io.emit("new_certificate", newCertificate);
+
     res.status(201).json({ success: true, message: "Certificate uploaded successfully", certificate: newCertificate });
   } catch (error) {
     console.error("Error uploading certificate:", error);
@@ -681,6 +684,9 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
     if (!certificate) {
       return res.status(404).json({ success: false, message: "Certificate not found" });
     }
+
+    // Emit the delete certificate event
+    io.emit("delete_certificate", { certificateId });
 
     res.status(200).json({ success: true, message: "Certificate deleted successfully" });
   } catch (error) {
