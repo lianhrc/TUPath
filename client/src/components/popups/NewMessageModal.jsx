@@ -111,7 +111,7 @@ const NewMessageModal = ({ isOpen, onClose }) => {
         <div className="new-message-head">
           <h6>New Message</h6>  
         </div>
-        <div>
+        <div className='newmessagesearchfilter'>
           <label>To:</label>
           <input
             type="text"
@@ -138,9 +138,7 @@ const NewMessageModal = ({ isOpen, onClose }) => {
             placeholder="Type your message here"
           />
         </div>
-        <div className="sendbtncontainer">
         <button className='newsendbtn' onClick={handleSend}>Send</button>
-        </div>
       </div>
     </div>
   );

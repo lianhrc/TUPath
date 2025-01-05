@@ -137,33 +137,35 @@ const MessagingPop = () => {
             <p>No new messages.</p>
           )}
 
-          <h4>All Messages</h4>
-          {messages.length > 0 ? (
-            messages
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
-              .map((message, index) => (
-                <div
-                  key={index}
-                  className="messagenotifitem"
-                  onClick={() => handleNotificationClick(message)}
-                >
-                  <div className="notifitemleft">
-                    <img
-                      src={message.sender.profileImg || profileicon}
-                      alt={`${message.sender.name}'s profile`}
-                    />
-                  </div>
-                  <div className="messnotifitemright">
-                    <p>
-                      <strong>{message.sender.name}</strong>
-                    </p>
-                    <p>{message.messageContent.text}</p>
-                  </div>
-                </div>
-              ))
-          ) : (
-            <p>No messages available.</p>
-          )}
+            <div className="allmessage">
+              <h4>All Messages</h4>
+              {messages.length > 0 ? (
+                messages
+                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
+                  .map((message, index) => (
+                    <div
+                      key={index}
+                      className="messagenotifitem"
+                      onClick={() => handleNotificationClick(message)}
+                    >
+                      <div className="notifitemleft">
+                        <img
+                          src={message.sender.profileImg || profileicon}
+                          alt={`${message.sender.name}'s profile`}
+                        />
+                      </div>
+                      <div className="messnotifitemright">
+                        <p>
+                          <strong>{message.sender.name}</strong>
+                        </p>
+                        <p>{message.messageContent.text}</p>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <p>No messages available.</p>
+              )}
+            </div>
         </div>
       )}
 

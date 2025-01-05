@@ -265,6 +265,8 @@
     justify-content: flex-end;
 }
 
+
+
 .new-message-section .dropdown {
     position: absolute;
     background-color: white;
@@ -272,8 +274,9 @@
     border-radius: 5px;
     max-height: 200px;
     overflow-y: auto;
-    width: 100%;
     z-index: 1000;
+    width: 53%;
+    margin-top: -2%;
   }
   
   .new-message-section .dropdown li {
@@ -295,17 +298,6 @@
   }
 
 
-  .new-message-section .dropdown {
-    position: absolute;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    max-height: 200px;
-    overflow-y: auto;
-    width: 100%;
-    z-index: 1000;
-  }
-  
   .new-message-section .dropdown li {
     padding: 10px;
     cursor: pointer;

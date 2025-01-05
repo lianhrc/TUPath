@@ -23,6 +23,7 @@
 
 /* Message Popup Container */
 .message-popup {
+    max-height: 500px;
     position: fixed;
     bottom: 0;
     right: 20px;
@@ -30,7 +31,7 @@
     flex-direction: column;
     align-items: center; /* Center content horizontally */
     justify-content: flex-start; /* Align items to start vertically */
-    z-index: 10;
+    z-index: 1000;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     background-color: rgba(244, 242, 238, 0.9); /* Semi-transparent background color */
@@ -43,7 +44,7 @@
     border: none;
     width: 300px;
     display: flex;
-    padding: 0 10px;
+    padding: 20px;
     justify-content: space-between;
     align-items: center;
     height: 40px;
@@ -126,8 +127,9 @@
 
 /* Popup content header */
 .popup-content h4 {
-    margin: 0 0 10px 0;
-    font-size: 14px; /* Smaller font size for the header */
+    margin: 10px 0;
+    color: rgb(103, 103, 255);
+    font-size: 12px; /* Smaller font size for the header */
     text-align: center; /* Center align header text */
 }
 
@@ -173,4 +175,5 @@
     margin: 5px 0; /* Space between sender and message text */
     font-size: 12px; /* Smaller font size for message text */
 }
+
 

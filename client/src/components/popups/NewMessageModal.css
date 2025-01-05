@@ -4,7 +4,7 @@
 .new-message-modal-overlay {
     position: fixed;
     right: 320px;
-    bottom: 0;
+    bottom: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,7 +19,7 @@
    border-top-right-radius: 10px;
    border-top-left-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 700px; /* Set a width for the modal */
+    width: 650px; /* Set a width for the modal */
     position: relative; /* Required for absolute positioning of close button */
 }
 
@@ -30,7 +30,69 @@
     right: 10px; /* Distance from the right */
     
 }
-
+.newmessagesearchfilter {
+    position: relative;
+    max-width: 100%;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .newmessagesearchfilter label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .newmessagesearchfilter input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .newmessagesearchfilter input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+  }
+  
+  .newmessagesearchfilter .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 5px;
+    padding: 0;
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+  
+  .newmessagesearchfilter .dropdown li {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .newmessagesearchfilter .dropdown li:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .newmessagesearchfilter .dropdown img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
 
 /* Close button styling */
 .new-message-modal .newbtnclose {
@@ -46,6 +108,7 @@
     cursor: pointer; /* Pointer cursor on hover */
 
 }
+
 
 /* Header styling */
 .new-message-modal .new-message-head {
@@ -70,7 +133,7 @@
 }
 
 .new-message-modal textarea{
-    height: 250px;
+    height: 230px;
 }
 
 /* Button styling */
