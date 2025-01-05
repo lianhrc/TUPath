@@ -42,7 +42,7 @@ function Inboxpage() {
         const allMessages = [...receivedMessages, ...sentMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setMessages(allMessages);
 
-        // Select the message based on the query parameter
+        // Select the message based on the query parameter.
         const queryParams = new URLSearchParams(location.search);
         const messageId = queryParams.get('messageId');
         if (messageId) {
