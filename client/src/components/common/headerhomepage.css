@@ -188,11 +188,10 @@ cursor: pointer;
   margin: 0;
   font-size: 12px;
   color: #333;
-  overflow: hidden; /* Hide overflow text */
-    text-overflow: ellipsis; /* Add ellipsis */
-    display: -webkit-box; /* Use flexbox for line clamping */
-    -webkit-box-orient: vertical; /* Set orientation to vertical */
-    -webkit-line-clamp: 1; /* Limit to two lines */
+  width: 100%;
+  white-space: nowrap; /* Prevents text from wrapping to the next line */
+  overflow: hidden; /* Hides overflowed text */
+  text-overflow: ellipsis; /* Displays ellipsis (...) for overflowed text */
   
 }
 
@@ -203,10 +202,13 @@ cursor: pointer;
   align-items: center;
   height: 50px;
 }
-
-.notifitemright{
- width: 80%;
+.notifitemright {
+  width: 100%;
+  white-space: nowrap; /* Prevents text from wrapping to the next line */
+  overflow: hidden; /* Hides overflowed text */
+  text-overflow: ellipsis; /* Displays ellipsis (...) for overflowed text */
 }
+
 
 .notifitemleft img{
   width: 50px;
