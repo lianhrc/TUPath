@@ -183,48 +183,50 @@ function UserProfile() {
           <div className="userproject-section">
             <h3>Projects</h3>
             <div className="projects-grid">
-              {projects.map((project) => (
-                <div
-                  key={project._id}
-                  className="project-card"
-                  onClick={() => {
-                    setSelectedProject(project);
-                    setShowProjectPreviewModal(true); // Open the modal for projects
-                  }}
-                >
-                  <img
-                    src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
-                    alt={project.projectName}
-                  />
-                  <p>{project.projectName}</p>
-                </div>
-              ))}
+              {projects.length > 0 ? (
+                projects.map((project) => (
+                  <div
+                    key={project._id}
+                    className="project-card"
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setShowProjectPreviewModal(true); // Open the modal for projects
+                    }}
+                  >
+                    <img
+                      src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
+                      alt={project.projectName}
+                    />
+                    <p>{project.projectName}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No projects available</p>
+              )}
             </div>
 
               <h3>Certificates</h3>
               <div className="projects-grid">
-              {certificates && certificates.length > 0 ? (
-                <div className="projects-grid">
-                  {certificates.map((certificate) => (
-                    <div
-                      key={certificate._id}
-                      className="project-card"
-                      onClick={() => {
-                        setSelectedCertificate(certificate);
-                        setShowCertPreviewModal(true);
-                      }}
-                    >
-                      {certificate.Certificate?.CertThumbnail && (
-                        <img
-                          src={`http://localhost:3001${certificate.Certificate.CertThumbnail}`}
-                          alt="Certificate Thumbnail"
-                          className="certificate-thumbnail"
-                        />
-                      )}
-                      <p>{certificate.Certificate?.CertName || 'No Name Available'}</p>
-                    </div>
-                  ))}
-                </div>
+              {certificates.length > 0 ? (
+                certificates.map((certificate) => (
+                  <div
+                    key={certificate._id}
+                    className="project-card"
+                    onClick={() => {
+                      setSelectedCertificate(certificate);
+                      setShowCertPreviewModal(true);
+                    }}
+                  >
+                    {certificate.Certificate?.CertThumbnail && (
+                      <img
+                        src={`http://localhost:3001${certificate.Certificate.CertThumbnail}`}
+                        alt="Certificate Thumbnail"
+                        className="certificate-thumbnail"
+                      />
+                    )}
+                    <p>{certificate.Certificate?.CertName || 'No Name Available'}</p>
+                  </div>
+                ))
               ) : (
                 <p>No certificates available</p>
               )}
