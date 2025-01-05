@@ -137,15 +137,22 @@ input[type="password"]:focus {
     font-size: 12px;
     margin-top: 20px; /* Space above the prompt */
 }
+.forgot-password-link{
+   color: #007bff;
 
+}
 .forgot-password-link:hover{
     cursor: pointer;
+   color: #007bff;
     text-decoration: underline;
 }
 
 .signup-link {
-    color: #007bff; /* Blue color for the signup link */
+    color: #007bff; 
     cursor: pointer; /* Pointer cursor for link */
+}
+
+.signup-link:hover{
     text-decoration: underline;
 }
 

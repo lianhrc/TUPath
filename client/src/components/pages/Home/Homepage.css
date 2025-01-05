@@ -130,16 +130,17 @@
   width: 100%;
   border-radius: 15px;
   margin-bottom: 20px;
+
 }
 .post-input img {
   width: 100%; /* Ensure the image fills the container */
   height: 100%; /* Ensure the height matches the container */
   border-radius: 50%;
-  object-fit: cover; /* Ensures the image is scaled and cropped to fit */
+  object-fit: cover;
 }
 
 .post-input .postinputimg-container {
-  width: 50px;
+  width: 55px;
   height: 50px;
   border-radius: 50%;
   overflow: hidden;
@@ -147,7 +148,6 @@
   align-items: center; /* Optional: Center the image */
   justify-content: center; /* Optional: Center the image */
 }
-
 
 /* Subpost Input */
 .subpost-input {

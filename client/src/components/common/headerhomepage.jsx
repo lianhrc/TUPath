@@ -146,6 +146,35 @@ function HeaderHomepage() {
         ? `http://localhost:3001${profileData.profileImg}`
         : profileData.profileImg || profileicon;
 
+
+        const SearchResultItem = React.memo(({ result, handleAddToRecentSearches }) => {
+            return (
+                <Link
+                    to={`/profile/${result._id}`}
+                    className="search-result-item"
+                    onClick={() => handleAddToRecentSearches(result)}
+                >
+                    <img
+                        src={result.profileDetails?.profileImg || profileicon}
+                        alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
+                        className="search-result-image"
+                    />
+                    <div>
+                        <p>
+                            <strong>
+                                {`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
+                            </strong>
+                        </p>
+                        {result.bestTag && (
+                            <p className="best-tag">
+                                Best Tag: <span>{result.bestTag}</span>
+                            </p>
+                        )}
+                    </div>
+                </Link>
+            );
+        });
+
     return (
         <>
             {isLoading ? (

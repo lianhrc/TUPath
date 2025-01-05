@@ -139,7 +139,7 @@ function studentlandpage() {
                 <div>
                  <div className="step-number">03</div>
               </div> 
-              <h3>Answer AI Questions</h3>
+              <h3>Answer Questions</h3>
               <p>
                 Enhance your profile by answering system indicators tailored to highlight your strengths.
               </p>
@@ -150,7 +150,7 @@ function studentlandpage() {
             <h2>Start Building Your Future</h2>
             <p>Join TUPATH today and take the first step towards your career goals.</p>
             </div>
-            <button className="cta-button">Create Your Profile</button>
+            <a href="/studentsignup"><button className="cta-button">Create Your Profile</button></a>
           </div>
        </motion.section>
          

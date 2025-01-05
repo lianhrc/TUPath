@@ -69,9 +69,9 @@ function employerlandpage() {
 
                 </div> 
                 <div className='subbox'>
-                <h3>AI Insights</h3>
+                <h3>Insights</h3>
                 <p>
-                  Utilize AI-generated analytics to evaluate candidate potential and make informed decisions.
+                  Utilize analytics to evaluate candidate potential and make informed decisions.
                 </p>
                 </div>
               </div>
