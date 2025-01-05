@@ -4,7 +4,7 @@ import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import ProjectPreviewModal2 from '../../popups/ProjectPreviewModal2';
 import CertPreviewModal2 from '../../popups/CertPreviewModal2';
-import './Profilepage.css';
+import './UserProfile.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
@@ -158,6 +158,8 @@ function UserProfile() {
                   <h3>Internship Opportunities</h3>
                   <p>{profile.profileDetails?.internshipOpportunities ? 'Yes' : 'No'}</p>
                 </div>
+          
+               
               </>
             )}
 
@@ -174,8 +176,23 @@ function UserProfile() {
               <h3>Email</h3>
               <p>{profile.email || 'Not Available'}</p>
             </div>
+            
+            </div>  
+            
+                
           </div>
-        </div>
+
+          {profile.role === 'employer' && (
+            <div className="userproject-section2">
+              <h3 className="section-title">About Company</h3>
+              <div className="project-grid2">
+                <p className="about-text">{profile.profileDetails?.aboutCompany || 'Not Available'}</p>
+              </div>
+            </div>
+          )}
+          
+          
+          
 
         {/* Project Section (for students only) */}
         {profile.role === 'student' && (

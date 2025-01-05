@@ -1,0 +1,343 @@
+/* Profile Page Styling */
+.Profilepage-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #F4F2EE;
+    padding-top: 80px;
+  }
+  
+  .main-content {
+    display: flex;
+    gap: 40px;
+    padding: 20px;
+    max-width: 1300px;
+    width: 100%;
+  }
+  
+  /* Profile Card */
+  .profile-card {
+    border-radius: 10px;
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  
+  
+  .profile-main {
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    width: 100%;
+    padding: 20px 0 20px 20px;
+  }
+  
+  .profile-header{
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .profilesectiontop {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .profilesectiontop a {
+    color: #9D0E0F;
+    font-size: 10px;
+    text-decoration: none;
+  }
+  
+  .profile-header h2 {
+    font-weight: bold;
+    font-size: 24px;
+  }
+  
+  .profile-header img{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .subheader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .subheader img {
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+  }
+  
+  .profile-header-left {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  
+  }
+  
+  .profile-header-right{
+    display: flex;
+    text-align: right;
+    flex-direction: column;
+  }
+  
+  .avatar {
+    width: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  
+  .profile-header hr {
+    width: 100%;
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 15px 0;
+  }
+  
+  .profile-info {
+    margin: 10px 0;
+    width: 100%;
+    color: #666;
+  }
+  
+  .profile-section {
+    width: 100%;
+    margin-bottom: 30px;
+    text-align: left;
+  }
+  
+  .profile-section .div {
+    display: flex;
+    width: auto;
+    justify-content: end;
+    align-items: center;
+  }
+  .profile-section .div img{
+    width: 20px;
+    height: 20px;
+    
+  }
+  
+  .profile-section .div img:hover{
+    opacity: 0.5;
+  }
+  
+  .profile-section p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: bla;
+    font-weight: bold;
+  }
+  
+  
+  .profile-section h3 {
+    font-size: 10px;
+    font-weight: normal;
+    color: #bdbbbb;
+  }
+  
+  /* Projects Section */
+  .projects-section {
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+  }
+  
+  .projects-section h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .project-card {
+    background-color: #f0f2f5;
+    display: flex;
+    position: relative;
+  
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    border-radius: 5px;
+    cursor: pointer;
+    height: 200px;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .project-card p{
+    margin-top: 5px;
+  }
+  
+  .project-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background-color: lightcoral;
+    transform: translateY(-5px);
+    opacity: 0.5;
+  }
+  
+  .project-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .proj-status {
+    position: absolute;
+    top: 5px; /* Adjust this value to control the position outside the card */
+    right: 0px; /* Adjust this value to control the position outside the card */
+    background-color: #faeed7; /* Bright color for visibility */
+    color: rgb(255, 123, 0);
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    font-size: 10px;
+    padding: 5px 10px;
+    font-weight: 600;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Add Project Button */
+  .add-project {
+    background-color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .add-project:hover {  
+    background-color: #e6f0ff;
+  }
+  
+  .add-project p {
+    margin: 0;
+    font-size: 1em;
+    color: #9D0E0F;
+  }
+  
+  /* File Upload Section */
+  .project-section {
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 70px;
+    padding: 30px;
+  }
+  
+  .userproject-section{
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px;
+    z-index: 100;
+  }
+  
+  .userproject-section h3{
+    margin-bottom: 10px;
+  }
+
+  .userproject-section2 {
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    padding: 30px;
+    z-index: 100;
+  }
+  
+  .section-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .project-grid2 {
+    width: 100%; /* Ensure it spans the full width of the container */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .about-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #555;
+    max-width: 100%; /* Ensure it fits the container width */
+    word-wrap: break-word; /* Break words if they are too long */
+    white-space: normal; /* Allow text to wrap to the next line */
+    overflow: visible; /* Ensure no text is hidden */
+  }
+  
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .userproject-section2 {
+      padding: 20px;
+      max-width: 95%; /* Adjust width for smaller screens */
+    }
+  
+    .project-grid2 {
+      width: 100%; /* Ensure full width on smaller screens */
+    }
+  
+    .about-text {
+      font-size: 14px; /* Adjust font size for readability */
+    }
+  }
+  
+  
+  .userproject-section2 h3{
+    margin-bottom: 10px;
+  }
+  
+  .project-section h3 {
+    margin-bottom: 10px;
+  }
+  
+  input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .feedback-message {
+    color: #d9534f;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
