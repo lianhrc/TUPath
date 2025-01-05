@@ -1362,8 +1362,38 @@ app.get('/api/search', verifyToken, async (req, res) => {
     const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
     let results = [];
 
-    if (req.user.role === 'employer') {
-      // Employers can search students
+    if (req.user.role === 'student') {
+      // Students can search employers
+      const employerResults = await Employer_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+
+      // Students can also search other students
+      const fellowStudentResults = await Tupath_usersModel.find({
+        $and: [
+          {
+            $or: [
+              { 'profileDetails.firstName': regex },
+              { 'profileDetails.middleName': regex },
+              { 'profileDetails.lastName': regex }
+            ]
+          },
+          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+        ]
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+
+      results = [...results, ...employerResults, ...fellowStudentResults];
+    } else if (req.user.role === 'employer') {
+      // Employers can search students (with bestTag)
       const studentResults = await Tupath_usersModel.find({
         $and: [
           {
@@ -1371,13 +1401,13 @@ app.get('/api/search', verifyToken, async (req, res) => {
               { 'profileDetails.firstName': regex },
               { 'profileDetails.middleName': regex },
               { 'profileDetails.lastName': regex },
-              { bestTag: regex } // Add this condition to match the `bestTag`
+              { bestTag: regex } // Search by `bestTag`
             ]
           },
           { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
         ]
       }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg bestTag');
-      
+
       results = [...results, ...studentResults];
     }
 
@@ -1387,6 +1417,7 @@ app.get('/api/search', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
 
 
 
