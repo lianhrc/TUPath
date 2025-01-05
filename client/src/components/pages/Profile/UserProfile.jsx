@@ -181,7 +181,7 @@ function UserProfile() {
         {/* Project Section (for students only) */}
         {profile.role === 'student' && (
           <div className="userproject-section">
-            <h3>My Projects</h3>
+            <h3>Projects</h3>
             <div className="projects-grid">
               {projects.map((project) => (
                 <div
@@ -201,7 +201,7 @@ function UserProfile() {
               ))}
             </div>
 
-              <h3>My Certificates</h3>
+              <h3>Certificates</h3>
               <div className="projects-grid">
               {certificates && certificates.length > 0 ? (
                 <div className="projects-grid">

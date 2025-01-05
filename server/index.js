@@ -686,7 +686,93 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
 });
 
 
-  // Login endpoint
+// Endpoint to fetch profile data including projects and certificates
+app.get('/api/profile', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const role = req.user.role; // Extract role from the token
+
+    const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
+    const user = await userModel.findById(userId)
+      .select('email role profileDetails createdAt googleSignup')
+      .populate({
+        path: 'profileDetails.projects',
+        select: 'projectName description tags tools thumbnail projectUrl',
+        strictPopulate: false, // Allow flexible population
+      });
+
+    if (!user) {
+      return res.status(404).json({ success: false, profile: 'User not Found' });
+    }
+
+    // Fetch certificates for the user
+    const certificates = await StudentCertificate.find({ StudId: userId });
+
+    // Return profile details tailored to the role
+    const profile = {
+      email: user.email,
+      role: user.role,
+      profileDetails: user.role === 'student' ? {
+        ...user.profileDetails,
+        certificates, // Include certificates in the profile details
+      } : {
+        ...user.profileDetails,
+        companyName: user.profileDetails.companyName || null,
+        industry: user.profileDetails.industry || null,
+        aboutCompany: user.profileDetails.aboutCompany || null,
+        preferredRoles: user.profileDetails.preferredRoles || [],
+        internshipOpportunities: user.profileDetails.internshipOpportunities || false,
+      },
+      createdAt: user.createdAt,
+      googleSignup: user.googleSignup,
+    };
+
+    res.status(200).json({ success: true, profile });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Endpoint to fetch profile data for a specific user including projects and certificates
+app.get('/api/profile/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await Tupath_usersModel.findById(id)
+      .populate({
+        path: 'profileDetails.projects',
+        strictPopulate: false,
+      }) || await Employer_usersModel.findById(id)
+      .populate({
+        path: 'profileDetails.projects',
+        strictPopulate: false,
+      });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Fetch certificates for the user
+    const certificates = await StudentCertificate.find({ StudId: id });
+
+    // Include certificates in the profile details
+    const profile = {
+      ...user.toObject(),
+      profileDetails: {
+        ...user.profileDetails,
+        certificates,
+      },
+    };
+
+    res.status(200).json({ success: true, profile });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
+// Login endpoint
   app.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
     try {
@@ -1022,11 +1108,17 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, profile: 'User not Found' });
         }
 
+        // Fetch certificates for the user
+        const certificates = await StudentCertificate.find({ StudId: userId });
+
         // Return profile details tailored to the role
         const profile = {
             email: user.email,
             role: user.role,
-            profileDetails: user.role === 'student' ? user.profileDetails : {
+            profileDetails: user.role === 'student' ? {
+                ...user.profileDetails,
+                certificates, // Include certificates in the profile details
+            } : {
                 ...user.profileDetails,
                 companyName: user.profileDetails.companyName || null,
                 industry: user.profileDetails.industry || null,
@@ -1044,7 +1136,6 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-
 
 
 
@@ -1418,25 +1509,6 @@ app.get('/api/search', verifyToken, async (req, res) => {
 });
 
 
-app.get('/api/profile/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await Tupath_usersModel.findById(id).populate({
-      path: 'profileDetails.projects',
-      strictPopulate: false
-    }) || await Employer_usersModel.findById(id).populate({
-      path: 'profileDetails.projects',
-      strictPopulate: false
-    });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    res.status(200).json({ success: true, profile: user });
-  } catch (err) {
-    console.error('Error fetching profile:', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
 
   
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
