@@ -3,8 +3,7 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import ProjectPreviewModal2 from '../../popups/ProjectPreviewModal2';
-import CertPreviewModal from '../../popups/CertPreviewModal';
-
+import CertPreviewModal2 from '../../popups/CertPreviewModal2';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
@@ -213,7 +212,7 @@ function UserProfile() {
                     key={certificate._id}
                     className="project-card"
                     onClick={() => {
-                      setSelectedCertificate(certificate);
+                      setSelectedCertificate(certificate || {});
                       setShowCertPreviewModal(true);
                     }}
                   >
@@ -237,7 +236,7 @@ function UserProfile() {
 
         {/* Modals */}
         <ProjectPreviewModal2 show={showProjectPreviewModal} onClose={() => setShowProjectPreviewModal(false)} project={selectedProject} />
-        <CertPreviewModal show={showCertPreviewModal} onClose={() => setShowCertPreviewModal(false)} certificate={selectedCertificate} /> {/* Update to use the correct state */}
+        <CertPreviewModal2 show={showCertPreviewModal} onClose={() => setShowCertPreviewModal(false)} project={selectedCertificate} /> {/* Update to use the correct state */}
 
       </div>
     </div>
