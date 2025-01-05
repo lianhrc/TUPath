@@ -20,8 +20,6 @@ import axiosInstance from '../../../services/axiosInstance';
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
 
-
-
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('Users'); // Track active section
 
@@ -29,34 +27,28 @@ const AdminDashboard = () => {
     <div className="admin-dashboard-container">
       {/* Sidebar */}
       <div className="adminsidebar">
-     
-      <nav>
-        <div className="imgcontaineradmin">
-            <img src={tupicon} alt="" />
-            <img src={irjpicon} alt="" />
-        </div>
+        <nav>
           <ul>
+            <li className="iconli">
+              <div className="imgcontaineradmin">
+                <img className="irjp" src={irjpicon} alt="" />
+                <img className="tup" src={tupicon} alt="" />
+              </div>
+            </li>
             <li
-            
               onClick={() => setActiveSection('Users')}
               className={activeSection === 'Users' ? 'active' : ''}
             >
               <FaUsers className="icon" />
               <span className="text">Users</span>
             </li>
-            <li
-              onClick={() => setActiveSection('Reports')}
-              className={activeSection === 'Reports' ? 'active' : ''}
-            >
-              <FaChartBar className="icon" />
-              <span className="text">Reports</span>
-            </li>
+            
             <li
               onClick={() => setActiveSection('Tags')}
               className={activeSection === 'Tags' ? 'active' : ''}
             >
               <FaTags className="icon" />
-              <span className="text">Tags</span>
+              <span className="text">Best</span>
             </li>
             <li>
               <FaSignOutAlt className="icon" />
@@ -69,7 +61,6 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
-        {activeSection === 'Reports' && <ReportsSection />}
         {activeSection === 'Tags' && <TagChart />}
       </div>
     </div>
@@ -81,12 +72,13 @@ const UsersSection = () => {
   const [selectedType, setSelectedType] = useState('Students'); // Track user type
   const [usersData, setUsersData] = useState([]); // Store fetched users
   const [loading, setLoading] = useState(false); // Loading state
+  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 }); // User stats for the pie chart
 
   const handleDropdownChange = (event) => {
     setSelectedType(event.target.value);
   };
 
-  // Fetch users whenever the selected type changes
+  // Fetch users and user stats whenever the selected type changes
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -102,13 +94,28 @@ const UsersSection = () => {
       }
     };
 
+    const fetchUserStats = async () => {
+      try {
+        const response = await axiosInstance.get('/api/user-stats');
+        if (response.data.success) {
+          setUserStats({
+            studentCount: response.data.studentCount,
+            employerCount: response.data.employerCount,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      }
+    };
+
     fetchUsers();
+    fetchUserStats();
   }, [selectedType]);
 
   const handleDelete = async (userId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (!confirmDelete) return;
-  
+
     try {
       const response = await axiosInstance.delete(`/api/manage-users/${userId}?type=${selectedType}`);
       if (response.data.success) {
@@ -123,6 +130,28 @@ const UsersSection = () => {
       alert("An error occurred while deleting the user.");
     }
   };
+
+  // Pie chart data
+  const chartData = {
+    labels: ['Students', 'Employers'],
+    datasets: [
+      {
+        data: [userStats.studentCount, userStats.employerCount],
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',  // Light blue with opacity
+          'rgba(255, 99, 132, 0.6)',  // Light red with opacity
+        ],
+        hoverBackgroundColor: [
+          'rgba(54, 162, 235, 0.9)',  // Darker blue on hover
+          'rgba(255, 99, 132, 0.9)',  // Darker red on hover
+        ],
+        borderColor: ['#36A2EB', '#FF6384'],  // Strong border color
+        borderWidth: 0, // Slightly thicker border for a sharper look
+        hoverBorderWidth: 0, // Thicker border on hover
+      },
+    ],
+  };
+
   
 
   // Render table dynamically based on selected type
@@ -151,7 +180,7 @@ const UsersSection = () => {
                 <tr key={index}>
                   <td>{`${firstName} ${lastName}`}</td>
                   <td>{user?.email || 'N/A'}</td>
-                  <td>{`${contact}` || 'N/A'}</td>
+                  <td>{contact}</td>
                   <td><button className='delete-btn' onClick={() => handleDelete(user._id)}>Delete</button></td>
                 </tr>
               );
@@ -181,7 +210,6 @@ const UsersSection = () => {
                 <td>{user?.email || 'N/A'}</td>
                 <td>{contact}</td>
                 <td><button className='delete-btn'>Delete</button></td>
-
               </tr>
             );
           })}
@@ -192,62 +220,28 @@ const UsersSection = () => {
 
   return (
     <div className="usersadminsection">
+      
+      <div className="leftusersadminsection">
       <h2>Users</h2>
-      <label>Select User Type:</label>
-      <select value={selectedType} onChange={handleDropdownChange}>
-        <option value="Students">Students</option>
-        <option value="Employers">Employers</option>
-      </select>
-      <div className="userslistcontainer">{renderTable()}</div>
-    </div>
-  );
-};
 
-// Reports Section Component
-const ReportsSection = () => {
-  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserStats = async () => {
-      try {
-        const response = await axiosInstance.get('/api/user-stats');
-        if (response.data.success) {
-          setUserStats({
-            studentCount: response.data.studentCount,
-            employerCount: response.data.employerCount,
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserStats();
-  }, []);
-
-  const chartData = {
-    labels: ['Students', 'Employers'],
-    datasets: [
-      {
-        data: [userStats.studentCount, userStats.employerCount],
-        backgroundColor: ['#36A2EB', '#FF6384'],
-      },
-    ],
-  };
-
-  return (
-    <div className="reportsadminsection">
-      <h2>Reports</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="chart-container">
-          <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+          <div className="dropdownad-container">
+          <label className="dropdownad-label">Select User Type:</label>
+          <select className="user-type-dropdown" value={selectedType} onChange={handleDropdownChange}>
+            <option value="Students">Students</option>
+            <option value="Employers">Employers</option>
+          </select>
         </div>
-      )}
+
+        <div className="userslistcontainer">{renderTable()}</div>
+      </div>
+
+      <div className="rightusersadminsection">
+        {/* Render Pie chart */}
+          <div className="chart-container">
+           <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+       </div>
+      </div>
+
     </div>
   );
 };
@@ -261,90 +255,91 @@ const TagChart = () => {
   const [studentsLoading, setStudentsLoading] = useState(false);
 
   useEffect(() => {
-      const fetchTagData = async () => {
-          try {
-              const response = await axiosInstance.get('/api/student-tags');
-              if (response.data.success) {
-                  setTagData(response.data.tags);
-              }
-          } catch (error) {
-              console.error('Error fetching tag data:', error);
-          } finally {
-              setLoading(false);
-          }
-      };
-      fetchTagData();
+    const fetchTagData = async () => {
+      try {
+        const response = await axiosInstance.get('/api/student-tags');
+        if (response.data.success) {
+          setTagData(response.data.tags);
+        }
+      } catch (error) {
+        console.error('Error fetching tag data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTagData();
   }, []);
 
   const handleBarClick = async (event, elements) => {
-      console.log('Bar clicked', elements); // Debugging
+    console.log('Bar clicked', elements); // Debugging
 
-      if (elements.length > 0) {
-          const index = elements[0].index; // Index of the clicked bar
-          const tag = tagData[index]._id; // Get tag from clicked bar
-          console.log('Selected tag:', tag); // Debugging
-          setSelectedTag(tag);
+    if (elements.length > 0) {
+      const index = elements[0].index; // Index of the clicked bar
+      const tag = tagData[index]._id; // Get tag from clicked bar
+      console.log('Selected tag:', tag); // Debugging
+      setSelectedTag(tag);
 
-          setStudentsLoading(true);
-          try {
-              const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
-              if (response.data.success) {
-                  console.log('API response for students:', response.data); // Debugging
-                  setStudents(response.data.students);
-              }
-          } catch (error) {
-              console.error('Error fetching students:', error);
-          } finally {
-              setStudentsLoading(false);
-          }
+      setStudentsLoading(true);
+      try {
+        const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
+        if (response.data.success) {
+          console.log('API response for students:', response.data); // Debugging
+          setStudents(response.data.students);
+        }
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      } finally {
+        setStudentsLoading(false);
       }
+    }
   };
 
   const chartData = {
-      labels: tagData.map((tag) => tag._id),
-      datasets: [{
-          label: 'Number of Students Excelling',
-          data: tagData.map((tag) => tag.count),
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 2,
-          barThickness: 80,
-          maxBarThickness: 100,
-      }],
+    labels: tagData.map((tag) => tag._id),
+    datasets: [{
+      label: 'Number of Students Excelling',
+      data: tagData.map((tag) => tag.count),
+      backgroundColor: '#e0b8b8',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 0,
+      barThickness: 50,
+      maxBarThickness: 100,
+    }],
   };
 
   return (
-      <div className="usersadminsection" >
-          <h2>Students Excelling in Different Tags</h2>
-          {loading ? (
-              <p>Loading...</p>
-          ) : (
-              <Bar
-                  data={chartData}
-                  options={{
-                      responsive: true,
-                      plugins: {
-                          legend: { display: false },
-                          title: { display: true, text: 'Students Excelling by Tag' },
-                      },
-                      scales: {
-                          x: { title: { display: true, text: 'Tags' } },
-                          y: { title: { display: true, text: 'Number of Students' } },
-                      },
-                      onClick: handleBarClick,
-                  }}
-              />
-          )}
+    <div className="userbestsadminsection">
+    <h2>Top Performing Students in Various Categories</h2>
+    <div className="userbestsadmincontianer">
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <Bar
+            data={chartData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                x: { title: { display: true, text: 'Tags' } },
+                y: { title: { display: true, text: 'Number of Students' } },
+              },
+              onClick: handleBarClick,
+            }}
+          />
+        )}
 
-    {selectedTag && (
-        <StudentListModal
+        {selectedTag && (
+          <StudentListModal
             tag={selectedTag}
             students={students}
             onClose={() => setSelectedTag(null)}
             loading={studentsLoading}
-        />
-    )}
+          />
+        )}
       </div>
+    </div>
   );
 };
 
