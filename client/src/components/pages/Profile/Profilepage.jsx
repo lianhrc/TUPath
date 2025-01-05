@@ -317,6 +317,21 @@ function ProfilePage() {
           onSave={(updatedData) => setProfileData(updatedData)}
         />
 
+           <CertUpModal
+        show={certificatesModalOpen}
+        onClose={() => setCertificatesModalOpen(false)}
+        onCertificateUpload={(newCertificate) => {
+          // Add the new certificate to the state to update the UI
+          setCertificates((prevCertificates) => [...prevCertificates, newCertificate]);
+      
+          // Close the modal
+          setCertificatesModalOpen(false);
+      
+          // Optionally display a success toast
+          toast.success('Certificate uploaded successfully!');
+        }}
+      />
+
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
         <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedProject} onDelete={deleteCertificate} />
         <GenericModal
@@ -345,17 +360,10 @@ function ProfilePage() {
           }}
         />
 
-        <CertUpModal
-        show={certificatesModalOpen}
-        onClose={() => setCertificatesModalOpen(false)}
-        onCertificateUpload={(newCertificate) => {
-          // Add the new certificate to the state to update the UI
-          addCertificateToState(newCertificate);
-          // Close the modal
-          setCertificatesModalOpen(false);
-          toast.success('Certificate uploaded successfully!'); // Optionally display success toast
-        }}
-      />
+     
+      
+
+
       
         <MessagePop />
       </div>
