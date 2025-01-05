@@ -38,19 +38,20 @@
 
 /* Close button */
 .studentslistmodal-content button {
-    background-color: #007BFF;
+    background-color: #9D0E0F;
     color: #fff;
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
+    font-weight: normal;
     cursor: pointer;
-    margin-top: 15px;
+    margin-top: 30px;
     transition: background-color 0.3s ease;
-    font-size: 1rem;
+    font-size: 10px;
 }
 
 .studentslistmodal-content button:hover {
-    background-color: #0056b3;
+    background-color: #6c0a0a;
 }
 
 /* Table styling */
@@ -69,8 +70,10 @@
 }
 
 .studentslistmodal-content th {
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #9D0E0F;
+    color: white;
+    font-weight: normal;
+    font-size: 12px;
 }
 
 .studentslistmodal-content td {

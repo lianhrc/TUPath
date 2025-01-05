@@ -21,6 +21,7 @@ const express = require("express");
   const studentTags = require("./routes/studentTags");
   const studentByTags = require("./routes/studentsByTag")
   const users = require("./routes/users");
+  const adminDelete = require("./routes/adminDelete");
   
   
 
@@ -33,7 +34,7 @@ const express = require("express");
   const path = require("path");
 
   // Middleware setup
-  app.use(cors({ origin: 'http://localhost:5173' })); // Updated CORS for specific origin
+  app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 
@@ -52,6 +53,7 @@ const express = require("express");
     app.use('/', userStats);
     app.use('/', studentTags);
     app.use('/', studentByTags);
+    app.use('/', adminDelete);
 
 
   // Middleware for setting COOP headers
@@ -60,15 +62,18 @@ const express = require("express");
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // Added CORP header
     next();
   });
+  const cookieParser = require('cookie-parser'); //start to delete this line if trial and error
+  app.use(cookieParser());
 
 
-  // // MongoDB connection
-  //  mongoose
-  //    .connect("mongodb://127.0.0.1:27017/tupath_users")
-  //    .then(() => console.log("MongoDB connected successfully"))
-  //   .catch((err) => console.error("MongoDB connection error:", err));
+/*
+   // MongoDB connection
+    mongoose
+     .connect("mongodb://127.0.0.1:27017/tupath_users")
+      .then(() => console.log("MongoDB connected successfully"))
+     .catch((err) => console.error("MongoDB connection error:", err));
+*/
  
-
 
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
@@ -76,7 +81,6 @@ mongoose.connect(
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
- 
 
 
   // Configure multer for file uploads
@@ -1456,7 +1460,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   });
 
 // -----------------------------------api for dynamic search----------------------------------
-
 app.get('/api/search', verifyToken, async (req, res) => {
   const { query } = req.query;
 
@@ -1469,22 +1472,7 @@ app.get('/api/search', verifyToken, async (req, res) => {
     const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
     let results = [];
 
-    if (req.user.role === 'student') {
-      // Students can search employers
-      const employerResults = await Employer_usersModel.find({
-        $and: [
-          {
-            $or: [
-              { 'profileDetails.firstName': regex },
-              { 'profileDetails.middleName': regex },
-              { 'profileDetails.lastName': regex }
-            ]
-          },
-          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
-        ]
-      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-      results = [...results, ...employerResults];
-    } else if (req.user.role === 'employer') {
+    if (req.user.role === 'employer') {
       // Employers can search students
       const studentResults = await Tupath_usersModel.find({
         $and: [
@@ -1492,12 +1480,14 @@ app.get('/api/search', verifyToken, async (req, res) => {
             $or: [
               { 'profileDetails.firstName': regex },
               { 'profileDetails.middleName': regex },
-              { 'profileDetails.lastName': regex }
+              { 'profileDetails.lastName': regex },
+              { bestTag: regex } // Add this condition to match the `bestTag`
             ]
           },
           { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
         ]
-      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg bestTag');
+      
       results = [...results, ...studentResults];
     }
 
@@ -1509,6 +1499,26 @@ app.get('/api/search', verifyToken, async (req, res) => {
 });
 
 
+
+app.get('/api/profile/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    }) || await Employer_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      strictPopulate: false
+    });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.status(200).json({ success: true, profile: user });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
 
   
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {

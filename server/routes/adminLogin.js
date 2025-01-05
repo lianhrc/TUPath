@@ -14,26 +14,27 @@ router.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Find admin by username
     const admin = await Admin.findOne({ username });
     if (!admin) {
       return res.status(400).json({ success: false, message: 'Invalid username or password.' });
     }
 
-    // Check if password matches
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
       return res.status(400).json({ success: false, message: 'Invalid username or password.' });
     }
 
-    // Generate a JWT token
     const token = jwt.sign({ id: admin._id }, JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({
-      success: true,
-      message: 'Login successful.',
-      token,
+    // Set token in HTTP-only cookie
+    res.cookie('adminToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'Strict', // Prevent CSRF
+      maxAge: 3600000, // 1 hour
     });
+
+    res.json({ success: true, message: 'Login successful.' });
   } catch (error) {
     console.error('Error logging in admin:', error);
     res.status(500).json({ success: false, message: 'Internal server error.' });

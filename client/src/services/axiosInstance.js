@@ -1,3 +1,4 @@
+
 // axiosInstance.js
 
 import axios from 'axios';
@@ -25,3 +26,6 @@ axiosInstance.interceptors.request.use(
 );
 
 export default axiosInstance;
+
+
+//OLD AXIOS INSTANCE

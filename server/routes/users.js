@@ -10,7 +10,7 @@ router.get('/api/users', async (req, res) => {
     try {
       const users =
         type === 'Students'
-          ? await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName email')
+          ? await Tupath_usersModel.find().select('profileDetails.firstName profileDetails.lastName email profileDetails.contact')
           : await Employer_usersModel.find().select('profileDetails.companyName email profileDetails.contact');
       
       res.status(200).json({ success: true, users });
