@@ -135,13 +135,58 @@
     }
 }
 
+.usersadminsection{
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100%;
+}
+
+
+.userbestsadminsection{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 80vh;
+  width: 100%;
+  overflow: hidden;
+  padding-top: 5%;
+}
+
+
+.userbestsadmincontianer {
+  display: flex;
+  margin-top: 3%;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  width: 80%;
+  height: 90%;
+  padding: 20px 0px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.leftusersadminsection{
+  width: 100%;
+}
+
+
+.rightusersadminsection{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 5%;
+}
+
+
 /* Accessibility: Focus-visible support */
 .adminsidebar nav ul li:focus-visible {
     outline: 2px solid #FFF;
     outline-offset: 2px;
 }
 
-.usersadminsection h2, .reportsadminsection h2, .logoutadminsection h2{
+.usersadminsection h2, .reportsadminsection h2, .logoutadminsection h2, .userbestsadminsection h2{
     color: white;
     font-size: 20px;
 }
@@ -149,39 +194,50 @@
 
 
 /* Dropdown Section Styling */
-.dropdown-container {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: flex-start;
-  }
-  
-  .dropdown-label {
-    font-size: 12px;
-    color: white;
-  }
-  
-  .user-type-dropdown {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 12px;
-    background-color: #fff;
-    color: #000;
-    cursor: pointer;
-  }
-  
-  .user-type-dropdown:focus {
-    outline: none;
-    border-color: #9D0E0F;
-  }
+/* Dropdown Section Styling */
+.dropdownad-container {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.dropdownad-label {
+  font-size: 12px;
+  color: white;
+}
+
+.user-type-dropdown {
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 12px;  /* Adjust font size for readability */
+  background-color: #fff;
+  color: #000;
+  cursor: pointer;
+  outline: none;
+}
+
+.user-type-dropdown:focus {
+  border-color: #0099ff;  /* Highlight color when focused */
+  box-shadow: 0 0 5px rgba(0, 153, 255, 0.5);  /* Soft shadow for focus effect */
+}
+
+.user-type-dropdown option {
+  padding: 10px;
+}
+
+/* Optional: Adding a hover effect */
+.user-type-dropdown:hover {
+  background-color: #f0f0f0;  /* Light background when hovered */
+}
+
   
   /* Users List Container */
   .userslistcontainer {
-    margin-top: 20px;
-    background-color: #F4F2EE;
     border-radius: 5px;
+    width: 100%;
     padding: 20px 0px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     color: white;
@@ -280,8 +336,8 @@
   }
   
   .chart-container {
-    max-width: 600px;
-    margin-top: 20px;
+    width:80%;
+    height: 80%;
   }
 
     
