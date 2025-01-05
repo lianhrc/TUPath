@@ -12,6 +12,7 @@ const MessagingPop = () => {
     profileImg: profileicon, // Default profile icon
   });
   const [unreadMessages, setUnreadMessages] = useState([]); // State for unread messages
+  const [messages, setMessages] = useState([]); // State for all messages
 
   // Fetch profile data
   useEffect(() => {
@@ -43,6 +44,22 @@ const MessagingPop = () => {
     };
 
     fetchUnreadMessages();
+  }, []);
+
+  // Fetch all messages
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await axiosInstance.get('/api/messages');
+        if (response.data) {
+          setMessages(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    fetchMessages();
   }, []);
 
   const togglePopup = () => {
@@ -118,6 +135,34 @@ const MessagingPop = () => {
               ))
           ) : (
             <p>No new messages.</p>
+          )}
+
+          <h4>All Messages</h4>
+          {messages.length > 0 ? (
+            messages
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
+              .map((message, index) => (
+                <div
+                  key={index}
+                  className="messagenotifitem"
+                  onClick={() => handleNotificationClick(message)}
+                >
+                  <div className="notifitemleft">
+                    <img
+                      src={message.sender.profileImg || profileicon}
+                      alt={`${message.sender.name}'s profile`}
+                    />
+                  </div>
+                  <div className="messnotifitemright">
+                    <p>
+                      <strong>{message.sender.name}</strong>
+                    </p>
+                    <p>{message.messageContent.text}</p>
+                  </div>
+                </div>
+              ))
+          ) : (
+            <p>No messages available.</p>
           )}
         </div>
       )}
