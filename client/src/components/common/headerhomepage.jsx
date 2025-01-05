@@ -8,7 +8,10 @@ import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
 import Loader from '../common/Loader';
 import _debounce from 'lodash.debounce';
+import { io } from 'socket.io-client';
 import './headerhomepage.css';
+
+const socket = io('http://localhost:3001');
 
 function HeaderHomepage() {
     const [isNotifOpen, setNotifOpen] = useState(false);
@@ -128,6 +131,7 @@ function HeaderHomepage() {
         }
     };
 
+<<<<<<< HEAD
     const handleNotificationClick = async (message) => {
         try {
             await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
@@ -138,6 +142,82 @@ function HeaderHomepage() {
             setUnreadMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== message._id));
         } catch (error) {
             console.error('Error marking message as read:', error);
+=======
+    fetchUnreadMessages();
+  }, []);
+
+  useEffect(() => {
+    socket.on('receive_message', (message) => {
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('new_message', (message) => {
+      setUnreadMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('message_read', ({ messageId }) => {
+      setUnreadMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== messageId)
+      );
+    });
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('new_message');
+      socket.off('message_read');
+    };
+  }, []);
+
+  const handleSearch = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    setIsSearchFieldClicked(false);
+    if (query.length > 0) {
+      debouncedSearch(query);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const toggleNotifDropdown = () => {
+    setNotifOpen(!isNotifOpen);
+    setProfileOpen(false);
+  };
+
+  const toggleProfileDropdown = () => {
+    setProfileOpen(!isProfileOpen);
+    setNotifOpen(false);
+  };
+
+  const handleSearchFieldClick = () => {
+    setIsSearchFieldClicked(true);
+  };
+
+  const handleClearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem('recentSearches');
+  };
+
+  const handleAddToRecentSearches = (profile) => {
+    if (!recentSearches.some((search) => search._id === profile._id)) {
+      const updatedSearches = [profile, ...recentSearches];
+      if (updatedSearches.length > 5) updatedSearches.pop();
+      setRecentSearches(updatedSearches);
+      localStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
+    }
+  };
+
+  const handleNotificationClick = async (message) => {
+    // Mark the message as read
+    try {
+      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+>>>>>>> forum
         }
         window.location.href = `/Inboxpage?messageId=${message._id}`;
     };

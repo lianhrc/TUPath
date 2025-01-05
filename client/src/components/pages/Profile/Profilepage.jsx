@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
@@ -17,6 +18,8 @@ import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notifications
 
+const socket = io('http://localhost:3001');
+
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
   const [projects, setProjects] = useState([]); // State for projects
@@ -32,7 +35,6 @@ function ProfilePage() {
   const addCertificateToState = (newCertificate) => {
     setCertificates((prevCertificates) => [...prevCertificates, newCertificate]);
   };
-  
 
   // Modals
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -78,6 +80,21 @@ function ProfilePage() {
 
     fetchProfileData();
   }, [userRole]); // Re-fetch if userRole changes
+
+  useEffect(() => {
+    socket.on('new_certificate', (certificate) => {
+      setCertificates((prevCertificates) => [...prevCertificates, certificate]);
+    });
+
+    socket.on('delete_certificate', ({ certificateId }) => {
+      setCertificates((prevCertificates) => prevCertificates.filter((cert) => cert._id !== certificateId));
+    });
+
+    return () => {
+      socket.off('new_certificate');
+      socket.off('delete_certificate');
+    };
+  }, []);
 
   if (loading) {
     return <Loader />;
@@ -251,7 +268,7 @@ function ProfilePage() {
               <h3>My Certificates</h3>
               <hr />
               <div className="projects-grid">
-                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(certificates)}>
+                <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
                   <p>+</p>
                   <p>Add a Certificate</p>
                 </div>
@@ -260,15 +277,8 @@ function ProfilePage() {
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
                     <div key={cert._id} className="project-card" onClick={() => { setselectedCert(cert); setshowcertPreviewModal(true); }}>
-                      {cert.Certificate.CertThumbnail && (
-                        <img
-                          src={`http://localhost:3001${cert.Certificate.CertThumbnail}`}
-                          alt="Certificate Thumbnail"
-                          className="certificate-thumbnail"
-                        />
-                      )}
+                      {cert.Certificate.CertThumbnail && <img src={`http://localhost:3001${cert.Certificate.CertThumbnail}`} alt="Certificate Thumbnail"/>}
                       <p>{cert.Certificate.CertName}</p>
-                     
                     </div>
                   ))
                 ) : (
@@ -293,10 +303,17 @@ function ProfilePage() {
 
         {/* Modals */}
         <ProjectUploadModal
-          key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+          key={showUploadModal ? 'project-open' : 'project-closed'} // Change key to force re-render
           show={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onProjectUpload={addProjectToState}
+        />
+
+        <CertUpModal
+          key={certificatesModalOpen ? 'cert-open' : 'cert-closed'} // Change key to force re-render
+          show={certificatesModalOpen}
+          onClose={() => setCertificatesModalOpen(false)}
+          onCertificateUpload={(addCertificateToState)}
         />
 
         <EditDescriptionModal
@@ -349,11 +366,6 @@ function ProfilePage() {
           }}
         />
 
-     
-      
-
-
-      
         <MessagePop />
       </div>
     </div>
