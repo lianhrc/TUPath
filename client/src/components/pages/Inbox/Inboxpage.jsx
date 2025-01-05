@@ -81,8 +81,22 @@ function Inboxpage() {
       );
     });
 
+    socket.on('new_message', (message) => {
+      setMessages((prevMessages) => 
+        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      );
+    });
+
+    socket.on('message_read', ({ messageId }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
+      );
+    });
+
     return () => {
       socket.off('receive_message');
+      socket.off('new_message');
+      socket.off('message_read');
     };
   }, []);
 

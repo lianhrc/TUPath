@@ -177,17 +177,17 @@ app.get('/api/userss', verifyToken, async (req, res) => {
 });
 
 
-  // REST endpoint to fetch chat messages
-  app.get("/api/messages", verifyToken, async (req, res) => {
-    try {
-      const userId = req.user.id; // Extract userId from the token
-      const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
-      res.json(messages);
-    } catch (err) {
-      console.error("Error fetching messages:", err);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
+// REST endpoint to fetch chat messages
+app.get("/api/messages", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract userId from the token
+    const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error("Error fetching messages:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
 // REST endpoint to fetch sent messages
 app.get("/api/sent-messages", verifyToken, async (req, res) => {
@@ -230,6 +230,9 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
 
     message.status.read = true;
     await message.save();
+
+    // Emit the message read event
+    io.emit("message_read", { messageId });
 
     res.status(200).json({ success: true, message: "Message marked as read" });
   } catch (err) {
@@ -580,6 +583,7 @@ const Post = mongoose.model("Post", postSchema);
           });
           await message.save();
           socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
+          io.emit("new_message", message); // Emit to all clients
         });
       } catch (err) {
         console.error("Error saving message:", err);
