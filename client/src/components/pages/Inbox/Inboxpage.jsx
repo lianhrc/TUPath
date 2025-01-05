@@ -5,7 +5,6 @@ import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
 import dotsicon from '../../../assets/dots.png';
 import profileicon from '../../../assets/profile2.png';
-import profileicon2 from '../../../assets/profileicon.png';
 import './Inboxpage.css';
 
 const socket = io("http://localhost:3001");
