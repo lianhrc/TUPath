@@ -49,7 +49,7 @@
 .search-input {
   height: 30px;
   margin-top: -10px;
-  width: 40%;
+  width: 42%;
   padding: 10px;
   z-index: 10000;
   border: 1px solid #ccc;
@@ -241,7 +241,7 @@ cursor: pointer;
 
 /* profile search */
 .search-results {
-  position: absolute;
+  position: fixed;
   background: white;
   border: 1px solid #ddd;
   width: 100%;
@@ -249,7 +249,7 @@ cursor: pointer;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 48.7%;
+  left: 50%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-bottom-right-radius: 20px;
@@ -295,7 +295,8 @@ cursor: pointer;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  left: 48.7%;
+  left: 50%;
+
 
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

@@ -216,14 +216,14 @@ function HeaderHomepage() {
                                           <strong>
                                               {`${result.profileDetails.firstName} ${result.profileDetails.middleName || ''} ${result.profileDetails.lastName}`.trim()}
                                           </strong>
+                                          {result.bestTag && (
+                                              <p className="best-tag">
+                                                  <span>{`${index + 1}.`}</span> 
+                                                  <i className="fa fa-star" style={{ color: 'gold', marginLeft: '5px' }}></i>
+                                                  Best Tag: <span>{result.bestTag}</span>
+                                              </p>
+                                          )}
                                       </p>
-                                      {result.bestTag && (
-                                          <p className="best-tag">
-                                              <span>{`${index + 1}.`}</span> 
-                                              <i className="fa fa-star" style={{ color: 'gold', marginLeft: '5px' }}></i>
-                                              Best Tag: <span>{result.bestTag}</span>
-                                          </p>
-                                      )}
                                   </div>
                               </Link>
                           ))}
