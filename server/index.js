@@ -9,6 +9,7 @@ const express = require("express");
   const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
+  const cookieParser = require('cookie-parser');
   
   //pushin purposes
  require('dotenv').config()
@@ -23,6 +24,8 @@ const express = require("express");
   const users = require("./routes/users");
   const adminDelete = require("./routes/adminDelete");
   
+  const checkAuth = require('./middleware/authv2')
+  const adminLogout = require('./routes/adminLogout')
   
 
   const JWT_SECRET = "your-secret-key";
@@ -42,7 +45,7 @@ const express = require("express");
 
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
+  app.use(cookieParser());
 
     //ROUTES
    
@@ -54,6 +57,8 @@ const express = require("express");
     app.use('/', studentTags);
     app.use('/', studentByTags);
     app.use('/', adminDelete);
+    app.use('/', checkAuth);
+    app.use('/', adminLogout);
 
 
   // Middleware for setting COOP headers
@@ -62,8 +67,6 @@ const express = require("express");
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // Added CORP header
     next();
   });
-  const cookieParser = require('cookie-parser'); //start to delete this line if trial and error
-  app.use(cookieParser());
 
 
 /*
