@@ -1,48 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminLogin.css';
 import { motion } from 'framer-motion';
 import adminheadericon from '../../../assets/logoicon2.png';
 import adminloginicon from '../../../assets/user-gear.png';
-import { useState } from 'react';
 import axiosInstancev2 from '../../../services/axiosInstancev2';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const navigate = useNavigate();
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axiosInstancev2.get('/check-auth');
+        if (response.data.success) {
+          // If already authenticated, redirect to admin dashboard
+          navigate('/admindashboard');
+        }
+      } catch (error) {
+        // If not authenticated, allow staying on login page
+        console.log('Not authenticated, staying on login page');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const navigate = useNavigate();
-
   const handleSignupRedirect = () => {
     navigate('/adminsignup');
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
-    axiosInstancev2
-      .post('/api/admin/login', formData)
-      .then((response) => {
-        if (response.data.success) {
-
-          // Redirect to admin dashboard
-          console.log('Cookie set successfully:', document.cookie);
-          navigate('/admindashboard');
-        } else {
-          setError(response.data.message || 'Invalid login credentials.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error during login:', error);
-        setError(error.response?.data?.message || 'An error occurred. Please try again.');
-      });
+    try {
+      const response = await axiosInstancev2.post('/api/admin/login', formData);
+      if (response.data.success) {
+        navigate('/admindashboard');
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Login failed');
+    }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="admin-login-container">

@@ -1706,9 +1706,30 @@ app.post("/api/reset-password/:token", async (req, res) => {
     }
 });
 
+// Add authentication check endpoint
+app.get('/check-auth', async (req, res) => {
+  try {
+    const token = req.cookies.adminToken; // Assuming you're using cookies for admin auth
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token found' });
+    }
 
+    const verified = jwt.verify(token, JWT_SECRET);
+    if (!verified) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
 
+    res.json({ success: true });
+  } catch (error) {
+    res.status(401).json({ success: false, message: 'Authentication failed' });
+  }
+});
 
+// Update logout endpoint to clear cookie
+app.post('/api/admin/logout', (req, res) => {
+  res.clearCookie('adminToken');
+  res.json({ success: true, message: 'Logged out successfully' });
+});
 
   // Server setup
   const PORT = process.env.PORT || 3001;
