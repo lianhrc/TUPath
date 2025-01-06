@@ -148,8 +148,34 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               )}
             </div>
 
+            <h6>Attachments:</h6>
             <div className="projpreviewfiles">
-              <p><strong>{getFileName(project.files)}</strong></p>
+              {(project.selectedFiles?.length > 0 || project.files?.length > 0) ? (
+                <>
+                  {project.selectedFiles?.map((file, index) => (
+                    <a 
+                      key={`selected-${index}`}
+                      href={`http://localhost:3001${file}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      {getFileName(file)}
+                    </a>
+                  ))}
+                  {project.files?.map((file, index) => (
+                    <a 
+                      key={`file-${index}`}
+                      href={`http://localhost:3001${file}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      {getFileName(file)}
+                    </a>
+                  ))}
+                </>
+              ) : (
+                <p>No attachments available</p>
+              )}
             </div>
           </div>
         </div>
