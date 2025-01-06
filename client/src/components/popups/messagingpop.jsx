@@ -136,7 +136,7 @@ const MessagingPop = () => {
       <button className="message-toggle" onClick={togglePopup}>
         <div>
           <img src={profileImageUrl} alt="Profile" />
-          Email
+          Messaging
         </div>
         <img
           className="writeicon"
@@ -176,7 +176,7 @@ const MessagingPop = () => {
           )}
 
             <div className="allmessage">
-              <h4>All Email</h4>
+              <h4>All Messages</h4>
               {messages.length > 0 ? (
                 messages
                   .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending

@@ -174,14 +174,14 @@
 
 .topdetailscontainer h5 {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 10px;
     margin: 0;
-    font-size: 14px;
+    text-align: left;
     color: #333;
 }
 
 .topdetailscontainer p {
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .bottomdetailscontainer {
@@ -234,6 +234,8 @@
     height: 80px; /* Set height */
     border-radius: 50%; /* Make it circular */
     border: 2px solid #ccc; /* Optional border */
+    object-fit: cover;
+
 }
 
 .namedatecontainer {
