@@ -310,7 +310,7 @@ function ProfilePage() {
         />
 
         <CertUpModal
-          key={certificatesModalOpen ? 'cert-open' : 'cert-closed'} // Change key to force re-render
+          key={certificatesModalOpen ? 'open' : 'closed'} // Change key to force re-render
           show={certificatesModalOpen}
           onClose={() => setCertificatesModalOpen(false)}
           onCertificateUpload={(addCertificateToState)}
@@ -322,21 +322,6 @@ function ProfilePage() {
           profileData={profileData}
           onSave={(updatedData) => setProfileData(updatedData)}
         />
-
-           <CertUpModal
-        show={certificatesModalOpen}
-        onClose={() => setCertificatesModalOpen(false)}
-        onCertificateUpload={(newCertificate) => {
-          // Add the new certificate to the state to update the UI
-          setCertificates((prevCertificates) => [...prevCertificates, newCertificate]);
-      
-          // Close the modal
-          setCertificatesModalOpen(false);
-      
-          // Optionally display a success toast
-          toast.success('Certificate uploaded successfully!');
-        }}
-      />
 
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />
         <CertPreviewModal show={showcertPreviewModal} onClose={() => setshowcertPreviewModal(false)} project={selectedCert} onDelete={deleteCertificate} />
