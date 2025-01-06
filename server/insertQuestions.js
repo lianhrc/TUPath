@@ -155,7 +155,7 @@ const Questions = [
 
 const insertQuestions = async () => {
   try {
-    await mongoose.connect("mongodb+srv://henry:admin@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority", {
+    await mongoose.connect("mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
