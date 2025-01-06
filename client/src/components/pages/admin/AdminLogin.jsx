@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import adminheadericon from '../../../assets/logoicon2.png';
 import adminloginicon from '../../../assets/user-gear.png';
 import { useState } from 'react';
-import axiosInstance from '../../../services/axiosInstance';
+import axiosInstancev2 from '../../../services/axiosInstancev2';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
@@ -26,15 +26,14 @@ const AdminLogin = () => {
     e.preventDefault();
     setError('');
 
-    axiosInstance
+    axiosInstancev2
       .post('/api/admin/login', formData)
       .then((response) => {
         if (response.data.success) {
-          // Save token or session data
-          localStorage.setItem('adminToken', response.data.token);
 
           // Redirect to admin dashboard
-          window.location.href = '/admindashboard';
+          console.log('Cookie set successfully:', document.cookie);
+          navigate('/admindashboard');
         } else {
           setError(response.data.message || 'Invalid login credentials.');
         }
