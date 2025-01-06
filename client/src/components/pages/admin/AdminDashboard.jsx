@@ -322,9 +322,18 @@ const TagChart = () => {
             }}
           />
         )}
+           {selectedTag && (
+          <StudentListModal
+            tag={selectedTag}
+            students={students}
+            onClose={() => setSelectedTag(null)}
+            loading={studentsLoading}
+          />
+        )}
+     
       </div>
     </div>
   );
-};
+};// pushin purposes
 
 export default AdminDashboard;
