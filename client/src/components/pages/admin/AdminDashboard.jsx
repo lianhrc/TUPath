@@ -5,6 +5,9 @@ import { Pie, Bar } from 'react-chartjs-2';
 import tupicon from '../../../assets/logo.png';
 import irjpicon from '../../../assets/irjplogo.png';
 import StudentListModal from '../../popups/StudentListModal';
+import AuthContext from '../../AuthProvider';
+import axiosInstancev2 from '../../../services/axiosInstancev2';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Chart as ChartJS,
@@ -16,12 +19,54 @@ import {
   LinearScale,
   BarElement,
 } from 'chart.js';
-import axiosInstance from '../../../services/axiosInstance';
 
 ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('Users'); // Track active section
+  const [authChecked, setAuthChecked] = useState(false); // Track if authentication check is done
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axiosInstancev2.get('/check-auth');
+        if (response.data.success) {
+          setAuthChecked(true);
+        } else {
+          navigate('/adminlogin');
+        }
+      } catch (error) {
+        if (error.response?.status === 401) {
+          console.error('User not authenticated:', error.response.data.message);
+          navigate('/adminlogin');
+        } else {
+          console.error('Unexpected error during authentication:', error);
+        }
+      }
+    };
+  
+    checkAuth();
+  }, [navigate]);
+  
+
+  const handleLogout = async () => {
+    try {
+      const response = await axiosInstancev2.post('/api/admin/logout');
+      if (response.data.success) {
+        navigate('/adminlogin');
+      } else {
+        alert('Failed to log out.');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      alert('An error occurred while logging out.');
+    }
+  };
+
+  if (!authChecked) {
+    return <div>Loading...</div>; // Show loading screen until authentication is checked
+  }
 
   return (
     <div className="admin-dashboard-container">
@@ -31,8 +76,8 @@ const AdminDashboard = () => {
           <ul>
             <li className="iconli">
               <div className="imgcontaineradmin">
-                <img className="irjp" src={irjpicon} alt="" />
-                <img className="tup" src={tupicon} alt="" />
+                <img className="irjp" src={irjpicon} alt="IRJP Logo" />
+                <img className="tup" src={tupicon} alt="TUP Logo" />
               </div>
             </li>
             <li
@@ -42,7 +87,7 @@ const AdminDashboard = () => {
               <FaUsers className="icon" />
               <span className="text">Users</span>
             </li>
-            
+
             <li
               onClick={() => setActiveSection('Tags')}
               className={activeSection === 'Tags' ? 'active' : ''}
@@ -50,7 +95,7 @@ const AdminDashboard = () => {
               <FaTags className="icon" />
               <span className="text">Best</span>
             </li>
-            <li>
+            <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
@@ -69,21 +114,20 @@ const AdminDashboard = () => {
 
 // Users Section Component
 const UsersSection = () => {
-  const [selectedType, setSelectedType] = useState('Students'); // Track user type
-  const [usersData, setUsersData] = useState([]); // Store fetched users
-  const [loading, setLoading] = useState(false); // Loading state
-  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 }); // User stats for the pie chart
+  const [selectedType, setSelectedType] = useState('Students');
+  const [usersData, setUsersData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 });
 
   const handleDropdownChange = (event) => {
     setSelectedType(event.target.value);
   };
 
-  // Fetch users and user stats whenever the selected type changes
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
+        const response = await axiosInstancev2.get(`/api/users?type=${selectedType}`);
         if (response.data.success) {
           setUsersData(response.data.users);
         }
@@ -96,7 +140,7 @@ const UsersSection = () => {
 
     const fetchUserStats = async () => {
       try {
-        const response = await axiosInstance.get('/api/user-stats');
+        const response = await axiosInstancev2.get('/api/user-stats');
         if (response.data.success) {
           setUserStats({
             studentCount: response.data.studentCount,
@@ -113,106 +157,62 @@ const UsersSection = () => {
   }, [selectedType]);
 
   const handleDelete = async (userId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
     if (!confirmDelete) return;
 
     try {
-      const response = await axiosInstance.delete(`/api/manage-users/${userId}?type=${selectedType}`);
+      const response = await axiosInstancev2.delete(`/api/manage-users/${userId}?type=${selectedType}`);
       if (response.data.success) {
-        alert("User deleted successfully!");
-        // Remove the user from the UI
+        alert('User deleted successfully!');
         setUsersData((prevUsers) => prevUsers.filter((user) => user._id !== userId));
       } else {
-        alert("Failed to delete the user.");
+        alert('Failed to delete the user.');
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("An error occurred while deleting the user.");
+      console.error('Error deleting user:', error);
+      alert('An error occurred while deleting the user.');
     }
   };
 
-  // Pie chart data
   const chartData = {
     labels: ['Students', 'Employers'],
     datasets: [
       {
         data: [userStats.studentCount, userStats.employerCount],
-        backgroundColor: [
-          'rgba(54, 162, 235, 0.6)',  // Light blue with opacity
-          'rgba(255, 99, 132, 0.6)',  // Light red with opacity
-        ],
-        hoverBackgroundColor: [
-          'rgba(54, 162, 235, 0.9)',  // Darker blue on hover
-          'rgba(255, 99, 132, 0.9)',  // Darker red on hover
-        ],
-        borderColor: ['#36A2EB', '#FF6384'],  // Strong border color
-        borderWidth: 0, // Slightly thicker border for a sharper look
-        hoverBorderWidth: 0, // Thicker border on hover
+        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+        hoverBackgroundColor: ['rgba(54, 162, 235, 0.9)', 'rgba(255, 99, 132, 0.9)'],
       },
     ],
   };
 
-  
-
-  // Render table dynamically based on selected type
   const renderTable = () => {
     if (loading) return <p>Loading...</p>;
 
     if (usersData.length === 0) return <p>No users found.</p>;
 
-    if (selectedType === 'Students') {
-      return (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Contact</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {usersData.map((user, index) => {
-              const firstName = user?.profileDetails?.firstName || 'N/A';
-              const lastName = user?.profileDetails?.lastName || 'N/A';
-              const contact = user?.profileDetails?.contact || 'N/A';
-              return (
-                <tr key={index}>
-                  <td>{`${firstName} ${lastName}`}</td>
-                  <td>{user?.email || 'N/A'}</td>
-                  <td>{contact}</td>
-                  <td><button className='delete-btn' onClick={() => handleDelete(user._id)}>Delete</button></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      );
-    }
-
     return (
       <table>
         <thead>
           <tr>
-            <th>Company Name</th>
+            <th>Name</th>
             <th>Email</th>
             <th>Contact</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {usersData.map((user, index) => {
-            const companyName = user?.profileDetails?.companyName || 'N/A';
-            const contact = user?.profileDetails?.contact || 'N/A';
-            return (
-              <tr key={index}>
-                <td>{companyName}</td>
-                <td>{user?.email || 'N/A'}</td>
-                <td>{contact}</td>
-                <td><button className='delete-btn'>Delete</button></td>
-              </tr>
-            );
-          })}
+          {usersData.map((user, index) => (
+            <tr key={index}>
+              <td>{`${user?.profileDetails?.firstName || 'N/A'} ${user?.profileDetails?.lastName || 'N/A'}`}</td>
+              <td>{user?.email || 'N/A'}</td>
+              <td>{user?.profileDetails?.contact || 'N/A'}</td>
+              <td>
+                <button className="delete-btn" onClick={() => handleDelete(user._id)}>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     );
@@ -220,28 +220,23 @@ const UsersSection = () => {
 
   return (
     <div className="usersadminsection">
-      
       <div className="leftusersadminsection">
-      <h2>Users</h2>
-
-          <div className="dropdownad-container">
+        <h2>Users</h2>
+        <div className="dropdownad-container">
           <label className="dropdownad-label">Select User Type:</label>
           <select className="user-type-dropdown" value={selectedType} onChange={handleDropdownChange}>
             <option value="Students">Students</option>
             <option value="Employers">Employers</option>
           </select>
         </div>
-
         <div className="userslistcontainer">{renderTable()}</div>
       </div>
 
       <div className="rightusersadminsection">
-        {/* Render Pie chart */}
-          <div className="chart-container">
-           <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
-       </div>
+        <div className="chart-container">
+          <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+        </div>
       </div>
-
     </div>
   );
 };
@@ -257,7 +252,7 @@ const TagChart = () => {
   useEffect(() => {
     const fetchTagData = async () => {
       try {
-        const response = await axiosInstance.get('/api/student-tags');
+        const response = await axiosInstancev2.get('/api/student-tags');
         if (response.data.success) {
           setTagData(response.data.tags);
         }
@@ -271,19 +266,15 @@ const TagChart = () => {
   }, []);
 
   const handleBarClick = async (event, elements) => {
-    console.log('Bar clicked', elements); // Debugging
-
     if (elements.length > 0) {
-      const index = elements[0].index; // Index of the clicked bar
-      const tag = tagData[index]._id; // Get tag from clicked bar
-      console.log('Selected tag:', tag); // Debugging
+      const index = elements[0].index;
+      const tag = tagData[index]._id;
       setSelectedTag(tag);
 
       setStudentsLoading(true);
       try {
-        const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
+        const response = await axiosInstancev2.get('/api/students-by-tag', { params: { tag } });
         if (response.data.success) {
-          console.log('API response for students:', response.data); // Debugging
           setStudents(response.data.students);
         }
       } catch (error) {
@@ -296,21 +287,21 @@ const TagChart = () => {
 
   const chartData = {
     labels: tagData.map((tag) => tag._id),
-    datasets: [{
-      label: 'Number of Students Excelling',
-      data: tagData.map((tag) => tag.count),
-      backgroundColor: '#e0b8b8',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 0,
-      barThickness: 50,
-      maxBarThickness: 100,
-    }],
+    datasets: [
+      {
+        label: 'Number of Students Excelling',
+        data: tagData.map((tag) => tag.count),
+        backgroundColor: '#e0b8b8',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 0,
+      },
+    ],
   };
 
   return (
     <div className="userbestsadminsection">
-    <h2>Top Performing Students in Various Categories</h2>
-    <div className="userbestsadmincontianer">
+      <h2>Top Performing Students in Various Categories</h2>
+      <div className="userbestsadmincontianer">
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -318,24 +309,13 @@ const TagChart = () => {
             data={chartData}
             options={{
               responsive: true,
-              plugins: {
-                legend: { display: false },
-              },
+              plugins: { legend: { display: false } },
               scales: {
                 x: { title: { display: true, text: 'Tags' } },
                 y: { title: { display: true, text: 'Number of Students' } },
               },
               onClick: handleBarClick,
             }}
-          />
-        )}
-
-        {selectedTag && (
-          <StudentListModal
-            tag={selectedTag}
-            students={students}
-            onClose={() => setSelectedTag(null)}
-            loading={studentsLoading}
           />
         )}
       </div>

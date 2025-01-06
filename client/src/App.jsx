@@ -24,7 +24,7 @@ import './App.css'
 import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
 import AdminSignup from './components/pages/admin/AdminSignup.jsx';
 import QuestionManager from './components/pages/admin/QuestionManager.jsx';
-
+import { AuthProvider } from './components/AuthProvider.jsx';
 
 function App() {
   return (
@@ -83,10 +83,10 @@ function App() {
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
 
-
+            
 
           <Route path='/adminlogin' element={<AdminLogin />} />
-          <Route path='/admindashboard' element={<AdminDashboard />} />
+          <Route path='/admindashboard' element={<AuthProvider><AdminDashboard /></AuthProvider>} />
           <Route path='/adminsignup' element={<AdminSignup />} />
           <Route path='/questionmanager' element={<QuestionManager />} />
 
