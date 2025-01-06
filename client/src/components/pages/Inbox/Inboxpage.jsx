@@ -19,44 +19,64 @@ function Inboxpage() {
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const [receivedResponse, sentResponse] = await Promise.all([
-          fetch('http://localhost:3001/api/messages', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          }),
-          fetch('http://localhost:3001/api/sent-messages', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          })
-        ]);
+    const countUnread = messages.filter(msg => !msg.status.read).length;
+    setUnreadCount(countUnread);
+  }, [messages]);
 
-        const receivedMessages = await receivedResponse.json();
-        const sentMessages = await sentResponse.json();
+  const fetchMessages = async () => {
+    setIsFetching(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/messages', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
-        const allMessages = [...receivedMessages, ...sentMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setMessages(allMessages);
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
 
-        // Select the message based on the query parameter
-        const queryParams = new URLSearchParams(location.search);
-        const messageId = queryParams.get('messageId');
-        if (messageId) {
-          const message = allMessages.find(msg => msg._id === messageId);
-          if (message) {
-            setSelectedMessage(message);
+      const messages = await response.json();
+      const sortedMessages = messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setMessages(sortedMessages);
+
+      const queryParams = new URLSearchParams(location.search);
+      const messageId = queryParams.get('messageId');
+      if (messageId) {
+        const message = messages.find(msg => msg._id === messageId);
+        if (message) {
+          setSelectedMessage(message);
+          if (!message.status.read) {
+            handleMarkAsRead(message);
           }
         }
-      } catch (error) {
-        console.error("Error fetching messages:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
+  useEffect(() => {
     fetchMessages();
+
+    socket.on('receive_message', handleNewMessage);
+    socket.on('message_read', handleMessageRead);
+    socket.on('message_deleted', handleMessageDeleted);
+
+    const refreshInterval = setInterval(fetchMessages, 10000);
+
+    return () => {
+      socket.off('receive_message');
+      socket.off('message_read');
+      socket.off('message_deleted');
+      clearInterval(refreshInterval);
+    };
   }, [location.search]);
 
   useEffect(() => {
@@ -74,6 +94,32 @@ function Inboxpage() {
       .catch(error => console.error("Error fetching users:", error));
   }, []);
 
+  const handleNewMessage = (message) => {
+    setMessages((prevMessages) => {
+      const updatedMessages = [message, ...prevMessages];
+      return updatedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    });
+  };
+
+  const handleMessageRead = ({ messageId }) => {
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) => 
+        msg._id === messageId 
+          ? { ...msg, status: { ...msg.status, read: true } }
+          : msg
+      )
+    );
+  };
+
+  const handleMessageDeleted = ({ messageId }) => {
+    setMessages((prevMessages) => 
+      prevMessages.filter((msg) => msg._id !== messageId)
+    );
+    if (selectedMessage?._id === messageId) {
+      setSelectedMessage(null);
+    }
+  };
+
   useEffect(() => {
     socket.on('receive_message', (message) => {
       setMessages((prevMessages) => 
@@ -90,7 +136,6 @@ function Inboxpage() {
     setSelectedMessage(message);
     setShowNewMessageSection(false);
   
-    // Mark the message as read
     if (!message.status.read) {
       try {
         await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
@@ -121,25 +166,25 @@ function Inboxpage() {
         return;
       }
 
-      const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
-      const username = localStorage.getItem('username'); // Assuming username is stored in localStorage
-      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+      const userId = localStorage.getItem('userId');
+      const username = localStorage.getItem('username');
+      const token = localStorage.getItem('token');
 
-      console.log("Sender ID:", userId); // Log the senderId for debugging
-      console.log("Sender Username:", username); // Log the sender username for debugging
+      console.log("Sender ID:", userId);
+      console.log("Sender Username:", username);
 
       const newMessage = {
         sender: {
           senderId: userId,
           name: username,
-          profileImg: localStorage.getItem('profileImg') // Assuming profileImg is stored in localStorage
+          profileImg: localStorage.getItem('profileImg')
         },
-        receiverId: recipientUser._id, // Use receiverId instead of receiver
-        receiverName: newMessageRecipient, // Use receiverName instead of receiver
+        receiverId: recipientUser._id,
+        receiverName: newMessageRecipient,
         receiverProfileImg: recipientUser.profileDetails.profileImg,
         messageContent: {
-          text: newMessageContent, // Ensure text is included in messageContent
-          attachments: [] // Add attachments if any
+          text: newMessageContent,
+          attachments: []
         },
         status: {
           read: false,
@@ -149,10 +194,8 @@ function Inboxpage() {
         token: token
       };
 
-      // Send message to the server via socket without adding it to the messages state
       socket.emit('send_message', newMessage);
 
-      // Clear inputs and hide the new message section
       setNewMessageRecipient('');
       setNewMessageContent('');
       setShowNewMessageSection(false);
@@ -187,13 +230,83 @@ function Inboxpage() {
     setFilteredUsers([]);
   };
 
+  const handleMarkAsRead = async (message) => {
+    if (!message.status.read) {
+      try {
+        const response = await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to mark message as read');
+        }
+
+        socket.emit('mark_as_read', { messageId: message._id });
+        
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => 
+            msg._id === message._id 
+              ? { ...msg, status: { ...msg.status, read: true } }
+              : msg
+          )
+        );
+      } catch (error) {
+        console.error("Error marking message as read:", error);
+      }
+    }
+  };
+
+  const renderMessageList = () => (
+    <div className="inboxlists">
+      {isFetching ? (
+        <div className="loading-indicator">Loading messages...</div>
+      ) : messages.length === 0 ? (
+        <div className="no-messages">No messages found</div>
+      ) : (
+        messages.map((message, index) => {
+          const isSentMessage = message.direction === 'sent';
+          const displayName = isSentMessage ? message.receiver.name : message.sender.name;
+          const profileImg = isSentMessage ? message.receiver.profileImg : message.sender.profileImg;
+          const text = message.messageContent?.text || '';
+          const isUnread = !message.status.read && !isSentMessage;
+
+          return (
+            <div
+              key={message._id || index}
+              className={`inboxlist-container ${message.direction} ${isUnread ? 'unread' : 'read'}`}
+              onClick={() => handleSelectMessage(message)}
+            >
+              <div className="inboxprofilecontainerleft">
+                <img src={profileImg || profileicon} alt={`${displayName}'s profile`} />
+                {isUnread && <span className="unread-indicator" />}
+              </div>
+              <div className="inboxdetailscontainerright">
+                <div className="topdetailscontainer">
+                  <h5>{message.direction === 'sent' ? 'To:' : 'From:'} {displayName}</h5>
+                  <p>{new Date(message.timestamp).toLocaleString()}</p>
+                </div>
+                <div className="bottomdetailscontainer">
+                  <p className="text-content">{text}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+
   return (
     <div className='Inboxpage'>
       <HeaderHomepage />
       <div className="inbox-container">
         <div className="inboxhead">
           <div className="headtitle">
-            <p>Email</p>
+            <p>Email {unreadCount > 0 && <span className="unread-count">({unreadCount})</span>}</p>
           </div>
           <div className="headicons">
             <button>
@@ -206,35 +319,7 @@ function Inboxpage() {
         </div>
         <div className="inboxmain">
           <div className="inboxmain-left">
-            <div className="inboxlists">
-              {messages.map((message, index) => {
-                const isSender = message.sender.senderId === localStorage.getItem('userId');
-                const profileImg = isSender ? message.receiver.profileImg : message.sender.profileImg;
-                const name = isSender ? message.receiver.name : message.sender.name;
-                const text = message.messageContent?.text || ''; // Ensure messageContent is defined
-
-                return (
-                  <div
-                    key={index}
-                    className="inboxlist-container"
-                    onClick={() => handleSelectMessage(message)}
-                  >
-                    <div className="inboxprofilecontainerleft">
-                      <img src={profileImg || profileicon} alt={`${name}'s profile`} />
-                    </div>
-                    <div className="inboxdetailscontainerright">
-                      <div className="topdetailscontainer">
-                        <h5>{name}</h5> {/* Display the name */}
-                        <p>{new Date(message.timestamp).toLocaleDateString()}</p>
-                      </div>
-                      <div className="bottomdetailscontainer">
-                         <p className="text-content">{text}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {renderMessageList()}
           </div>
           <div className="inboxmain-right">
             {showNewMessageSection ? (
@@ -275,10 +360,10 @@ function Inboxpage() {
                   <img src={selectedMessage.receiver.profileImg || profileicon} alt={`${selectedMessage.receiver.name}'s profile`} className="profile-image" />
                 </div>
                 <div className="namedatecontainer">
-                  <h4>{selectedMessage.receiver.name}</h4> {/* Display the receiver's name */}
+                  <h4>{selectedMessage.receiver.name}</h4>
                   <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
                 </div>
-                <p className="message-content">{selectedMessage.messageContent?.text || ''}</p> {/* Ensure messageContent is defined */}
+                <p className="message-content">{selectedMessage.messageContent?.text || ''}</p>
               </div>
             ) : (
               <p>Select a Email to view its content</p>
