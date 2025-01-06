@@ -9,6 +9,26 @@ import './Inboxpage.css';
 
 const socket = io("http://localhost:3001");
 
+const formatTimeAgo = (timestamp) => {
+  const now = new Date();
+  const postDate = new Date(timestamp);
+  const diffInMs = now - postDate;
+  const diffInMinutes = Math.floor(diffInMs / 60000);
+
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+
+  return postDate.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
 function Inboxpage() {
   const { Inboxpage } = useParams();
   const location = useLocation();
@@ -301,7 +321,7 @@ function Inboxpage() {
               <div className="inboxdetailscontainerright">
                 <div className="topdetailscontainer">
                   <h5>{message.direction === 'sent' ? 'To:' : 'From:'} {displayName}</h5>
-                  <p>{new Date(message.timestamp).toLocaleString()}</p>
+                  <p>{formatTimeAgo(message.timestamp)}</p>
                 </div>
                 <div className="bottomdetailscontainer">
                   <p className="text-content">{text}</p>
@@ -375,7 +395,7 @@ function Inboxpage() {
                 </div>
                 <div className="namedatecontainer">
                   <h4>{selectedMessage.receiver.name}</h4>
-                  <p className="message-date">{new Date(selectedMessage.timestamp).toLocaleDateString()}</p>
+                  <p className="message-date">{formatTimeAgo(selectedMessage.timestamp)}</p>
                 </div>
                 <p className="message-content">{selectedMessage.messageContent?.text || ''}</p>
               </div>
