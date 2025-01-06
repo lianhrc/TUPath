@@ -8,39 +8,24 @@ import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CS
 
 
 const predefinedTags = [
-  "Machine Learning",
-  "AI",
-  "Data Science",
   "Web Development",
-  "Mobile Development",
-  "Cybersecurity",
-  "UI/UX Design",
+  "Software Development and Applications",
 ];
 
 const predefinedTools = [
   "React",
   "Node.js",
-  "MongoDB",
-  "VS Code",
-  "Git",
-  "Figma",
-  "Postman",
-  "Webpack",
-  "Firebase",
+  "Laravel",
   "PHP",
 ];
 
 const predefinedRoles = [
   "Frontend Developer",
   "UI/UX Designer",
-  "React.js Developer",
   "Angular Developer",
-  "Vue.js Developer",
+  "Backend Developer",
   "HTML/CSS Specialist",
-  "JavaScript Developer",
-  "Web Accessibility Specialist",
-  "Web Performance Engineer",
-  "Web Animator",
+
 ];
 
 

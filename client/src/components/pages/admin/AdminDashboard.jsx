@@ -52,9 +52,13 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
+      // Clear any stored admin auth data first
+      localStorage.removeItem('adminToken'); // If you're using token-based auth
+      
       const response = await axiosInstancev2.post('/api/admin/logout');
       if (response.data.success) {
-        navigate('/adminlogin');
+        // Force navigation to login and prevent back navigation
+        window.location.replace('/adminlogin');
       } else {
         alert('Failed to log out.');
       }
@@ -318,9 +322,18 @@ const TagChart = () => {
             }}
           />
         )}
+           {selectedTag && (
+          <StudentListModal
+            tag={selectedTag}
+            students={students}
+            onClose={() => setSelectedTag(null)}
+            loading={studentsLoading}
+          />
+        )}
+     
       </div>
     </div>
   );
-};
+};// pushin purposes
 
 export default AdminDashboard;

@@ -213,42 +213,52 @@ function HeaderHomepage() {
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
 
-          <div className="search-container">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={handleSearch}
-              onClick={handleSearchFieldClick}
-            />
-            {isSearching}
-            {searchResults.length > 0 && (
-              <div className="search-results">
-                <h3>Search Results</h3>
-                {searchResults.map((result, index) => (
-                  <Link
-                    to={`/profile/${result._id}`}
-                    key={index}
-                    className="search-result-item"
-                    onClick={() => handleAddToRecentSearches(result)}
-                  >
-                    <img
-                      src={result.profileDetails?.profileImg || profileicon}
-                      alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
-                      className="search-result-image"
-                    />
-                    <div>
-                      <p>
-                        <strong>{`${result.profileDetails.firstName} ${
-                          result.profileDetails.middleName || ''
-                        } ${result.profileDetails.lastName}`.trim()}</strong>
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+                    <div className="search-container">
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={handleSearch}
+                            onClick={handleSearchFieldClick}
+                        />
+                        {isSearching ? (
+                            <p>Searching...</p>
+                        ) : searchResults.length > 0 ? (
+                          <div className="search-results">
+                          <h3>Search Results</h3>
+                          {searchResults.map((result, index) => (
+                              <Link
+                                  to={`/profile/${result._id}`}
+                                  key={index}
+                                  className="search-result-item"
+                                  onClick={() => handleAddToRecentSearches(result)}
+                              >
+                                  <img
+                                      src={result.profileDetails?.profileImg || profileicon}
+                                      alt={`${result.profileDetails.firstName} ${result.profileDetails.lastName}`}
+                                      className="search-result-image"
+                                  />
+                                  <div>
+                                      <p>
+                                          <strong>
+                                              {`${result.profileDetails.firstName} ${result.profileDetails.middleName || ''} ${result.profileDetails.lastName}`.trim()}
+                                          </strong>
+                                          {result.bestTag && (
+                                              <p className="best-tag">
+                                                  <span>{`${index + 1}.`}</span> 
+                                                  <i className="fa fa-star" style={{ color: 'gold', marginLeft: '5px' }}></i>
+                                                  Best Tag: <span>{result.bestTag}</span>
+                                              </p>
+                                          )}
+                                      </p>
+                                  </div>
+                              </Link>
+                          ))}
+                      </div>
+                                              ) : (
+                            isSearchFieldClicked && <p className="no-results">No results found for "{searchQuery}".</p>
+                        )}
 
             {!isSearching && isSearchFieldClicked && recentSearches.length > 0 && (
               <div className="recent-searches">
