@@ -105,10 +105,6 @@ TupathUserSchema.methods.calculateBestTag = async function () {
   }
 };
 
-
-
-
-
 const projectSchema = new mongoose.Schema({
   projectName: { type: String, required: true },
   description: { type: String, required: true },
@@ -130,8 +126,6 @@ const projectSchema = new mongoose.Schema({
     },
   ],
 });
-
-
 
 // Schema for TUPATH employers
 const EmployerUserSchema = new mongoose.Schema({
@@ -208,12 +202,6 @@ const AssessmentQuestionSchema = new mongoose.Schema({
   },
 });
 
-
-
-
-
-
-
 //----------------------------------------ADMIN SIDE---------------------------------------
 
 // Define the Admin schema
@@ -258,17 +246,12 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-
-
-
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
 const AssessmentQuestion = mongoose.model('AssessmentQuestion', AssessmentQuestionSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
-
-
 
 module.exports = {
   Tupath_usersModel,

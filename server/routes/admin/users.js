@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
-const { Tupath_usersModel, Employer_usersModel } = require("../models/Tupath_users");
-
+const Tupath_usersModel = require("../../models/TupathUser");
+const Employer_usersModel = require("../../models/EmployerUser");
 
 router.get('/api/users', async (req, res) => {
     const { type } = req.query; // Get the user type from query params
@@ -20,7 +20,4 @@ router.get('/api/users', async (req, res) => {
     }
   });
   
-  
-
-
 module.exports = router;

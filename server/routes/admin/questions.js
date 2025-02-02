@@ -1,7 +1,5 @@
-
-
 const express = require('express');
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
+const { AssessmentQuestion } = require("../../models/AssessmentQuestion");
 const router = express.Router();
 
 

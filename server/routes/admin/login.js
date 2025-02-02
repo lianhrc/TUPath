@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
+const { Admin } = require("../../models/Admin");
 const router = express.Router();
 const JWT_SECRET = "your-secret-key";
 

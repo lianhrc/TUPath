@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
+const Admin = require("../../models/Admin");
 
 // Middleware to parse JSON bodies
 router.use(express.json());
