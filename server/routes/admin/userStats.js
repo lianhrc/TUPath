@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
-
+const Tupath_usersModel = require("../../models/TupathUser");
+const Employer_usersModel = require("../../models/EmployerUser");
 
 router.get('/api/user-stats', async (req, res) => {
     try {

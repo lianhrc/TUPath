@@ -1,8 +1,6 @@
-
 const express = require('express');
 const router = express.Router();
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
-
+const Tupath_usersModel = require("../../models/TupathUser");
 
 router.get('/api/student-tags', async (req, res) => {
     try {
