@@ -12,6 +12,7 @@ import AdminLogin from './components/pages/admin/AdminLogin.jsx';
 import AdminDashboard from './components/pages/admin/AdminDashboard.jsx'; // Admin dashboard component
 import Employerlandpage from './components/pages/Main/employerlandpage';
 import Homepage from './components/pages/Home/Homepage';
+import Client_Dashboard from './components/pages/Home/client_Dashboard.jsx';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
@@ -78,6 +79,7 @@ function App() {
           <Route path='/studentlandpage' element={<Studentlandpage />} />
           <Route path='/studentsignup' element={<StudentSignup />} />
           <Route path='/employersignup' element={<EmployerSignup />} />
+          <Route path='/client_Dashboard' element={<Client_Dashboard />} />
           <Route path='/login' element={<Login />} />
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
