@@ -12,7 +12,7 @@ const express = require("express");
   const cookieParser = require('cookie-parser');
   
   //pushin purposes
- require('dotenv').config()
+ //require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");
@@ -23,6 +23,7 @@ const express = require("express");
   const studentByTags = require("./routes/studentsByTag")
   const users = require("./routes/users");
   const adminDelete = require("./routes/adminDelete");
+  const corRoutes = require("./routes/corRoutes");
   
   const checkAuth = require('./middleware/authv2')
   const adminLogout = require('./routes/adminLogout')
@@ -40,6 +41,7 @@ const express = require("express");
   app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
   app.use('/uploads', express.static('uploads'));
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+  app.use('/cor', express.static('cor'));
 
 
 
@@ -59,6 +61,7 @@ const express = require("express");
     app.use('/', adminDelete);
     app.use('/', checkAuth);
     app.use('/', adminLogout);
+    app.use('/', corRoutes);
 
 
   // Middleware for setting COOP headers
@@ -69,22 +72,22 @@ const express = require("express");
   });
 
 
-/*
+
    // MongoDB connection
     mongoose
      .connect("mongodb://127.0.0.1:27017/tupath_users")
       .then(() => console.log("MongoDB connected successfully"))
      .catch((err) => console.error("MongoDB connection error:", err));
-*/
- 
 
+ 
+/*
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-
+*/
 
   // Configure multer for file uploads
     const storage = multer.diskStorage({
