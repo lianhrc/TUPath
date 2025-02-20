@@ -1,4 +1,5 @@
 const express = require('express')
+const bcrypt = require('bcrypt')
 const User = require('../models/userModels')
 const router = express.Router()
 
@@ -7,7 +8,8 @@ router.post('/', async (req, res) => {
     const { email, password } = req.body
 
     try {
-        const user = await User.create({ email, password })
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const user = await User.create({ email, password: hashedPassword })
         res.status(200).json(user)
     } catch (error) {
         res.status(500).json({error: error.message})
@@ -45,7 +47,8 @@ router.put('/:id', async (req, res) => {
     const { email, password } = req.body
 
     try {
-        const user = await User.findByIdAndUpdate(id, { email, password }, { new: true })
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const user = await User.findByIdAndUpdate(id, { email, password: hashedPassword }, { new: true })
         if (!user) {
             return res.status(404).json({error: 'User not found'})
         }
