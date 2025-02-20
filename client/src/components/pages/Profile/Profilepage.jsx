@@ -16,7 +16,8 @@ import CertUpModal from '../../popups/CertUpModal';
 import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
-import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notifications
+import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
+import CorUpModal from '../../popups/CorUpModal';  // Import the new modal
 
 const socket = io('http://localhost:3001');
 
@@ -27,6 +28,8 @@ function ProfilePage() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
+
+const [showCorUploadModal, setShowCorUploadModal] = useState(false);
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -273,6 +276,11 @@ function ProfilePage() {
                   <p>Add a Certificate</p>
                 </div>
 
+                <div className="project-card add-project" onClick={() => setShowCorUploadModal(true)}>
+                      <p>+</p>
+                      <p>Upload COR & Rating Slip</p>
+                    </div>
+
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
@@ -303,7 +311,7 @@ function ProfilePage() {
 
         {/* Modals */}
         <ProjectUploadModal
-          key={showUploadModal ? 'open' : 'closed'} // Change key to force re-render
+          key={showUploadModal ? 'project-open' : 'project-closed'} // Change key to force re-render
           show={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onProjectUpload={addProjectToState}
@@ -315,6 +323,8 @@ function ProfilePage() {
           onClose={() => setCertificatesModalOpen(false)}
           onCertificateUpload={(addCertificateToState)}
         />
+
+<CorUpModal show={showCorUploadModal} onClose={() => setShowCorUploadModal(false)} />
 
         <EditDescriptionModal
           show={showEditDescriptionModal}

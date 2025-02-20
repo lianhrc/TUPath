@@ -1,0 +1,189 @@
+.cd_dashboard-container {
+     display: flex;
+    margin: 0;
+    padding: 20px;
+    padding-top: 50px;
+    height: 100vh;
+    font-family: 'Arial', sans-serif;
+    background: url(../../../assets/loadersbg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode: overlay;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: relative; /* Added to allow absolute positioning inside */
+  }
+  
+  .cd_sidebar {
+    
+    width: 320px;
+  }
+  
+ .cd_sidebar h6{
+    font-size: 12px;
+ }
+  
+  .cd_sidebar select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: none;
+    font-size: 10px;
+  }
+  
+  .cd_main-content {
+    flex-grow: 1;
+  }
+
+  
+  .cd_dashboard-content {
+    padding: 20px;
+    width: 100%;
+  }
+  
+  .cd_courses-container {
+    width: 80%;
+    margin-bottom: 20px;
+  }
+  
+  .courses {
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .course-box {
+    background-color: white;
+    color: #4a0d0d;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    width: 100px;
+    font-weight: bold;
+  }
+  
+  .course-box span {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  
+  .cd_coursesoverview-container{
+    display: flex;
+    height: 35px;
+    padding: 10px;
+    background-color: #A82632;
+    color: white;
+  }
+
+  .cd_coursesoverview-container h3{
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+
+    
+  .cd_grades-container {
+    width: 100%;
+    background-color: white;
+    color: black;
+    
+  }
+
+  .cd_grades-container h3{
+    font-size: 12px;
+  }
+
+  .cd_subjects-container{
+    width: 100%;
+    background-color: white;
+    color: black;
+    padding: 20px;
+  }
+
+  .cd_subjects-list h6{
+    font-size: 10px;
+  }
+  
+  .cd_subjects-list label{
+    font-size: 10px;
+  }
+
+  .cdsearch{
+    width: 100%;
+    padding: 5px;  
+    font-size: 10px;
+
+  }
+
+  .cdsearch::placeholder{
+    font-size: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+  }
+  
+
+  .tableheadercd{
+    display: flex;
+    height: 35px;
+    padding: 10px;
+    background-color: #A82632;
+    color: white;
+  }
+
+  .tableheadercd h3{
+    font-weight: normal;
+  }
+
+  .cd_grades-container th, .cd_grades-container td {
+    padding: 10px;
+    border: 1px solid black;
+    text-align: left;
+    border: none;
+    font-size: 12px;
+  }
+  .cd_grades-container tbody tr:hover{
+    background-color: rgb(231, 231, 231);
+    cursor: pointer;
+  }
+
+  .cd_grades-container th {
+    color: #A82632;
+    border: none;
+ 
+  }
+  
+
+
+  .section3boxes{
+    display: flex;
+    height: 25vh;
+    padding: 10px 0;
+    gap: 30px;
+    
+  }
+
+  .div1box, .div2box, .div3box{
+    flex: 1;
+    flex-direction: column;
+    display: flex;
+    font-size: 50px;
+    font-weight: bold;
+    color: #A82632;
+    padding: 0;
+    align-items: center;
+    background-color: white;
+  }
+
+  .boxheadercd {
+    font-size: 12px;
+    width: 100%;
+    color: rgb(127, 126, 126);
+    margin-left: 20px;
+    margin-top: 10px;
+    font-weight: normal;
+  }

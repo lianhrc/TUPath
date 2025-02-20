@@ -41,6 +41,8 @@ const TupathUserSchema = new mongoose.Schema({
     certificatePhotos: [String], // New field for storing certificate image paths
     techSkills: [String],
     softSkills: [String],
+    corDocuments: [String],  // Store COR file paths
+    ratingSlips: [String],   // Store Rating Slip file paths
     // email: String,
     dob: Date,
     projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], 

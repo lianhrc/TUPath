@@ -1,29 +1,32 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const axios = require("axios");
-const http = require("http");
-const { Server } = require("socket.io");
-const { TupathUsers, Admin, Project, AssessmentQuestion } = require("./models/TupathUsers");
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
-const cookieParser = require('cookie-parser');
+  const mongoose = require("mongoose");
+  const cors = require("cors");
+  const jwt = require("jsonwebtoken");
+  const bcrypt = require("bcryptjs");
+  const axios = require("axios");
+  const http = require("http");
+  const { Server } = require("socket.io");
+  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
+  const nodemailer = require("nodemailer");
+  const crypto = require("crypto");
+  const cookieParser = require('cookie-parser');
+  
+  //pushin purposes
+ require('dotenv').config()
 
-require('dotenv').config()
 
-const adminSignup = require("./routes/admin/signup");
-const adminLogin = require("./routes/admin/login");
-const questions = require("./routes/admin/questions");
-const userStats = require("./routes/admin/userStats");
-const studentTags = require("./routes/admin/studentTags");
-const studentsByTag = require("./routes/admin/studentsByTag");
-const users = require("./routes/admin/users");
-const adminDelete = require("./routes/admin/delete");
-
-const checkAuth = require('./middleware/authv2');
-const adminLogout = require('./routes/admin/logout');
+  const adminsignup = require("./routes/adminsignup");
+  const adminLogin = require("./routes/adminLogin");
+  const questions = require("./routes/questions")
+  const userStats = require("./routes/userStats")
+  const studentTags = require("./routes/studentTags");
+  const studentByTags = require("./routes/studentsByTag")
+  const users = require("./routes/users");
+  const adminDelete = require("./routes/adminDelete");
+  
+  const checkAuth = require('./middleware/authv2')
+  const adminLogout = require('./routes/adminLogout')
+  
 
 const JWT_SECRET = "your-secret-key";
 const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
@@ -33,26 +36,29 @@ const server = http.createServer(app);
 const multer = require("multer");
 const path = require("path");
 
-// Middleware setup
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
-app.use('/uploads', express.static('uploads'));
-app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+  // Middleware setup
+  app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
+  app.use('/uploads', express.static('uploads'));
+  app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+
+
 
 app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
-// Routes
-app.use('/', users);
-app.use('/', adminSignup);
-app.use('/', adminLogin);
-app.use('/', questions);
-app.use('/', userStats);
-app.use('/', studentTags);
-app.use('/', studentsByTag);
-app.use('/', adminDelete);
-app.use('/', checkAuth);
-app.use('/', adminLogout);
+    //ROUTES
+   
+    app.use('/', users);
+    app.use('/', adminsignup);
+    app.use('/', adminLogin);
+    app.use('/', questions);
+    app.use('/', userStats);
+    app.use('/', studentTags);
+    app.use('/', studentByTags);
+    app.use('/', adminDelete);
+    app.use('/', checkAuth);
+    app.use('/', adminLogout);
 
 // Middleware for setting COOP headers
 app.use((req, res, next) => {
@@ -61,26 +67,39 @@ app.use((req, res, next) => {
   next();
 });
 
+
+/*
+   // MongoDB connection
+    mongoose
+     .connect("mongodb://127.0.0.1:27017/tupath_users")
+      .then(() => console.log("MongoDB connected successfully"))
+     .catch((err) => console.error("MongoDB connection error:", err));
+*/
+ 
+
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Define where to store the files
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Define how files are named
-  }
-});
 
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
-});
+
+  // Configure multer for file uploads
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Define where to store the files
+      },
+      filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname); // Define how files are named
+      }
+    });
+   
+    const upload = multer({ 
+      storage: storage,
+      limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
+    });
+    
 
 // JWT verification middleware
 const verifyToken = (req, res, next) => {
@@ -115,39 +134,40 @@ const io = new Server(server, {
   },
 });
 
-// Chat message schema
-const messageSchema = new mongoose.Schema({
-  sender: {
-    senderId: { type: String, required: true },
-    name: { type: String, required: true },
-    profileImg: { type: String, default: "" },
-  },
-  receiver: {
-    receiverId: { type: String, required: true },
-    name: { type: String, required: true },
-    profileImg: { type: String, default: "" },
-  },
-  messageContent: {
-    text: { type: String, required: true },
-    attachments: [{ type: String }], // URLs or file paths
-  },
-  status: {
-    read: { type: Boolean, default: false },
-    delivered: { type: Boolean, default: false },
-  },
-  timestamp: { type: Date, default: Date.now },
-});
-
-// Add indexes for optimization
-messageSchema.index({ "sender.senderId": 1 });
-messageSchema.index({ "receiver.receiverId": 1 });
-messageSchema.index({ timestamp: -1 });
-messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
-messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
-
-const Message = mongoose.model("Message", messageSchema);
-
-// Add this endpoint to fetch users
+  // Chat message schema
+  const messageSchema = new mongoose.Schema({
+    sender: {
+      senderId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    receiver: {
+      receiverId: { type: String, required: true },
+      name: { type: String, required: true },
+      profileImg: { type: String, default: "" },
+    },
+    messageContent: {
+      text: { type: String, required: true },
+      attachments: [{ type: String }], // URLs or file paths
+    },
+    status: {
+      read: { type: Boolean, default: false },
+      delivered: { type: Boolean, default: false },
+    },
+    timestamp: { type: Date, default: Date.now },
+  });
+  
+  // Add indexes for optimization
+  messageSchema.index({ "sender.senderId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1 });
+  messageSchema.index({ timestamp: -1 });
+  messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+  messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+  
+  const Message = mongoose.model("Message", messageSchema);
+  
+  // Add this endpoint to fetch users
+  
 app.get('/api/userss', verifyToken, async (req, res) => {
   try {
     const students = await TupathUsers.find().select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
@@ -160,17 +180,17 @@ app.get('/api/userss', verifyToken, async (req, res) => {
   }
 });
 
-// REST endpoint to fetch chat messages
-app.get("/api/messages", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
-    res.json(messages);
-  } catch (err) {
-    console.error("Error fetching messages:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+  // REST endpoint to fetch chat messages
+  app.get("/api/messages", verifyToken, async (req, res) => {
+    try {
+      const userId = req.user.id; // Extract userId from the token
+      const messages = await Message.find({ "receiver.receiverId": userId }).sort({ timestamp: 1 });
+      res.json(messages);
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
 
 // REST endpoint to fetch sent messages
 app.get("/api/sent-messages", verifyToken, async (req, res) => {
@@ -179,7 +199,7 @@ app.get("/api/sent-messages", verifyToken, async (req, res) => {
     const messages = await Message.find({ "sender.senderId": userId }).sort({ timestamp: 1 });
     res.json(messages);
   } catch (err) {
-    console.error("Error fetching sent messages:", err);
+    console.error("Error fetching messages:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
@@ -213,6 +233,9 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
 
     message.status.read = true;
     await message.save();
+
+    // Emit the message read event
+    io.emit("message_read", { messageId });
 
     res.status(200).json({ success: true, message: "Message marked as read" });
   } catch (err) {
@@ -507,65 +530,68 @@ app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
   }
 });
 
-// Socket.IO events for real-time chat and certificates
-io.on("connection", (socket) => {
-  socket.on("send_message", async (data) => {
-    try {
-      const token = data.token; // Extract token from the data
-      if (!token) {
-        console.error("Token not provided");
-        return;
-      }
+  // Socket.IO events for real-time chat and certificates
+  io.on("connection", (socket) => {
+    // console.log(`User connected: ${socket.id}`);
 
-      jwt.verify(token, JWT_SECRET, async (err, user) => {
-        if (err) {
-          console.error("Token verification failed:", err);
+    socket.on("send_message", async (data) => {
+      try {
+        const token = data.token; // Extract token from the data
+        if (!token) {
+          console.error("Token not provided");
           return;
         }
-
-        const userId = user.id; // Extract userId from the token
-        console.log("Sender ID:", userId); // Log the senderId for debugging
-
-        const senderUser = await TupathUsers.findById(userId) || await Employer_usersModel.findById(userId);
-
-        if (!senderUser) {
-          console.error("User not found for ID:", userId); // Log the userId if user is not found
-          return;
-        }
-
-        const message = new Message({
-          sender: {
-            senderId: userId,
-            name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
-            profileImg: senderUser.profileDetails.profileImg,
-          },
-          receiver: {
-            receiverId: data.receiverId,
-            name: data.receiverName, // Use receiverName instead of receiver
-            profileImg: data.receiverProfileImg,
-          },
-          messageContent: {
-            text: data.messageContent.text, // Ensure text is included in messageContent
-            attachments: data.messageContent.attachments || [],
-          },
-          status: {
-            read: false,
-            delivered: true,
-          },
-          timestamp: data.timestamp,
+  
+        jwt.verify(token, JWT_SECRET, async (err, user) => {
+          if (err) {
+            console.error("Token verification failed:", err);
+            return;
+          }
+  
+          const userId = user.id; // Extract userId from the token
+          console.log("Sender ID:", userId); // Log the senderId for debugging
+  
+          const senderUser = await Tupath_usersModel.findById(userId) || await Employer_usersModel.findById(userId);
+  
+          if (!senderUser) {
+            console.error("User not found for ID:", userId); // Log the userId if user is not found
+            return;
+          }
+  
+          const message = new Message({
+            sender: {
+              senderId: userId,
+              name: senderUser.profileDetails.firstName + " " + senderUser.profileDetails.lastName,
+              profileImg: senderUser.profileDetails.profileImg,
+            },
+            receiver: {
+              receiverId: data.receiverId,
+              name: data.receiverName, // Use receiverName instead of receiver
+              profileImg: data.receiverProfileImg,
+            },
+            messageContent: {
+              text: data.messageContent.text, // Ensure text is included in messageContent
+              attachments: data.messageContent.attachments || [],
+            },
+            status: {
+              read: false,
+              delivered: true,
+            },
+            timestamp: data.timestamp,
+          });
+          await message.save();
+          socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
         });
-        await message.save();
-        socket.to(data.receiverId).emit("receive_message", message); // Emit only to the intended receiver
-      });
-    } catch (err) {
-      console.error("Error saving message:", err);
-    }
+      } catch (err) {
+        console.error("Error saving message:", err);
+      }
+    });
+  
+    socket.on("disconnect", () => {
+     // console.log(`User disconnected: ${socket.id}`);
+    });
   });
 
-  socket.on("disconnect", () => {
-    // console.log(`User disconnected: ${socket.id}`);
-  });
-});
 
 // Student Certificate Schema
 const StudentCert = new mongoose.Schema({

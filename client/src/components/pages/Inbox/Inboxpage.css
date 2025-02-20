@@ -233,6 +233,8 @@
     height: 80px; /* Set height */
     border-radius: 50%; /* Make it circular */
     border: 2px solid #ccc; /* Optional border */
+    object-fit: cover;
+
 }
 
 .namedatecontainer {
