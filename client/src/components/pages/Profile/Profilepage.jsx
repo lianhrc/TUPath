@@ -277,9 +277,9 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
                 </div>
 
                 <div className="project-card add-project" onClick={() => setShowCorUploadModal(true)}>
-  <p>+</p>
-  <p>Upload COR & Rating Slip</p>
-</div>
+                      <p>+</p>
+                      <p>Upload COR & Rating Slip</p>
+                    </div>
 
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
