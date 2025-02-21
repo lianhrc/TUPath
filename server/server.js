@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 app.use(express.json())
 
 // Import Router
-const userRouter = require('./routes/userRoutes')
+const userRouter = require('./routes/userRoute')
 
 //router
 app.use('/api/users', userRouter)
