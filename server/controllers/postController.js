@@ -81,8 +81,6 @@ const votePost = async (req, res) => {
     const { postId } = req.params;
     const { userId, vote } = req.body;
 
-    console.log(`Received postId: ${postId}`); // Log the postId
-
     try {
         const post = await Post.findById(postId);
         if (!post) {

@@ -41,8 +41,8 @@ const postSchema = new Schema({
         type: String,
         required: false
     },
-    votedUsers: [voteSchema], // Changed from an object to an array of voteSchema
-    comments: [commentSchema] // Kept as an array
+    votedUsers: [voteSchema],
+    comments: [commentSchema]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Post', postSchema);
