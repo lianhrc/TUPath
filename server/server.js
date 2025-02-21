@@ -10,9 +10,11 @@ app.use(express.json())
 
 // Import Router
 const userRouter = require('./routes/userRoute')
+const postRouter = require('./routes/postRoute')
 
 //router
 app.use('/api/users', userRouter)
+app.use('/api/posts', postRouter)
 
 //connect to mongodb
 mongoose.connect(process.env.MONGO_URI)
