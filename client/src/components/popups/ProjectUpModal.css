@@ -8,12 +8,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 .ProjectUploadModal-content {
     position: relative;
-    height: 600px; /* Limit the height of the modal */
+    height: 500px; /* Limit the height of the modal */
     padding: 20px;
     border-radius: 8px;
     max-width: 1000px;
@@ -21,7 +21,6 @@
     background: white;
     overflow: hidden; /* Prevent overflow */
 }
-
 
 
 .ProjectUploadModal-content .upheader {

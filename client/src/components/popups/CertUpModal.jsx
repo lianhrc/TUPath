@@ -155,9 +155,9 @@ const CertUpModal = ({ show, onClose }) => {
           </div>
 
           </form>
-          <div className="submit-btn-container">
-            <button type="submit" onClick={handleSubmit}>Submit</button>
-          </div>
+            <div className="submit-btn-container">
+              <button type="submit" onClick={handleSubmit}>Submit</button>
+            </div>
       </motion.div>
     </div>
   );
