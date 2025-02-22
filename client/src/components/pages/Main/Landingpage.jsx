@@ -15,11 +15,10 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
-  // Redirect to studenthomepage if the user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/homepage', { replace: true });
+        navigate('/homepage', { replace: true });
     }
   }, [navigate]);
 

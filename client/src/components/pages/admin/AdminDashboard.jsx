@@ -5,7 +5,6 @@ import { Pie, Bar } from 'react-chartjs-2';
 import tupicon from '../../../assets/logo.png';
 import irjpicon from '../../../assets/irjplogo.png';
 import StudentListModal from '../../popups/StudentListModal';
-import AuthContext from '../../AuthProvider';
 import axiosInstancev2 from '../../../services/axiosInstancev2';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,16 +44,15 @@ const AdminDashboard = () => {
         }
       }
     };
-  
+
     checkAuth();
   }, [navigate]);
-  
 
   const handleLogout = async () => {
     try {
       // Clear any stored admin auth data first
       localStorage.removeItem('adminToken'); // If you're using token-based auth
-      
+
       const response = await axiosInstancev2.post('/api/admin/logout');
       if (response.data.success) {
         // Force navigation to login and prevent back navigation

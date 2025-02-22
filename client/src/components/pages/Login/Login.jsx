@@ -14,20 +14,12 @@ function Login() {
     const [role, setRole] = useState('student'); // Default role
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
-
-    useEffect(() => {
-        if (token) {
-            navigate(role === 'student' ? '/homepage' : '/homepage', { replace: true });
-        }
-    }, [navigate, role, token]); 
 
     const handleGoogleLogin = async (response) => {
         try {
             const googleToken = response.credential;
             const res = await axiosInstance.post('/google-login', { token: googleToken, role });
             if (res.data.success) {
-                localStorage.setItem('token', res.data.token);
                 const redirectPath = res.data.redirectPath || '/homepage';
                 navigate(redirectPath, { replace: true });
             } else {
@@ -47,7 +39,6 @@ function Login() {
         try {
             const response = await axiosInstance.post('/login', { email, password, role });
             if (response.data.success) {
-                localStorage.setItem('token', response.data.token);
                 const redirectPath = response.data.redirectPath || '/homepage';
                 navigate(redirectPath, { replace: true });
             } else {

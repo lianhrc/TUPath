@@ -6,33 +6,32 @@ import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
 
 function StudentSignup() {
-    // const [firstName, setFirstName] = useState('');
-    // const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('student');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
     const handleSignup = async (event) => {
         event.preventDefault();
-    
+
         if (!email || !password) {
             setMessage('All fields are required.');
             return;
         }
-    
+
         try {
-            const response = await axiosInstance.post('/studentsignup', {
-                // firstName,
-                // lastName,
+            const response = await axiosInstance.post('/api/auth/register', {
                 email,
                 password,
+                isNewUser: true,
+                googleSignup: false,
+                role: 'Student'
             });
-    
-            if (response.data.success) {
+
+            console.log('Signup response:', response.data); // Log the response data
+
+            if (response.data) {
                 setMessage('Signup successful!');
-                localStorage.setItem('token', response.data.token); // Save token if provided
                 navigate('/studentprofilecreation', { replace: true });
             }
         } catch (error) {
@@ -40,22 +39,22 @@ function StudentSignup() {
             console.error("Signup error:", error); // Log detailed error for debugging
         }
     };
-    
 
     const handleGoogleSignup = async (response) => {
         const googleToken = response.credential;
-        const role = "student"; // Explicitly define the role
-    
+        const role = "Student"; // Explicitly define the role
+
         try {
-            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
-    
+            const res = await axiosInstance.post('/api/auth/google-signup', { token: googleToken, role });
+
+            console.log('Google signup response:', res.data); // Log the response data
+
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');
                 return;
             }
-    
+
             if (res.data.success) {
-                localStorage.setItem('token', res.data.token);
                 navigate('/studentprofilecreation', { replace: true });
             } else {
                 setMessage(res.data.message || 'Sign-up failed. Please try again.');
@@ -64,7 +63,6 @@ function StudentSignup() {
             setMessage(error.response?.data?.message || 'An error occurred during Google sign-up. Please try again.');
         }
     };
-    
 
     const handleLoginRedirect = () => {
         navigate('/login');
@@ -84,28 +82,6 @@ function StudentSignup() {
                 </div>
                 <p className="d-flex justify-content-center mb-3">or</p>
                 <form onSubmit={handleSignup}>
-                    {/*<div className='nameinput'>
-                        <div className="form-groups mb-3">
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="First name"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="form-groups mb-3">
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Last name"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>*/}
                     <div className="form-group mb-3">
                         <input
                             type="email"

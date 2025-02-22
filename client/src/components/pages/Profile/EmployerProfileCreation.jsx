@@ -53,16 +53,9 @@ function EmployerProfileCreation() {
         imageData.append("profileImg", file);
     
         try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setMessage("Authentication token not found. Please log in again.");
-                return;
-            }
-    
             const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${token}`,
                 },
             });
     
@@ -87,19 +80,11 @@ function EmployerProfileCreation() {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setMessage("Authentication token not found. Please log in again.");
-                setLoading(false);
-                return;
-            }
-
             const response = await axiosInstance.post('/api/updateEmployerProfile', {
                 ...formData,
                 profileImg: uploadedImage,
             }, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
                 },
             });
 
