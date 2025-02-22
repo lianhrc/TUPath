@@ -18,6 +18,8 @@ import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
 import CorUpModal from '../../popups/CorUpModal';  // Import the new modal
+import GradesTable from "../../other/Gradestable"; // Adjust the path if needed
+
 
 const socket = io('http://localhost:3001');
 
@@ -25,7 +27,7 @@ function ProfilePage() {
   const [profileData, setProfileData] = useState({});
   const [projects, setProjects] = useState([]); // State for projects
   const [certificates, setCertificates] = useState([]); // State for certificates
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
 
@@ -242,9 +244,16 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
 
         {/* Project Section */}
         {userRole === 'student' && (
+         
           <div className="project-section">
+          <div className="grademaincontainer">
+            <h3> Grades</h3>
+            <GradesTable />
+
+          
+          </div>
             <div className="projectscontainer">
-              <h3>My Projects</h3>
+              <h3>Projects</h3>
               <hr />
               <div className="projects-grid">
                 <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
@@ -268,7 +277,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
             </div>
 
             <div className="achievementscontainer">
-              <h3>My Certificates</h3>
+              <h3> Certificates</h3>
               <hr />
               <div className="projects-grid">
                 <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>

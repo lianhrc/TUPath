@@ -212,8 +212,8 @@ function HeaderHomepage() {
           <Link className="lefticon" to="/Homepage">
             <img src={logo} alt="Tupath Logo" className="homepagelogo" />
           </Link>
-
-                    <div className="search-container">
+              {/*       
+                  <div className="search-container">
                         <input
                             type="text"
                             className="search-input"
@@ -291,6 +291,7 @@ function HeaderHomepage() {
               </div>
             )}
           </div>
+      */}
 
           <div className="icon-buttons">
             <nav className="homepagenav-links">
