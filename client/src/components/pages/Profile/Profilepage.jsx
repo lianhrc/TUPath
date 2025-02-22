@@ -17,7 +17,6 @@ import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
-import CorUpModal from '../../popups/CorUpModal';  // Import the new modal
 import GradesTable from "../../other/Gradestable"; // Adjust the path if needed
 
 
@@ -31,7 +30,6 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
 
-const [showCorUploadModal, setShowCorUploadModal] = useState(false);
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -285,10 +283,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
                   <p>Add a Certificate</p>
                 </div>
 
-                <div className="project-card add-project" onClick={() => setShowCorUploadModal(true)}>
-                      <p>+</p>
-                      <p>Upload COR & Rating Slip</p>
-                    </div>
+          
 
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
@@ -333,7 +328,6 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
           onCertificateUpload={(addCertificateToState)}
         />
 
-<CorUpModal show={showCorUploadModal} onClose={() => setShowCorUploadModal(false)} />
 
         <EditDescriptionModal
           show={showEditDescriptionModal}

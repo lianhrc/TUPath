@@ -252,9 +252,9 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
 
               <div className="bottom">
                
-              <label>Tags:</label>
+              <label>Category</label>
                 <select value={tag} onChange={handleTagSelect}>
-                  <option value="">Select a Tag</option>
+                  <option value="">Select a Category</option>
                   {predefinedTags.map((tag, index) => (
                     <option key={index} value={tag}>
                       {tag}

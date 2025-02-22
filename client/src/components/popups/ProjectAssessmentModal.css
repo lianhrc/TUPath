@@ -18,6 +18,12 @@
     width: auto;
     text-align: center;
   }
+
+
+  .assessment-modal-content table{
+    margin-bottom: 20px;
+  }
+
   .assessment-modal-content .header-p{
     margin-bottom: 50px;
   }
@@ -47,7 +53,7 @@
   
   .assessment-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: right;
     margin-top: 50px;
     width: 100%;
   }

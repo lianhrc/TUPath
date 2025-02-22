@@ -106,6 +106,7 @@ function EmployerSignup() {
                         </div>
                     </div> */}
                     <div className="form-group mb-3">
+                    <label>Email</label>
                         <input
                             type="email"
                             className="form-control"
@@ -116,6 +117,8 @@ function EmployerSignup() {
                         />
                     </div>
                     <div className="form-group mb-3">
+                    <label>Password</label>
+
                         <input
                             type="password"
                             className="form-control"
