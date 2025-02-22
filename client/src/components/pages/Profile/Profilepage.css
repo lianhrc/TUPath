@@ -151,10 +151,13 @@
 /* Projects Section */
 .projects-section {
   background-color: white;
-  padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
+
 }
+
+
+
 
 .projects-section h3 {
   margin-bottom: 15px;
@@ -249,7 +252,6 @@
   display: flex;
   flex-direction: column;
   gap: 70px;
-  padding: 30px;
 }
 
 .userproject-section{
@@ -259,15 +261,22 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 30px;
 }
 
 .userproject-section h3{
   margin-bottom: 10px;
+  
 }
 
 .project-section h3 {
   margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 30px;
+  width: 100px;
+  display: flex;
+  justify-content: center;
+  
 }
 
 input[type="file"] {

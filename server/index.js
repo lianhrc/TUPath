@@ -12,7 +12,7 @@ const express = require("express");
   const cookieParser = require('cookie-parser');
   
   //pushin purposes
- //require('dotenv').config()
+ require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");
@@ -71,7 +71,8 @@ const express = require("express");
     next();
   });
 
-
+ 
+/*
 
    // MongoDB connection
     mongoose
@@ -79,15 +80,14 @@ const express = require("express");
       .then(() => console.log("MongoDB connected successfully"))
      .catch((err) => console.error("MongoDB connection error:", err));
 
- 
-/*
+*/
+
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-*/
 
   // Configure multer for file uploads
     const storage = multer.diskStorage({

@@ -35,7 +35,7 @@ const ProjectAssessmentModal = ({
   // Submit assessment
   const handleSubmit = () => {
     if (ratings.some((rating) => rating === 0)) {
-      alert("Please provide ratings for all questions before submitting.");
+      alert("Please provide grade for that subject before submitting.");
       return;
     }
     onFinalSubmit();
@@ -55,35 +55,43 @@ const ProjectAssessmentModal = ({
         className="assessment-modal-content"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3>Project Assessment</h3>
-        <p>Please rate the following questions:</p>
-        <div className="assessment-questions">
-          {currentQuestions.map((question, index) => (
-            <div
-              key={startIndex + index}
-              className="assessment-question"
-            >
-              <p>
-                <strong>{question.categoryName}:</strong> {question.text}
-              </p>
-              <div className="star-rating">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`star ${
-                      star <= ratings[startIndex + index] ? "selected" : ""
-                    }`}
-                    onClick={() =>
-                      handleRatingChange(startIndex + index, star)
-                    }
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <h3>Project Subject Categorization</h3>
+        <p>Please input your grade/s:</p>
+
+        <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Subject Code</th>
+            <th>Description</th>
+            <th>Final Grade</th>
+           
+          </tr>
+        </thead>
+        <tbody>
+            <tr >
+              <td>1</td>
+              <td>CS101</td>
+              <td>Introduction to Programming</td>
+              <td>
+              <input
+              type="text"
+              placeholder="Enter grade"
+            />
+              </td>
+              
+            
+            </tr>
+        </tbody>
+      </table>
+       <label>Attach COR if available:</label>
+          <input
+            type="file"
+            multiple
+            accept=".zip,.rar,.pdf,.docx,.jpg,.png"
+          />
+        
+        
         <div className="assessment-buttons">
           {currentPage > 0 && (
             <button
