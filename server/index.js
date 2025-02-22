@@ -451,25 +451,34 @@ const Post = mongoose.model("Post", postSchema);
   });
 
     // Create a new post
-  app.post("/api/posts", verifyToken, async (req, res) => {
-    const userId = req.user.id; // Extract userId from the verified token
-    const { profileImg, name, content, postImg } = req.body;
-    try {
-        const newPost = new Post({
-            profileImg,
-            name,
-            content,
-            postImg,
-            userId, // Save userId for the post
-        });
-        await newPost.save();
-        res.status(201).json({ success: true, post: newPost });
-        io.emit("new_post", newPost);
-    } catch (err) {
-        console.error("Error creating post:", err);
-        res.status(500).json({ success: false, message: "Internal server error" });
-    }
+    app.post("/api/posts", verifyToken, async (req, res) => {
+      const userId = req.user.id; // Extract userId from the verified token
+      const userRole = req.user.role; // Extract role from the user token
+  
+      if (userRole !== "employer") {
+          return res.status(403).json({ success: false, message: "Only employers can post." });
+      }
+  
+      const { profileImg, name, content, postImg } = req.body;
+  
+      try {
+          const newPost = new Post({
+              profileImg,
+              name,
+              content,
+              postImg,
+              userId, // Save userId for the post
+          });
+  
+          await newPost.save();
+          res.status(201).json({ success: true, post: newPost });
+          io.emit("new_post", newPost);
+      } catch (err) {
+          console.error("Error creating post:", err);
+          res.status(500).json({ success: false, message: "Internal server error" });
+      }
   });
+  
 
   
   // update a post
@@ -1373,7 +1382,7 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   );
   
   
-  
+
   
   
   
