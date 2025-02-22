@@ -68,7 +68,6 @@ const Homepage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -239,7 +238,6 @@ const Homepage = () => {
     try {
       const response = await axiosInstance.delete(`/api/posts/${postId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
   

@@ -14,25 +14,29 @@ const tuPathSchema = new Schema({
     },
     isNewUser: {
         type: Boolean, //true if user is new
-        required: true
+        required: false
     },
     googleSignup: {
         type: Boolean, //true if user signed up with google
-        required: true
+        required: false
     },
     role: {
         type: String,
         enum: ['Student', 'Admin', 'Employer'],      //Only these roles are allowed
-        required: true
+        required: false
     },
     profileDetails: {
+        studentId: {
+            type: String,
+            required: false
+        },
         firstName: {
             type: String,
-            required: true
+            required: false
         },
         lastName: {
             type: String,
-            required: true
+            required: false
         },
         middleName: {
             type: String,
@@ -45,11 +49,11 @@ const tuPathSchema = new Schema({
         yearLevel: {
             type: String,
             enum: ['1st year', '2nd year', '3rd year', '4th year'],      //Only these roles are allowed
-            required: true
+            required: false
         },
         dateOfBirth: {
             type: Date,
-            required: true
+            required: false
         },
         profileImg: {
             type: String,
@@ -58,15 +62,15 @@ const tuPathSchema = new Schema({
         gender: {
             type: String,
             enum: ['Male', 'Female', 'Other'],      //Only these roles are allowed
-            required: true
+            required: false
         },
         address: {
             type: String,
-            required: true
+            required: false
         },
         contactNumber: {
             type: String,
-            required: true
+            required: false
         },
         techSkills: {
             type: [String],

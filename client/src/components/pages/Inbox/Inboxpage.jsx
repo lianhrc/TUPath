@@ -52,7 +52,7 @@ function Inboxpage() {
     try {
       const response = await fetch('http://localhost:3001/api/messages', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
@@ -102,7 +102,7 @@ function Inboxpage() {
   useEffect(() => {
     fetch('http://localhost:3001/api/userss', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        // 'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     })
       .then(response => response.json())
@@ -175,7 +175,7 @@ function Inboxpage() {
         await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           }
         });
@@ -202,7 +202,7 @@ function Inboxpage() {
 
       const userId = localStorage.getItem('userId');
       const username = localStorage.getItem('username');
-      const token = localStorage.getItem('token');
+      // const token = localStorage.getItem('token');
 
       console.log("Sender ID:", userId);
       console.log("Sender Username:", username);
@@ -225,7 +225,7 @@ function Inboxpage() {
           delivered: true
         },
         timestamp: new Date().toISOString(),
-        token: token
+        // token: token
       };
 
       socket.emit('send_message', newMessage);
@@ -270,7 +270,7 @@ function Inboxpage() {
         const response = await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           }
         });

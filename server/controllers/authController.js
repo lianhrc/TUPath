@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // Register
 const register = async (req, res) => {
-    const { email, password, isNewUser, googleSignup, role, profileDetails } = req.body;
+    const { email, password, isNewUser, googleSignup, role } = req.body;
 
     try {
         // Check if user already exists
@@ -22,8 +22,7 @@ const register = async (req, res) => {
             password: hashedPassword,
             isNewUser,
             googleSignup,
-            role,
-            profileDetails
+            role
         });
 
         return res.status(201).json(user);
@@ -52,7 +51,15 @@ const login = async (req, res) => {
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        return res.status(200).json({ token });
+        // Set the token in an HTTP-only cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+            sameSite: 'strict',
+            maxAge: 3600000 // 1 hour
+        });
+
+        return res.status(200).json({ message: 'Login successful' });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -60,7 +67,13 @@ const login = async (req, res) => {
 
 // Logout
 const logout = (req, res) => {
-    // Invalidate the token (handled on the client side by removing the token)
+    // Clear the token cookie
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
+
     return res.status(200).json({ message: 'Logged out successfully' });
 };
 

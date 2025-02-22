@@ -23,7 +23,6 @@ function StudentProfileCreation() {
         techSkills: '',
         softSkills: '',
         contact: '',
-        // email: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -42,16 +41,9 @@ function StudentProfileCreation() {
         imageData.append("profileImg", file);
 
         try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setMessage("Authentication token not found. Please log in again.");
-                return;
-            }
-
             const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -78,14 +70,16 @@ function StudentProfileCreation() {
         const currentDate = new Date().toISOString();
 
         try {
-            const response = await axiosInstance.post('/api/updateStudentProfile', {
-                ...formData,
-                createdAt: formData.createdAt || currentDate,
-                dob: formData.dob ? new Date(formData.dob).toISOString() : null,
-                profileImg: uploadedImage,
+            const response = await axiosInstance.put('/api/users/updateProfile', {
+                profileDetails: {
+                    ...formData,
+                    createdAt: formData.createdAt || currentDate,
+                    dob: formData.dob ? new Date(formData.dob).toISOString() : null,
+                    profileImg: uploadedImage,
+                }
             });
 
-            if (response.data.success) {
+            if (response.data) {
                 navigate('/Profile', { replace: true });
             } else {
                 setMessage('Failed to update profile. Please try again.');
@@ -239,14 +233,6 @@ function StudentProfileCreation() {
                             onChange={handleInputChange}
                             required
                         />
-                        {/* <input
-                            type="email"
-                            name="email"
-                            placeholder="Email Address"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                        />*/}
                         <button type="submit" className="submit-button">
                             Submit
                         </button>

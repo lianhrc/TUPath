@@ -16,7 +16,6 @@ import Client_Dashboard from './components/pages/Home/client_Dashboard.jsx';
 import StudentProfileCreation from './components/pages/Profile/StudentProfileCreation';
 import Profile from './components/pages/Profile/Profilepage';
 import Inboxpage from './components/pages/Inbox/Inboxpage';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Settings from './components/pages/Settings/settings';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ForgotPassword from './components/pages/Login/ForgotPassword.jsx';
@@ -25,7 +24,6 @@ import './App.css'
 import UserProfile from './components/pages/Profile/UserProfile'; // Updated path
 import AdminSignup from './components/pages/admin/AdminSignup.jsx';
 import QuestionManager from './components/pages/admin/QuestionManager.jsx';
-import { AuthProvider } from './components/AuthProvider.jsx';
 import { useState, useEffect } from 'react';
 import axiosInstancev2 from './services/axiosInstancev2'; // Update this line to use correct path
 
@@ -65,38 +63,22 @@ function App() {
           {/* Protected Routes */}       
           <Route 
             path='/homepage' 
-            element={
-              <ProtectedRoute>
-                <Homepage />
-              </ProtectedRoute>
-            } 
+            element={<Homepage />} 
           />
 
           <Route 
             path='/Inboxpage' 
-            element={
-              <ProtectedRoute>
-                <Inboxpage />
-              </ProtectedRoute>
-            } 
+            element={<Inboxpage />} 
           />
 
           <Route 
             path='/Profile' 
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } 
+            element={<Profile />} 
           />
          
           <Route 
             path='/Settings' 
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } 
+            element={<Settings />} 
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -109,9 +91,6 @@ function App() {
           <Route path='/loginroles' element={<LoginRoles />} /> 
           <Route path='/studentprofilecreation' element={<StudentProfileCreation />} />
           <Route path='/employerprofilecreation' element={<EmployerProfileCreation />} />
-
-            
-            
 
           <Route path='/adminlogin' element={<AdminLogin />} />
           <Route path='/admindashboard' element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />

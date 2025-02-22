@@ -18,7 +18,7 @@ function ResetPassword() {
       return;
     }
     try {
-      const response = await axiosInstance.post(`/api/reset-password/${token}`, { newPassword });
+      const response = await axiosInstance.post(`/api/reset-password`, { newPassword });
       setMessage(response.data.message);
       setError('');
       setTimeout(() => navigate('/login'), 3000);
