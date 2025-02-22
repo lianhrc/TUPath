@@ -9,13 +9,10 @@ import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
-import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 import dots from '../../../assets/dots.png';
 import EditPostOption from '../../popups/EditOptionsModal';
 import { useNavigate } from "react-router-dom";
-
-const socket = io('http://localhost:3001');
 
 const Homepage = () => {
   const [postsData, setPostsData] = useState([]);
@@ -105,35 +102,6 @@ const Homepage = () => {
 
   useEffect(() => {
     fetchPostsData();
-    
-    socket.on('new_post', (post) => {
-      setPostsData((prevPosts) => [{ ...post, showComments: false }, ...prevPosts]);
-    });
-
-    socket.on('receive_comment', ({ postId, comment }) => {
-      setPostsData((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: [...post.comments, comment] }
-            : post
-        )
-      );
-    });
-
-    return () => {
-      socket.off('new_post');
-      socket.off('receive_comment');
-    };
-  }, []);
-
-  useEffect(() => {
-    socket.on("delete_post", ({ postId }) => {
-      setPostsData((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-    });
-  
-    return () => {
-      socket.off("delete_post");
-    };
   }, []);
 
   useEffect(() => {
@@ -225,7 +193,6 @@ const Homepage = () => {
     }
   };
 
-
   const toggleEditModal = (postId) => {
     setActivePostId((prevId) => (prevId === postId ? null : postId));
   };
@@ -287,7 +254,6 @@ const Homepage = () => {
       }
     }
   };
-  
 
   const cancelEdit = () => {
     setEditingPostId(null);

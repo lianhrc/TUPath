@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import HeaderHomepage from '../../common/headerhomepage';
 import addnewwrite from '../../../assets/writemessage.png';
 import dotsicon from '../../../assets/dots.png';
 import profileicon from '../../../assets/profile2.png';
 import './Inboxpage.css';
-
-const socket = io("http://localhost:3001");
 
 const formatTimeAgo = (timestamp) => {
   const now = new Date();
@@ -85,16 +82,9 @@ function Inboxpage() {
   useEffect(() => {
     fetchMessages();
 
-    socket.on('receive_message', handleNewMessage);
-    socket.on('message_read', handleMessageRead);
-    socket.on('message_deleted', handleMessageDeleted);
-
     const refreshInterval = setInterval(fetchMessages, 10000);
 
     return () => {
-      socket.off('receive_message');
-      socket.off('message_read');
-      socket.off('message_deleted');
       clearInterval(refreshInterval);
     };
   }, [location.search]);
@@ -139,32 +129,6 @@ function Inboxpage() {
       setSelectedMessage(null);
     }
   };
-
-  useEffect(() => {
-    socket.on('receive_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('new_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('message_read', ({ messageId }) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
-      );
-    });
-
-    return () => {
-      socket.off('receive_message');
-      socket.off('new_message');
-      socket.off('message_read');
-    };
-  }, []);
 
   const handleSelectMessage = async (message) => {
     setSelectedMessage(message);
@@ -228,8 +192,6 @@ function Inboxpage() {
         // token: token
       };
 
-      socket.emit('send_message', newMessage);
-
       setNewMessageRecipient('');
       setNewMessageContent('');
       setShowNewMessageSection(false);
@@ -279,8 +241,6 @@ function Inboxpage() {
           throw new Error('Failed to mark message as read');
         }
 
-        socket.emit('mark_as_read', { messageId: message._id });
-        
         setMessages((prevMessages) =>
           prevMessages.map((msg) => 
             msg._id === message._id 
