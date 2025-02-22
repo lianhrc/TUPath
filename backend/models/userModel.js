@@ -6,7 +6,7 @@ const profileSchema = new Schema({
     student: {
         studentId: { 
             type: String, 
-            required: false 
+            required: true 
         },
         firstName: { 
             type: String, 
@@ -44,7 +44,7 @@ const profileSchema = new Schema({
         },
         address: { 
             type: String, 
-            required: true 
+            required: false 
         },
         contactNumber: { 
             type: String, 
@@ -101,7 +101,7 @@ const profileSchema = new Schema({
         },
         industry: { 
             type: String, 
-            required: true 
+            required: false 
         },
         location: { 
             type: String, 
@@ -164,7 +164,7 @@ const UserSchema = new Schema({
     },
     profileDetails: { 
         type: profileSchema, 
-        required: true 
+        required: false 
     }
 }, { timestamps: true })
 

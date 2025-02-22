@@ -58,8 +58,7 @@ const googleSignup = async (req, res) => {
             password: googleId, // Placeholder for password
             isNewUser: true,
             googleSignup: true,
-            role,
-            profileDetails: role === 'student' ? { student: { firstName: name.split(' ')[0], lastName: name.split(' ')[1] } } : { employer: { firstName: name.split(' ')[0], lastName: name.split(' ')[1] } }
+            role
         })
 
         // Generate JWT token
@@ -130,8 +129,7 @@ const studentSignup = async (req, res) => {
             email,
             password: hashedPassword,
             isNewUser: true,
-            role: 'student',
-            profileDetails: { student: { firstName, lastName } }
+            role: 'student'
         })
 
         const token = jwt.sign({ id: newUser._id, role: 'student' }, process.env.JWT_SECRET, { expiresIn: '1h' })
@@ -141,9 +139,9 @@ const studentSignup = async (req, res) => {
             token,
             message: "Signup successful",
             redirectPath: "/studentprofilecreation",
-        });
+        })
     } catch (err) {
-        console.error("Error during signup:", err);
+        console.error("Error during signup:", err)
         res.status(500).json({ success: false, message: "Internal server error" })
     }
 }
@@ -165,9 +163,8 @@ const employerSignup = async (req, res) => {
             email,
             password: hashedPassword,
             isNewUser: true,
-            role: 'employer',
-            profileDetails: { employer: { firstName, lastName } }
-        });
+            role: 'employer'
+        })
 
         const token = jwt.sign({ id: newUser._id, role: 'employer' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
@@ -176,7 +173,7 @@ const employerSignup = async (req, res) => {
             token,
             message: "Signup successful",
             redirectPath: "/employerprofilecreation",
-        });
+        })
     } catch (err) {
         console.error("Error during signup:", err)
         res.status(500).json({ success: false, message: "Internal server error" })
