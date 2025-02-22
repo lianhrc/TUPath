@@ -13,7 +13,7 @@ const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid email or password" })
         }
 
-        const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" })
+        const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/homepage"
         if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/homepage"
@@ -65,7 +65,7 @@ const googleSignup = async (req, res) => {
         // Generate JWT token
         const jwtToken = jwt.sign(
             { email, googleId, name, id: newUser._id, role },
-            JWT_SECRET,
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         )
 
@@ -100,7 +100,7 @@ const googleLogin = async (req, res) => {
         // Generate JWT token
         const jwtToken = jwt.sign(
             { email, googleId, name, id: user._id, role },
-            JWT_SECRET,
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         )
 
@@ -134,7 +134,7 @@ const studentSignup = async (req, res) => {
             profileDetails: { student: { firstName, lastName } }
         })
 
-        const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ id: newUser._id, role: 'student' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         return res.status(201).json({
             success: true,
@@ -169,7 +169,7 @@ const employerSignup = async (req, res) => {
             profileDetails: { employer: { firstName, lastName } }
         });
 
-        const token = jwt.sign({ id: newUser._id, role: 'employer' }, JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ id: newUser._id, role: 'employer' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         return res.status(201).json({
             success: true,

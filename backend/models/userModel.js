@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 
 const profileSchema = new Schema({
     student: {
@@ -137,7 +137,7 @@ const profileSchema = new Schema({
             default: [], 
             required: false }
     }
-});
+})
 
 const UserSchema = new Schema({
     email: { 
@@ -166,6 +166,6 @@ const UserSchema = new Schema({
         type: profileSchema, 
         required: true 
     }
-}, { timestamps: true });
+}, { timestamps: true })
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema)

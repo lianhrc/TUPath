@@ -1,16 +1,14 @@
 require('dotenv').config()
 const express = require('express')
 
-
 const app = express()
 const mongoose = require('mongoose')
 
 //Import routes
-
-
+const userRoute = require('./routes/userRoute')
 
 //router
-
+app.use('/api/users', userRoute)
 
 //connect to mnogoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -23,3 +21,4 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((error) => {
         console.log(error)
     })
+    

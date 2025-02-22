@@ -1,5 +1,7 @@
 const express = require('express')
 
+const { login, googleSignup, googleLogin, studentSignup, employerSignup } = require('../controllers/userController')
+
 const router = express.Router()
 
 router.post('/login', login)
