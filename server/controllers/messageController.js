@@ -36,7 +36,7 @@ const createConversation = async (req, res) => {
 const sendMessage = async (req, res) => {
     const { conversationId, sender, content, media } = req.body;
 
-    console.log(`Received conversationId: ${conversationId}`); // Log the conversationId
+    console.log(`Received conversationId: ${conversationId}`); // Log the conversationId {remove this line later}
 
     try {
         // Check if conversation exists
@@ -64,7 +64,7 @@ const fetchMessages = async (req, res) => {
     const { conversationId } = req.params;
     const { limit = 10, skip = 0 } = req.query;
 
-    console.log(`Received conversationId: ${conversationId}`); // Log the conversationId
+    console.log(`Received conversationId: ${conversationId}`); // Log the conversationId {remove this line later}
 
     try {
         // Check if conversation exists
@@ -90,7 +90,7 @@ const updateMessageStatus = async (req, res) => {
     const { messageId } = req.params;
     const { status } = req.body;
 
-    console.log(`Received messageId: ${messageId}`); // Log the messageId
+    console.log(`Received messageId: ${messageId}`); // Log the messageId {remove this line later}
 
     try {
         // Validate status value

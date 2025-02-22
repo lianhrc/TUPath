@@ -4,10 +4,10 @@ const { createUser, readAllUsers, readUserById, updateUser, deleteUser } = requi
 
 const router = express.Router()
 
-router.post('/', createUser)        //create user
-router.get('/', readAllUsers)       //read all users
-router.get('/:id', readUserById)      //read user by id  
-router.put('/:id', updateUser)      //update user
-router.delete('/:id', deleteUser)   //delete user
+router.post('/', createUser)       
+router.get('/', readAllUsers)       
+router.get('/:id', readUserById)    
+router.put('/:id', updateUser)     
+router.delete('/:id', deleteUser)  
 
 module.exports = router
