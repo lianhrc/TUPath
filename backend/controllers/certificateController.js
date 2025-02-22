@@ -1,6 +1,6 @@
 const express = require('express')
 const multer = require('multer')
-const { verifyToken } = require('../middleware/authv2')
+const { verifyToken } = require('../middleware/verifyToken')
 const StudentCertificate = require('../models/certModel')
 
 const router = express.Router()
@@ -20,12 +20,10 @@ const upload = multer({
     limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
 })
 
-// Endpoint to handle certificate uploads
-router.post("/api/uploadCertificate", verifyToken, upload.fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "attachments", maxCount: 10 }
-]), async (req, res) => {
-    try {
+
+//create a certificate
+const createCertificate = async (req, res) => {
+try {
         const userId = req.user.id
         const userName = req.user.name // Ensure user name is extracted from the token
         const { CertName, CertDescription } = req.body
@@ -55,10 +53,10 @@ router.post("/api/uploadCertificate", verifyToken, upload.fields([
         console.error("Error uploading certificate:", error)
         res.status(500).json({ success: false, message: "Internal server error", error: error.message })
     }
-})
+}
 
-// Endpoint to fetch certificates for a user
-router.get('/api/certificates', verifyToken, async (req, res) => {
+//get cetificates
+const getCertificates = async (req, res) => {
     try {
         const userId = req.user.id
         const certificates = await StudentCertificate.find({ studId: userId })
@@ -67,6 +65,19 @@ router.get('/api/certificates', verifyToken, async (req, res) => {
         console.error('Error fetching certificates:', error)
         res.status(500).json({ success: false, message: 'Internal server error' })
     }
+}
+
+// // Endpoint to handle certificate uploads
+// router.post("/api/uploadCertificate", verifyToken, upload.fields([
+//     { name: "thumbnail", maxCount: 1 },
+//     { name: "attachments", maxCount: 10 }
+// ]), async (req, res) => {
+    
+// })
+
+// Endpoint to fetch certificates for a user
+router.get('/api/certificates', verifyToken, async (req, res) => {
+    
 })
 
 // Endpoint to delete a certificate
@@ -88,4 +99,7 @@ router.delete('/api/certificates/:id', verifyToken, async (req, res) => {
     }
 })
 
-module.exports = router
+module.exports = {
+    createCertificate,
+    getCertificates
+}
