@@ -1,7 +1,6 @@
 const Project = require('../models/projectModel')
 const User = require('../models/userModel')
 
-
 // Endpoint to handle project uploads
 const uploadProject = async (req, res) => {
     try {
@@ -118,7 +117,7 @@ const uploadProject = async (req, res) => {
         console.error("Error uploading project:", error)
         res.status(500).json({ success: false, message: "Internal server error" })
     } 
- }
+}
 
 // Fetch projects
 const getProjects = async (req, res) => {

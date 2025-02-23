@@ -21,7 +21,8 @@ const login = async (req, res) => {
         user.isNewUser = false
         await user.save()
 
-        res.status(200).json({ success: true, token, message: "Login successful", redirectPath })
+        res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
+        res.status(200).json({ success: true, message: "Login successful", redirectPath })
     } catch (err) {
         res.status(500).json({ success: false, message: "Internal server error" })
     }
@@ -70,7 +71,8 @@ const googleSignup = async (req, res) => {
 
         const redirectPath = role === 'student' ? '/studentprofilecreation' : '/employerprofilecreation'
 
-        res.json({ success: true, token: jwtToken, redirectPath })
+        res.cookie('token', jwtToken, { httpOnly: true }) // Set the token in a cookie
+        res.json({ success: true, redirectPath })
     } catch (error) {
         console.error('Google sign-up error:', error)
         res.status(500).json({ success: false, message: 'Google sign-up failed' })
@@ -105,7 +107,8 @@ const googleLogin = async (req, res) => {
 
         const redirectPath = '/homepage'
 
-        res.json({ success: true, token: jwtToken, redirectPath })
+        res.cookie('token', jwtToken, { httpOnly: true }) // Set the token in a cookie
+        res.json({ success: true, redirectPath })
     } catch (error) {
         console.error('Google login error:', error)
         res.status(500).json({ success: false, message: 'Google login failed' })
@@ -134,9 +137,9 @@ const studentSignup = async (req, res) => {
 
         const token = jwt.sign({ id: newUser._id, role: 'student' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
+        res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
         return res.status(201).json({
             success: true,
-            token,
             message: "Signup successful",
             redirectPath: "/studentprofilecreation",
         })
@@ -168,9 +171,9 @@ const employerSignup = async (req, res) => {
 
         const token = jwt.sign({ id: newUser._id, role: 'employer' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
+        res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
         return res.status(201).json({
             success: true,
-            token,
             message: "Signup successful",
             redirectPath: "/employerprofilecreation",
         })
@@ -215,10 +218,10 @@ const uploadProfileImage = async (req, res) => {
 }
 
 // Logout endpoint
-const logout = async (req, res) => {
-    res.status(200).json({ success: true, message: "Logout successful" })
-}
-
+const logout = (req, res) => {
+    res.clearCookie("token")
+    res.status(200).json({ message: "Logged out successfully" })
+};
 
 module.exports = {
     login,

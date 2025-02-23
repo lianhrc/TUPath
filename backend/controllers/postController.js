@@ -3,7 +3,8 @@ const User = require('../models/userModel')
 
 // Create Post
 const createPost = async (req, res) => {
-    const { userId, postContent, media } = req.body
+    const userId = req.user.id // Extract user ID from the token
+    const { postContent, media } = req.body
 
     try {
         // Check if user exists
@@ -80,7 +81,7 @@ const deletePost = async (req, res) => {
 // Vote Post
 const votePost = async (req, res) => {
     const { postId } = req.params
-    const { userId } = req.body
+    const userId = req.user.id // Extract user ID from the token
 
     try {
         const post = await Post.findById(postId)
@@ -109,7 +110,8 @@ const votePost = async (req, res) => {
 // Comment Post
 const commentPost = async (req, res) => {
     const { postId } = req.params
-    const { userId, comment } = req.body
+    const userId = req.user.id // Extract user ID from the token
+    const { comment } = req.body
 
     try {
         const post = await Post.findById(postId)

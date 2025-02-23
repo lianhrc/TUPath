@@ -4,7 +4,8 @@ const User = require('../models/userModel')
 
 // Create Conversation
 const createConversation = async (req, res) => {
-    const { userId1, userId2 } = req.body
+    const userId1 = req.user.id // Extract user ID from the token
+    const { userId2 } = req.body // Extract the other user ID from the request body
 
     try {
         // Check if users exist
@@ -34,7 +35,8 @@ const createConversation = async (req, res) => {
 
 // Send Message
 const sendMessage = async (req, res) => {
-    const { conversationId, sender, content, media } = req.body
+    const { conversationId, content, media } = req.body
+    const sender = req.user.id // Extract user ID from the token
 
     console.log(`Received conversationId: ${conversationId}`) // Log the conversationId {remove this line later}
 

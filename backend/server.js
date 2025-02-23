@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const cookieParser = require('cookie-parser')
 
 const app = express()
 const mongoose = require('mongoose')
@@ -10,6 +11,9 @@ const certificateRoute = require('./routes/certificateRoute')
 const projectRoute = require('./routes/projectRoute')
 const messageRoute = require('./routes/messageRoute')
 const postRoute = require('./routes/postRoute')
+
+// Use cookie-parser middleware
+app.use(cookieParser())
 
 //router
 app.use('/api/users', userRoute)
@@ -29,4 +33,3 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((error) => {
         console.log(error)
     })
-    
