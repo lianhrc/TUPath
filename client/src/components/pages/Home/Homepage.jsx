@@ -9,13 +9,10 @@ import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
-import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 import dots from '../../../assets/dots.png';
 import EditPostOption from '../../popups/EditOptionsModal';
 import { useNavigate } from "react-router-dom";
-
-const socket = io('http://localhost:3001');
 
 const Homepage = () => {
   const [postsData, setPostsData] = useState([]);
@@ -64,23 +61,11 @@ const Homepage = () => {
 
   const handleUpvote = async (postId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/posts/${postId}/upvote`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to toggle upvote");
-      }
-
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post(`/api/posts/${postId}/vote`);
+      if (response.data.success) {
         setPostsData((prevPosts) =>
           prevPosts.map((post) =>
-            post._id === postId ? { ...post, upvotes: data.post.upvotes } : post
+            post._id === postId ? { ...post, upvotes: response.data.post.upvotes } : post
           )
         );
       }
@@ -91,9 +76,8 @@ const Homepage = () => {
 
   const fetchPostsData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/posts');
-      const data = await response.json();
-      const updatedPosts = data.map((post) => ({
+      const response = await axiosInstance.get('/api/posts');
+      const updatedPosts = response.data.map((post) => ({
         ...post,
         showComments: false,
       }));
@@ -106,35 +90,6 @@ const Homepage = () => {
 
   useEffect(() => {
     fetchPostsData();
-    
-    socket.on('new_post', (post) => {
-      setPostsData((prevPosts) => [{ ...post, showComments: false }, ...prevPosts]);
-    });
-
-    socket.on('receive_comment', ({ postId, comment }) => {
-      setPostsData((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, comments: [...post.comments, comment] }
-            : post
-        )
-      );
-    });
-
-    return () => {
-      socket.off('new_post');
-      socket.off('receive_comment');
-    };
-  }, []);
-
-  useEffect(() => {
-    socket.on("delete_post", ({ postId }) => {
-      setPostsData((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-    });
-  
-    return () => {
-      socket.off("delete_post");
-    };
   }, []);
 
   useEffect(() => {
@@ -237,21 +192,14 @@ const Homepage = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      const response = await axiosInstance.delete(`/api/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-  
-      const { success, message } = response.data;
-  
-      if (success) {
+      const response = await axiosInstance.delete(`/api/posts/${postId}`);
+      if (response.data.success) {
         setPostsData((prevPosts) =>
           prevPosts.filter((post) => post._id !== postId)
         );
       } else {
-        console.error("Error deleting post:", message);
-        alert(message || "Failed to delete post");
+        console.error("Error deleting post:", response.data.message);
+        alert(response.data.message || "Failed to delete post");
       }
     } catch (err) {
       console.error("Error deleting post:", err);

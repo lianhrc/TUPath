@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './NewMessageModal.css'; // Create this CSS file for modal styling
 import axiosInstance from '../../services/axiosInstance'; // Import axios instance for API calls
 import profileicon from '../../assets/profileicon.png'; // Replace with actual icon path
-import { io } from 'socket.io-client';
-
-const socket = io("http://localhost:3001");
 
 const NewMessageModal = ({ isOpen, onClose }) => {
   const [recipient, setRecipient] = useState('');
@@ -90,13 +87,21 @@ const NewMessageModal = ({ isOpen, onClose }) => {
         token: token
       };
 
-      // Send message to the server via socket without adding it to the messages state
-      socket.emit('send_message', newMessage);
-
-      // Clear fields after sending
-      setRecipient('');
-      setMessage('');
-      onClose(); // Close the modal after sending
+      // Send message to the server via API call instead of socket
+      axiosInstance.post('/api/messages', newMessage, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => {
+        if (response.data.success) {
+          // Clear fields after sending
+          setRecipient('');
+          setMessage('');
+          onClose(); // Close the modal after sending
+        }
+      }).catch(error => {
+        console.error('Error sending message:', error);
+      });
     }
   };
 

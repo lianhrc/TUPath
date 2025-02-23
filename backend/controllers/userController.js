@@ -7,7 +7,7 @@ const axios = require("axios")
 const login = async (req, res) => {
     const { email, password, role } = req.body
     try {
-        const user = await User.findOne({ email, role })
+        const user = await User.findOne({ email, "roles.role": role })
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(400).json({ success: false, message: "Invalid email or password" })
@@ -16,7 +16,7 @@ const login = async (req, res) => {
         const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, { expiresIn: "1h" })
 
         let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/homepage"
-        if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/homepage"
+        if (role === "Employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/homepage"
 
         user.isNewUser = false
         await user.save()
@@ -33,7 +33,7 @@ const googleSignup = async (req, res) => {
     const { token, role } = req.body
 
     // Validate role
-    if (!['student', 'employer'].includes(role)) {
+    if (!['Student', 'Employer'].includes(role)) {
         return res.status(400).json({ success: false, message: 'Invalid role specified' })
     }
 
@@ -41,14 +41,14 @@ const googleSignup = async (req, res) => {
         // Verify the Google token using Google API
         const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
 
-        if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
+        if (googleResponse.data.aud !== process.env.GOOGLE_CLIENT_ID) {
             return res.status(400).json({ success: false, message: 'Invalid Google token' })
         }
 
         const { email, sub: googleId, name } = googleResponse.data
 
         // Check if the user already exists
-        const existingUser = await User.findOne({ email, role })
+        const existingUser = await User.findOne({ email, "roles.role": role })
         if (existingUser) {
             return res.status(409).json({ success: false, message: 'Account already exists. Please log in.' })
         }
@@ -59,7 +59,7 @@ const googleSignup = async (req, res) => {
             password: googleId, // Placeholder for password
             isNewUser: true,
             googleSignup: true,
-            role
+            roles: { role }
         })
 
         // Generate JWT token
@@ -69,7 +69,7 @@ const googleSignup = async (req, res) => {
             { expiresIn: '1h' }
         )
 
-        const redirectPath = role === 'student' ? '/studentprofilecreation' : '/employerprofilecreation'
+        const redirectPath = role === 'Student' ? '/studentprofilecreation' : '/employerprofilecreation'
 
         res.cookie('token', jwtToken, { httpOnly: true }) // Set the token in a cookie
         res.json({ success: true, redirectPath })
@@ -86,14 +86,14 @@ const googleLogin = async (req, res) => {
     try {
         const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
 
-        if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
+        if (googleResponse.data.aud !== process.env.GOOGLE_CLIENT_ID) {
             return res.status(400).json({ success: false, message: 'Invalid Google token' })
         }
 
         const { email, sub: googleId, name } = googleResponse.data
 
         // Check if the user exists
-        const user = await User.findOne({ email, role })
+        const user = await User.findOne({ email, "roles.role": role })
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not registered. Please sign up first.' })
         }
@@ -117,10 +117,10 @@ const googleLogin = async (req, res) => {
 
 // Student signup endpoint
 const studentSignup = async (req, res) => {
-    const { firstName, lastName, email, password } = req.body
+    const { email, password } = req.body
 
     try {
-        const existingUser = await User.findOne({ email, role: 'student' })
+        const existingUser = await User.findOne({ email, "roles.role": 'Student' })
 
         if (existingUser) {
             return res.status(400).json({ success: false, message: "User already exists." })
@@ -132,10 +132,10 @@ const studentSignup = async (req, res) => {
             email,
             password: hashedPassword,
             isNewUser: true,
-            role: 'student'
+            roles: { role: 'Student' }
         })
 
-        const token = jwt.sign({ id: newUser._id, role: 'student' }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ id: newUser._id, role: 'Student' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
         return res.status(201).json({
@@ -154,7 +154,7 @@ const employerSignup = async (req, res) => {
     const { firstName, lastName, email, password } = req.body
 
     try {
-        const existingUser = await User.findOne({ email, role: 'employer' })
+        const existingUser = await User.findOne({ email, "roles.role": 'Employer' })
 
         if (existingUser) {
             return res.status(400).json({ success: false, message: "User already exists." })
@@ -166,10 +166,10 @@ const employerSignup = async (req, res) => {
             email,
             password: hashedPassword,
             isNewUser: true,
-            role: 'employer'
+            roles: { role: 'Employer' }
         })
 
-        const token = jwt.sign({ id: newUser._id, role: 'employer' }, process.env.JWT_SECRET, { expiresIn: '1h' })
+        const token = jwt.sign({ id: newUser._id, role: 'Employer' }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
         res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
         return res.status(201).json({
@@ -194,9 +194,7 @@ const uploadProfileImage = async (req, res) => {
 
         const profileImgPath = `/uploads/${req.file.filename}`
 
-        const userModel = req.user.role === "student" ? Student : Employer
-
-        const updatedUser = await userModel.findByIdAndUpdate(
+        const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: { "profileDetails.profileImg": profileImgPath } },
             { new: true }
@@ -221,7 +219,7 @@ const uploadProfileImage = async (req, res) => {
 const logout = (req, res) => {
     res.clearCookie("token")
     res.status(200).json({ message: "Logged out successfully" })
-};
+}
 
 module.exports = {
     login,

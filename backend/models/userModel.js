@@ -2,6 +2,14 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
+const roleSchema = new Schema({
+    role: {
+        type: String,
+        enum: ['Student', 'Employer'],
+        required: true
+    }
+})
+
 const profileSchema = new Schema({
     student: {
         studentId: { 
@@ -157,9 +165,8 @@ const UserSchema = new Schema({
         type: Boolean, 
         default: false 
     },
-    role: { 
-        type: String, 
-        enum: ['Student', 'Employer'], 
+    roles: { 
+        type: roleSchema, 
         required: true 
     },
     profileDetails: { 

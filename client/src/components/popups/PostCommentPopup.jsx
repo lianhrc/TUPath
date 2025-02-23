@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import "./PostCommentPopup.css";
 import dot from "../../assets/dots.png";
 
-const socket = io("http://localhost:3001");
+
 
 const formatTimeAgo = (timestamp) => {
   const now = new Date();
@@ -63,19 +62,6 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
     fetchProfileData();
   }, []);
-
-  useEffect(() => {
-    socket.on("new_comment", ({ postId, comment }) => {
-      if (postId === post._id && !handledComments.current.has(comment._id)) {
-        setComments((prevComments) => [...prevComments, comment]);
-        handledComments.current.add(comment._id);
-      }
-    });
-
-    return () => {
-      socket.off("new_comment");
-    };
-  }, [post._id]);
 
   const handleCommentSubmit = async () => {
     if (commentText.trim() === "") return;

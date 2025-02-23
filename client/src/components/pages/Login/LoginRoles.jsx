@@ -16,9 +16,9 @@ function LoginRoles() {
 
     const handleSignupRedirect = () => {
         if (role === 'student') {
-            navigate('/StudentSignup'); // Navigate to StudentSignup
+            navigate('/student-signup'); // Navigate to StudentSignup
         } else {
-            navigate('/EmployerSignup'); // Navigate to EmployerSignup
+            navigate('/employer-signup'); // Navigate to EmployerSignup
         }
     };
 

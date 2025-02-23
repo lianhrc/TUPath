@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
 import axiosInstance from '../../../services/axiosInstance';
 import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
@@ -18,8 +17,6 @@ import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
 import CorUpModal from '../../popups/CorUpModal';  // Import the new modal
-
-const socket = io('http://localhost:3001');
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
@@ -83,21 +80,6 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
 
     fetchProfileData();
   }, [userRole]); // Re-fetch if userRole changes
-
-  useEffect(() => {
-    socket.on('new_certificate', (certificate) => {
-      setCertificates((prevCertificates) => [...prevCertificates, certificate]);
-    });
-
-    socket.on('delete_certificate', ({ certificateId }) => {
-      setCertificates((prevCertificates) => prevCertificates.filter((cert) => cert._id !== certificateId));
-    });
-
-    return () => {
-      socket.off('new_certificate');
-      socket.off('delete_certificate');
-    };
-  }, []);
 
   if (loading) {
     return <Loader />;
