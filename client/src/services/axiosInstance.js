@@ -1,7 +1,4 @@
-
-// axiosInstance.js
-
-import axios from 'axios';
+import axios from 'axios'
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:3001', // Update to your backend server's URL
@@ -10,22 +7,19 @@ const axiosInstance = axios.create({
     'Cache-Control': 'no-store', // Disables caching for API responses
     Pragma: 'no-cache',           // HTTP/1.0 compatibility
   },
-});
+})
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['Authorization'] = `Bearer ${token}`
     }
-    return config;
+    return config
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default axiosInstance;
-
-
-//OLD AXIOS INSTANCE
+export default axiosInstance
