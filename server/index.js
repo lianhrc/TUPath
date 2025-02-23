@@ -745,10 +745,10 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     let certificates = await StudentCertificate.find({ StudId: id });
 
     // Hide projects and certificates if the requesting user is another student
-    if (requestingUserRole === 'student' && requestingUserId !== id) {
+    if (requestingUserRole === 'student' && requestingUserId.toString() !== id.toString()) {
       user.profileDetails.projects = [];
       certificates = [];
-    }
+  }
 
     res.status(200).json({
       success: true,
