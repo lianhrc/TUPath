@@ -18,4 +18,5 @@ router.post('/student-signup', studentSignup)
 router.post('/employer-signup', employerSignup)
 router.post('/uploadProfileImage', uploadProfileImage)
 
+
 module.exports = router
