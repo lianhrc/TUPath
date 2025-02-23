@@ -1213,279 +1213,276 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     }
   });
   */
-// api upload image endpoint
-  app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
-    try {
-      const userId = req.user.id;
+// // api upload image endpoint
+//   app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+//     try {
+//       const userId = req.user.id;
   
-      if (!req.file) {
-        return res.status(400).json({ success: false, message: "No file uploaded" });
-      }
+//       if (!req.file) {
+//         return res.status(400).json({ success: false, message: "No file uploaded" });
+//       }
   
-      const profileImgPath = `/uploads/${req.file.filename}`;
+//       const profileImgPath = `/uploads/${req.file.filename}`;
   
-      const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
+//       const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
   
-      const updatedUser = await userModel.findByIdAndUpdate(
-        userId,
-        { $set: { "profileDetails.profileImg": profileImgPath } },
-        { new: true }
-      );
+//       const updatedUser = await userModel.findByIdAndUpdate(
+//         userId,
+//         { $set: { "profileDetails.profileImg": profileImgPath } },
+//         { new: true }
+//       );
   
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
+//       if (!updatedUser) {
+//         return res.status(404).json({ success: false, message: "User not found" });
+//       }
   
-      res.status(200).json({
-        success: true,
-        message: "Profile image uploaded successfully",
-        profileImg: profileImgPath,
-      });
-    } catch (error) {
-      console.error("Error uploading profile image:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
+//       res.status(200).json({
+//         success: true,
+//         message: "Profile image uploaded successfully",
+//         profileImg: profileImgPath,
+//       });
+//     } catch (error) {
+//       console.error("Error uploading profile image:", error);
+//       res.status(500).json({ success: false, message: "Internal server error" });
+//     }
+//   });
   
 
 
-  app.post(
-    "/api/uploadProject",
-    verifyToken,
-    upload.fields([
-      { name: "thumbnail", maxCount: 1 },
-      { name: "selectedFiles", maxCount: 10 },
-    ]),
-    async (req, res) => {
-      try {
-        const userId = req.user.id;
-        const { projectName, description, tag, tools, projectUrl, assessment,roles } = req.body;
+  // app.post("/api/uploadProject",verifyToken, upload.fields([
+  //     { name: "thumbnail", maxCount: 1 },
+  //     { name: "selectedFiles", maxCount: 10 },
+  //   ]),
+  //   async (req, res) => {
+  //     try {
+  //       const userId = req.user.id;
+  //       const { projectName, description, tag, tools, projectUrl, assessment,roles } = req.body;
   
-        // Validate required fields
-        if (!projectName || !projectName.trim()) {
-          return res.status(400).json({ success: false, message: "Project name is required." });
-        }
+  //       // Validate required fields
+  //       if (!projectName || !projectName.trim()) {
+  //         return res.status(400).json({ success: false, message: "Project name is required." });
+  //       }
   
-        if (!description || !description.trim()) {
-          return res.status(400).json({ success: false, message: "Description is required." });
-        }
+  //       if (!description || !description.trim()) {
+  //         return res.status(400).json({ success: false, message: "Description is required." });
+  //       }
   
-        if (!tag || !tag.trim()) {
-          return res.status(400).json({ success: false, message: "A single tag is required." });
-        }
+  //       if (!tag || !tag.trim()) {
+  //         return res.status(400).json({ success: false, message: "A single tag is required." });
+  //       }
   
-        // Ensure tools is always an array
-        const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
-        const rolesArray = Array.isArray(roles) ? roles : roles ? [roles] : [];
+  //       // Ensure tools is always an array
+  //       const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
+  //       const rolesArray = Array.isArray(roles) ? roles : roles ? [roles] : [];
 
-              // Validate roles
-      if (!rolesArray.length) {
-        return res.status(400).json({ success: false, message: "At least one role must be selected." });
-      }
+  //             // Validate roles
+  //     if (!rolesArray.length) {
+  //       return res.status(400).json({ success: false, message: "At least one role must be selected." });
+  //     }
 
-        // Parse assessment data
-        const parsedAssessment = assessment
-          ? JSON.parse(assessment).map((q) => ({
-              ...q,
-              weightedScore: q.scoring[q.rating],
-            }))
-          : [];
+  //       // Parse assessment data
+  //       const parsedAssessment = assessment
+  //         ? JSON.parse(assessment).map((q) => ({
+  //             ...q,
+  //             weightedScore: q.scoring[q.rating],
+  //           }))
+  //         : [];
   
-        // Validate assessment data for required categories (tags and tools)
-        const requiredCategories = [
-          { type: "tag", name: tag },
-          ...toolsArray.map((tool) => ({ type: "tool", name: tool })),
-        ];
+  //       // Validate assessment data for required categories (tags and tools)
+  //       const requiredCategories = [
+  //         { type: "tag", name: tag },
+  //         ...toolsArray.map((tool) => ({ type: "tool", name: tool })),
+  //       ];
   
-        for (const category of requiredCategories) {
-          const relevantAssessment = parsedAssessment.filter(
-            (a) => a.category === category.type && a.categoryName === category.name
-          );
+  //       for (const category of requiredCategories) {
+  //         const relevantAssessment = parsedAssessment.filter(
+  //           (a) => a.category === category.type && a.categoryName === category.name
+  //         );
   
-          if (!relevantAssessment.length) {
-            return res.status(400).json({
-              success: false,
-              message: `Assessment is required for ${category.type} '${category.name}'.`,
-            });
-          }
+  //         if (!relevantAssessment.length) {
+  //           return res.status(400).json({
+  //             success: false,
+  //             message: `Assessment is required for ${category.type} '${category.name}'.`,
+  //           });
+  //         }
   
-          const isValidAssessment = relevantAssessment.every(
-            (item) => item.question && item.rating >= 1 && item.rating <= 5
-          );
+  //         const isValidAssessment = relevantAssessment.every(
+  //           (item) => item.question && item.rating >= 1 && item.rating <= 5
+  //         );
   
-          if (!isValidAssessment) {
-            return res.status(400).json({
-              success: false,
-              message: `Invalid assessment data for ${category.type} '${category.name}'. Ratings must be between 1 and 5.`,
-            });
-          }
-        }
+  //         if (!isValidAssessment) {
+  //           return res.status(400).json({
+  //             success: false,
+  //             message: `Invalid assessment data for ${category.type} '${category.name}'. Ratings must be between 1 and 5.`,
+  //           });
+  //         }
+  //       }
   
-        // Retrieve files from multer
-        const thumbnail = req.files["thumbnail"]
-          ? `/uploads/${req.files["thumbnail"][0].filename}`
-          : null;
+  //       // Retrieve files from multer
+  //       const thumbnail = req.files["thumbnail"]
+  //         ? `/uploads/${req.files["thumbnail"][0].filename}`
+  //         : null;
   
-        const selectedFiles = req.files["selectedFiles"]
-          ? req.files["selectedFiles"].map((file) => file.path)
-          : [];
+  //       const selectedFiles = req.files["selectedFiles"]
+  //         ? req.files["selectedFiles"].map((file) => file.path)
+  //         : [];
   
-        // Create a new project document
-        const newProject = new Project({
-          projectName,
-          description,
-          tag,
-          tools: toolsArray,
-          selectedFiles,
-          thumbnail,
-          projectUrl,
-          roles: rolesArray,
-          status: "pending",
-          assessment: parsedAssessment,
-        });
+  //       // Create a new project document
+  //       const newProject = new Project({
+  //         projectName,
+  //         description,
+  //         tag,
+  //         tools: toolsArray,
+  //         selectedFiles,
+  //         thumbnail,
+  //         projectUrl,
+  //         roles: rolesArray,
+  //         status: "pending",
+  //         assessment: parsedAssessment,
+  //       });
   
-        // Save project to the database
-        const savedProject = await newProject.save();
+  //       // Save project to the database
+  //       const savedProject = await newProject.save();
   
-        // Associate the project with the user
-        const user = await Tupath_usersModel.findById(userId);
+  //       // Associate the project with the user
+  //       const user = await Tupath_usersModel.findById(userId);
   
-        if (!user) {
-          return res.status(404).json({ success: false, message: "User not found" });
-        }
+  //       if (!user) {
+  //         return res.status(404).json({ success: false, message: "User not found" });
+  //       }
   
-        user.profileDetails.projects.push(savedProject._id);
+  //       user.profileDetails.projects.push(savedProject._id);
   
-        // Recalculate the best tag and cumulative scores
-        await user.calculateBestTag();
+  //       // Recalculate the best tag and cumulative scores
+  //       await user.calculateBestTag();
   
-        // Save the updated user
-        await user.save();
+  //       // Save the updated user
+  //       await user.save();
   
-        res.status(201).json({
-          success: true,
-          message: "Project uploaded successfully",
-          project: savedProject,
-        });
-      } catch (error) {
-        console.error("Error uploading project:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
-      }
-    }
-  );
-  
-  
+  //       res.status(201).json({
+  //         success: true,
+  //         message: "Project uploaded successfully",
+  //         project: savedProject,
+  //       });
+  //     } catch (error) {
+  //       console.error("Error uploading project:", error);
+  //       res.status(500).json({ success: false, message: "Internal server error" });
+  //     }
+  //   }
+  // );
   
   
   
   
   
-  app.get("/api/projects", verifyToken, async (req, res) => {
-    try {
-      const userId = req.user.id;
-  
-      // Fetch user with populated projects
-      const user = await Tupath_usersModel.findById(userId).populate("profileDetails.projects");
-  
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-  
-      // Add scores and tag summary for each project
-      const projectsWithScores = user.profileDetails.projects.map((project) => {
-        const totalScore = project.assessment.reduce((sum, question) => sum + (question.weightedScore || 0), 0);
-  
-        return {
-          _id: project._id,
-          projectName: project.projectName,
-          description: project.description,
-          tag: project.tag,
-          totalScore, // Sum of all weighted scores for the project
-          tools: project.tools,
-          status: project.status,
-          assessment: project.assessment, // Include detailed assessment
-          createdAt: project.createdAt,
-          roles:project.roles,
-        };
-      });
-  
-      res.status(200).json({
-        success: true,
-        projects: projectsWithScores,
-      });
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
   
   
+  // app.get("/api/projects", verifyToken, async (req, res) => {
+  //   try {
+  //     const userId = req.user.id;
+  
+  //     // Fetch user with populated projects
+  //     const user = await Tupath_usersModel.findById(userId).populate("profileDetails.projects");
+  
+  //     if (!user) {
+  //       return res.status(404).json({ success: false, message: "User not found" });
+  //     }
+  
+  //     // Add scores and tag summary for each project
+  //     const projectsWithScores = user.profileDetails.projects.map((project) => {
+  //       const totalScore = project.assessment.reduce((sum, question) => sum + (question.weightedScore || 0), 0);
+  
+  //       return {
+  //         _id: project._id,
+  //         projectName: project.projectName,
+  //         description: project.description,
+  //         tag: project.tag,
+  //         totalScore, // Sum of all weighted scores for the project
+  //         tools: project.tools,
+  //         status: project.status,
+  //         assessment: project.assessment, // Include detailed assessment
+  //         createdAt: project.createdAt,
+  //         roles:project.roles,
+  //       };
+  //     });
+  
+  //     res.status(200).json({
+  //       success: true,
+  //       projects: projectsWithScores,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching projects:", error);
+  //     res.status(500).json({ success: false, message: "Internal server error" });
+  //   }
+  // });
   
   
-  app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
-    try {
-      const userId = req.user.id; // Extract user ID from the token
-      const { projectId } = req.params;
   
-      // Find the user
-      const user = await Tupath_usersModel.findById(userId);
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
   
-      // Find the project in the user's profile and remove it
-      const projectIndex = user.profileDetails.projects.findIndex(
-        (project) => project._id.toString() === projectId
-      );
-      if (projectIndex === -1) {
-        return res.status(404).json({ success: false, message: "Project not found in user's profile" });
-      }
+  // app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
+  //   try {
+  //     const userId = req.user.id; // Extract user ID from the token
+  //     const { projectId } = req.params;
   
-      // Remove the project reference from the user's profile
-      user.profileDetails.projects.splice(projectIndex, 1);
-      await user.save();
+  //     // Find the user
+  //     const user = await Tupath_usersModel.findById(userId);
+  //     if (!user) {
+  //       return res.status(404).json({ success: false, message: "User not found" });
+  //     }
   
-      // Delete the project document from the 'projects' collection
-      const deletedProject = await Project.findByIdAndDelete(projectId);
-      if (!deletedProject) {
-        return res.status(404).json({ success: false, message: "Project not found in projects collection" });
-      }
+  //     // Find the project in the user's profile and remove it
+  //     const projectIndex = user.profileDetails.projects.findIndex(
+  //       (project) => project._id.toString() === projectId
+  //     );
+  //     if (projectIndex === -1) {
+  //       return res.status(404).json({ success: false, message: "Project not found in user's profile" });
+  //     }
   
-      res.status(200).json({
-        success: true,
-        message: "Project deleted successfully from user's profile and projects collection",
-      });
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
+  //     // Remove the project reference from the user's profile
+  //     user.profileDetails.projects.splice(projectIndex, 1);
+  //     await user.save();
+  
+  //     // Delete the project document from the 'projects' collection
+  //     const deletedProject = await Project.findByIdAndDelete(projectId);
+  //     if (!deletedProject) {
+  //       return res.status(404).json({ success: false, message: "Project not found in projects collection" });
+  //     }
+  
+  //     res.status(200).json({
+  //       success: true,
+  //       message: "Project deleted successfully from user's profile and projects collection",
+  //     });
+  //   } catch (error) {
+  //     console.error("Error deleting project:", error);
+  //     res.status(500).json({ success: false, message: "Internal server error" });
+  //   }
+  // })
   
   
   
 
   // Endpoint for uploading certificate photos
-  app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const filePaths = req.files.map(file => `/certificates/${file.filename}`);
+  // app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
+  //   try {
+  //     const userId = req.user.id;
+  //     const filePaths = req.files.map(file => `/certificates/${file.filename}`);
 
-      const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-        userId,
-        { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
-        { new: true }
-      );
+  //     const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+  //       userId,
+  //       { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
+  //       { new: true }
+  //     );
 
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
+  //     if (!updatedUser) {
+  //       return res.status(404).json({ success: false, message: "User not found" });
+  //     }
 
-      res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
-    } catch (error) {
-      console.error("Error uploading certificate photos:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
+  //     res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
+  //   } catch (error) {
+  //     console.error("Error uploading certificate photos:", error);
+  //     res.status(500).json({ success: false, message: "Internal server error" });
+  //   }
+  // });
 
 // -----------------------------------api for dynamic search----------------------------------
 app.get('/api/search', verifyToken, async (req, res) => {

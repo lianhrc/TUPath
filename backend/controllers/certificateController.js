@@ -1,11 +1,10 @@
-const express = require('express');
 const StudentCertificate = require('../models/certModel');
 
 // Upload certificate
 const uploadCertificate = async (req, res) => {
     try {
         const userId = req.user.id;
-        const userName = req.user.name; // Ensure user name is extracted from the token
+        const userName = req.user.name;
         const { CertName, CertDescription } = req.body;
 
         if (!CertName || !CertDescription) {
@@ -17,7 +16,7 @@ const uploadCertificate = async (req, res) => {
 
         const newCertificate = new StudentCertificate({
             studId: userId,
-            studName: userName, // Use the extracted user name
+            studName: userName,
             certificate: {
                 certName: CertName,
                 certDescription: CertDescription,
@@ -33,7 +32,7 @@ const uploadCertificate = async (req, res) => {
         console.error("Error uploading certificate:", error);
         res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
-}
+};
 
 // Fetch certificates
 const getCertificates = async (req, res) => {
@@ -45,7 +44,7 @@ const getCertificates = async (req, res) => {
         console.error('Error fetching certificates:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}
+};
 
 // Delete certificate
 const deleteCertificate = async (req, res) => {
@@ -64,10 +63,10 @@ const deleteCertificate = async (req, res) => {
         console.error('Error deleting certificate:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}
+};
 
 module.exports = {
     uploadCertificate,
     getCertificates,
     deleteCertificate
-}
+};

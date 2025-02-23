@@ -6,9 +6,13 @@ const mongoose = require('mongoose')
 
 //Import routes
 const userRoute = require('./routes/userRoute')
+const certificateRoute = require('./routes/certificateRoute')
+const projectRoute = require('./routes/projectRoute')
 
 //router
 app.use('/api/users', userRoute)
+app.use('/api/certificates', certificateRoute)
+app.use('/api/projects', projectRoute)
 
 //connect to mnogoDB
 mongoose.connect(process.env.MONGO_URI)
