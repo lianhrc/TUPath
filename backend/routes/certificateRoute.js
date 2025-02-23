@@ -1,13 +1,14 @@
 const express = require('express')
-const { createCertificate, getCertificates } = require('../controllers/certificateController')
+const { uploadCertificate, getCertificates, deleteCertificate } = require('../controllers/certificateController')
 const upload = require('../middleware/upload')
 const router = express.Router()
 
 router.post("/api/uploadCertificate", verifyToken, upload.fields ([
 {name: "thumbnail", maxCount: 1},
 {name: "attachments", maxCount: 10}
-]), createCertificate)
+]), uploadCertificate)
 
 router.get('/api/certificates', verifyToken, getCertificates)
+router.delete('/api/certificates/:id', verifyToken, deleteCertificate)
 
 module.exports = router
