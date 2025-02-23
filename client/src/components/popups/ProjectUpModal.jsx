@@ -45,6 +45,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [assessmentQuestions, setAssessmentQuestions] = useState([]);
   const [assessmentRatings, setAssessmentRatings] = useState([]);
   const [readyToSubmit, setReadyToSubmit] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const thumbnailInputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -141,29 +142,31 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   };
 
   
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
+    // ...existing code...
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!projectName.trim()) {
       alert("Project name is required.");
       return;
     }
-  
+
     if (!description.trim()) {
       alert("Description is required.");
       return;
     }
-  
+
     if (!tag) {
       alert("Please select a tag.");
       return;
     }
-  
-    if (assessmentQuestions.length > 0 && !readyToSubmit) {
-      setShowAssessmentModal(true);
-      return;
-    }
-  
+
+    setShowAssessmentModal(true); // Open assessment modal after clicking Submit
+
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
@@ -171,18 +174,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     tools.forEach((tool) => formData.append("tools", tool));
     roles.forEach((role) => formData.append("roles", role));
     formData.append("projectUrl", projectUrl);
-    formData.append(
-      "assessment",
-      JSON.stringify(
-        assessmentQuestions.map((question, index) => ({
-          question,
-          rating: assessmentRatings[index],
-          scoring: question.scoring,
-          category: question.category,
-          categoryName: question.categoryName,
-        }))
-      )
-    );
+
     selectedFiles.forEach((file) => formData.append("selectedFiles", file));
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
@@ -212,6 +204,9 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     } catch (error) {
       console.error("Error uploading project:", error);
     }
+    setIsSubmitting(false);
+    setShowAssessmentModal(false);
+
   };
   
 
@@ -376,18 +371,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
           questions={assessmentQuestions}
           ratings={assessmentRatings}
           setRatings={setAssessmentRatings}
-          onFinalSubmit={() => {
-            setShowAssessmentModal(false);
-            setReadyToSubmit(true);
-            toast.success('Assessment completed successfully!', {
-              position: "top-center",
-              autoClose: 3000,  // Toast will disappear in 3 seconds
-              hideProgressBar: false,
-              theme: "light",
-            });
-            
-            
-          }}
+          onFinalSubmit={handleFinalSubmit} // Pass handleFinalSubmit here
         />
       )}
     </>
