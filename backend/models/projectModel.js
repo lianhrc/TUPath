@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 
 // Define the assessment schema
 const AssessmentSchema = new Schema({
@@ -17,7 +17,7 @@ const AssessmentSchema = new Schema({
         type: Number,
         default: 0
     },
-}, { _id: false }); // Prevent automatic _id creation inside subdocument
+}, { _id: false }) // Prevent automatic _id creation inside subdocument
 
 // Define the project schema
 const ProjectSchema = new Schema({
@@ -53,6 +53,6 @@ const ProjectSchema = new Schema({
     },
     assessment:
         [AssessmentSchema], // Use the assessment schema
-}, { timestamps: true });
+}, { timestamps: true })
 
-module.exports = mongoose.model('Project', ProjectSchema);
+module.exports = mongoose.model('Project', ProjectSchema)

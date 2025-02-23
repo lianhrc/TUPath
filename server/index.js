@@ -142,40 +142,40 @@ mongoose.connect(
     },
   });
 
-  // Chat message schema
-  const messageSchema = new mongoose.Schema({
-    sender: {
-      senderId: { type: String, required: true },
-      name: { type: String, required: true },
-      profileImg: { type: String, default: "" },
-    },
-    receiver: {
-      receiverId: { type: String, required: true },
-      name: { type: String, required: true },
-      profileImg: { type: String, default: "" },
-    },
-    messageContent: {
-      text: { type: String, required: true },
-      attachments: [{ type: String }], // URLs or file paths
-    },
-    status: {
-      read: { type: Boolean, default: false },
-      delivered: { type: Boolean, default: false },
-    },
-    timestamp: { type: Date, default: Date.now },
-    direction: { type: String, enum: ['sent', 'received'], required: true }, // Add direction field
-  });
+  // // Chat message schema
+  // const messageSchema = new mongoose.Schema({
+  //   sender: {
+  //     senderId: { type: String, required: true },
+  //     name: { type: String, required: true },
+  //     profileImg: { type: String, default: "" },
+  //   },
+  //   receiver: {
+  //     receiverId: { type: String, required: true },
+  //     name: { type: String, required: true },
+  //     profileImg: { type: String, default: "" },
+  //   },
+  //   messageContent: {
+  //     text: { type: String, required: true },
+  //     attachments: [{ type: String }], // URLs or file paths
+  //   },
+  //   status: {
+  //     read: { type: Boolean, default: false },
+  //     delivered: { type: Boolean, default: false },
+  //   },
+  //   timestamp: { type: Date, default: Date.now },
+  //   direction: { type: String, enum: ['sent', 'received'], required: true }, // Add direction field
+  // });
   
-  // Add indexes for optimization
-  messageSchema.index({ "sender.senderId": 1 });
-  messageSchema.index({ "receiver.receiverId": 1 });
-  messageSchema.index({ timestamp: -1 });
-  messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
-  messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+  // // Add indexes for optimization
+  // messageSchema.index({ "sender.senderId": 1 });
+  // messageSchema.index({ "receiver.receiverId": 1 });
+  // messageSchema.index({ timestamp: -1 });
+  // messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+  // messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
   
-  const Message = mongoose.model("Message", messageSchema);
+  // const Message = mongoose.model("Message", messageSchema);
   
-  // Add this endpoint to fetch users
+  // // Add this endpoint to fetch users
   
 app.get('/api/userss', verifyToken, async (req, res) => {
   try {
