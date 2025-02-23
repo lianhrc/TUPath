@@ -29,6 +29,7 @@ function ProfilePage() {
   const [description, setDescription] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
+  const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
 
 
   const addProjectToState = (newProject) => {
@@ -241,7 +242,7 @@ function ProfilePage() {
         </div>
 
         {/* Project Section */}
-        {userRole === 'student' && (
+        {(userRole === 'employer' || (userRole === 'student' && profileData.email === loggedInUserEmail)) && (
          
           <div className="project-section">
           <div className="grademaincontainer">
