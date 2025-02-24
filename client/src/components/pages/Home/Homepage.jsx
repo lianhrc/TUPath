@@ -9,7 +9,7 @@ import commenticon from '../../../assets/comment.png';
 import Messagepop from '../../popups/messagingpop';
 import PostCommentPopup from '../../popups/PostCommentPopup';
 import AddPostModal from '../../popups/AddPostModal';
-import axiosInstance from '../../../services/axiosInstance';
+import axiosApi from '../../../services/axiosApi';
 import dots from '../../../assets/dots.png';
 import EditPostOption from '../../popups/EditOptionsModal';
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ const Homepage = () => {
 
   const handleUpvote = async (postId) => {
     try {
-      const response = await axiosInstance.post(`/api/posts/${postId}/vote`);
+      const response = await axiosApi.post(`/api/posts/${postId}/vote`);
       if (response.data.success) {
         setPostsData((prevPosts) =>
           prevPosts.map((post) =>
@@ -76,7 +76,7 @@ const Homepage = () => {
 
   const fetchPostsData = async () => {
     try {
-      const response = await axiosInstance.get('/api/posts');
+      const response = await axiosApi.get('/api/posts');
       const updatedPosts = response.data.map((post) => ({
         ...post,
         showComments: false,
@@ -95,7 +95,7 @@ const Homepage = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axiosInstance.get('/api/profile');
+        const response = await axiosApi.get('/api/profile');
         if (response.data.success) {
           setProfileData(response.data.profile.profileDetails || {});
         }
@@ -161,7 +161,7 @@ const Homepage = () => {
           postImg: newPostImage,
         };
   
-        const response = await axiosInstance.post('/api/posts', newPost);
+        const response = await axiosApi.post('/api/posts', newPost);
         if (response.data.success) {
           toast.success("Posted Successfully!");  // Success toast
           setPostSuccess(true);  // Indicate post was successful
@@ -192,7 +192,7 @@ const Homepage = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      const response = await axiosInstance.delete(`/api/posts/${postId}`);
+      const response = await axiosApi.delete(`/api/posts/${postId}`);
       if (response.data.success) {
         setPostsData((prevPosts) =>
           prevPosts.filter((post) => post._id !== postId)
@@ -215,7 +215,7 @@ const Homepage = () => {
           postImg: editingImage || undefined, // Ensure the new image is added if provided
         };
   
-        const response = await axiosInstance.put(`/api/posts/${editingPostId}`, updatedPost);
+        const response = await axiosApi.put(`/api/posts/${editingPostId}`, updatedPost);
         if (response.data.success) {
           setPostsData((prevPosts) =>
             prevPosts.map((post) =>

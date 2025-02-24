@@ -3,7 +3,7 @@ import './messagingpop.css';
 import writemessage from '../../assets/writemessage.png'; // Replace with actual icon path
 import profileicon from '../../assets/profileicon.png'; // Replace with actual icon path
 import NewMessageModal from './NewMessageModal'; // Import the new modal component
-import axiosInstance from '../../services/axiosInstance'; // Import axios instance for API calls
+import axiosApi from '../../services/axiosApi'; // Import axios instance for API calls
 
 const MessagingPop = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,7 @@ const MessagingPop = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axiosInstance.get('/api/profile');
+        const response = await axiosApi.get('/api/profile');
         if (response.data.success) {
           setProfileData(response.data.profile.profileDetails || {});
         }
@@ -34,7 +34,7 @@ const MessagingPop = () => {
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
-        const response = await axiosInstance.get('/api/unread-messages');
+        const response = await axiosApi.get('/api/unread-messages');
         if (response.data) {
           setUnreadMessages(response.data);
         }
@@ -50,7 +50,7 @@ const MessagingPop = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await axiosInstance.get('/api/messages');
+        const response = await axiosApi.get('/api/messages');
         if (response.data) {
           setMessages(response.data);
         }
@@ -77,7 +77,7 @@ const MessagingPop = () => {
   const handleNotificationClick = async (message) => {
     // Mark the message as read
     try {
-      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
+      await axiosApi.put(`/api/messages/${message._id}/read`, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

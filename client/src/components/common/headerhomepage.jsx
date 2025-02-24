@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axiosInstance from '../../services/axiosInstance';
+import axiosApi from '../../services/axiosApi';
 import logo from '../../assets/logoicon.png';
 import homeicon from '../../assets/home.png';
 import messageicon from '../../assets/email.png';
@@ -29,7 +29,7 @@ function HeaderHomepage() {
   const debouncedSearch = _debounce(async (query) => {
     setIsSearching(true);
     try {
-      const response = await axiosInstance.get('/api/search', { params: { query } });
+      const response = await axiosApi.get('/api/search', { params: { query } });
       if (response.data.success) {
         setSearchResults(response.data.results);
       }
@@ -51,7 +51,7 @@ function HeaderHomepage() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axiosInstance.get('/api/profile');
+        const response = await axiosApi.get('/api/profile');
         if (response.data.success) {
           setProfileData(response.data.profile.profileDetails || {});
         }
@@ -79,7 +79,7 @@ function HeaderHomepage() {
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
-        const response = await axiosInstance.get('/api/unread-messages');
+        const response = await axiosApi.get('/api/unread-messages');
         if (response.data) {
           setUnreadMessages(response.data);
         }
@@ -133,7 +133,7 @@ function HeaderHomepage() {
   const handleNotificationClick = async (message) => {
     // Mark the message as read
     try {
-      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
+      await axiosApi.put(`/api/messages/${message._id}/read`, {}, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

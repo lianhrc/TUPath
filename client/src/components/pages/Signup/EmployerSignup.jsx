@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Signup.css';
 import { GoogleLogin } from '@react-oauth/google';
@@ -22,7 +22,7 @@ function EmployerSignup() {
         }
     
         try {
-            const response = await axiosInstance.post('/employersignup', {
+            const response = await axiosApi.post('/employersignup', {
                 // firstName,
                 // lastName,
                 email,
@@ -46,7 +46,7 @@ function EmployerSignup() {
         const role = "employer"; // Define the role explicitly
     
         try {
-            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
+            const res = await axiosApi.post('/google-signup', { token: googleToken, role });
     
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import "./ForgotPassword.css"
 import Header from '../../../components/common/headerlogsign';
 
@@ -12,7 +12,7 @@ function ForgotPassword() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axiosInstance.post('/api/forgot-password', { email });
+      const response = await axiosApi.post('/api/forgot-password', { email });
       setMessage(response.data.message);
       setError('');
     } catch (err) {

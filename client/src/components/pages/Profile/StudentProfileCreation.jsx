@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './StudentProfileCreation.css';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
 import { format } from 'date-fns';
@@ -48,7 +48,7 @@ function StudentProfileCreation() {
                 return;
             }
 
-            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+            const response = await axiosApi.post("/api/uploadProfileImage", imageData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ function StudentProfileCreation() {
         const currentDate = new Date().toISOString();
 
         try {
-            const response = await axiosInstance.post('/api/updateStudentProfile', {
+            const response = await axiosApi.post('/api/updateStudentProfile', {
                 ...formData,
                 createdAt: formData.createdAt || currentDate,
                 dob: formData.dob ? new Date(formData.dob).toISOString() : null,

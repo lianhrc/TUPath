@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../../../services/axiosInstance";
+import axiosApi from "../../../services/axiosApi";
 import "./QuestionManager.css"
 
 const QuestionManager = () => {
@@ -26,7 +26,7 @@ const QuestionManager = () => {
 
   const fetchQuestions = async () => {
     try {
-      const response = await axiosInstance.get("/admin/questions");
+      const response = await axiosApi.get("/admin/questions");
       setQuestions(response.data);
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -57,9 +57,9 @@ const QuestionManager = () => {
     e.preventDefault();
     try {
       if (isEditing) {
-        await axiosInstance.put(`/admin/questions/${selectedQuestionId}`, form);
+        await axiosApi.put(`/admin/questions/${selectedQuestionId}`, form);
       } else {
-        await axiosInstance.post("/admin/questions", form);
+        await axiosApi.post("/admin/questions", form);
       }
       resetForm();
       fetchQuestions();
@@ -76,7 +76,7 @@ const QuestionManager = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axiosInstance.delete(`/admin/questions/${id}`);
+      await axiosApi.delete(`/admin/questions/${id}`);
       fetchQuestions();
     } catch (error) {
       console.error("Error deleting question:", error);

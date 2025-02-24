@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from "react-toastify";
-import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
+import axiosApi from '../../services/axiosApi';  // Make sure to import axios instance
 
 import "react-toastify/dist/ReactToastify.css";
 import './CorUpModal.css';
@@ -33,7 +33,7 @@ const CorUpModal = ({ show, onClose }) => {
     }
 
     try {
-      const response = await axiosInstance.post("/api/uploadCOR", formData, {
+      const response = await axiosApi.post("/api/uploadCOR", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

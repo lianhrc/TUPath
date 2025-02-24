@@ -4,7 +4,7 @@ import './CertUpModal.css';
 import { toast } from "react-toastify"; // Import toastify
 import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
-import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
+import axiosApi from '../../services/axiosApi';  // Make sure to import axios instance
 
 const CertUpModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -41,7 +41,7 @@ const CertUpModal = ({ show, onClose }) => {
     });
   
     try {
-      const response = await axiosInstance.post("/api/uploadCertificate", formData, {
+      const response = await axiosApi.post("/api/uploadCertificate", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

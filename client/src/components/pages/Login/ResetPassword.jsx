@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import './ResetPassword.css'; // Make sure you have this CSS file
 
 function ResetPassword() {
@@ -18,7 +18,7 @@ function ResetPassword() {
       return;
     }
     try {
-      const response = await axiosInstance.post(`/api/reset-password/${token}`, { newPassword });
+      const response = await axiosApi.post(`/api/reset-password/${token}`, { newPassword });
       setMessage(response.data.message);
       setError('');
       setTimeout(() => navigate('/login'), 3000);

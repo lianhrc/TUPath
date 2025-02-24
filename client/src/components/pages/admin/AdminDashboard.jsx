@@ -6,7 +6,7 @@ import tupicon from '../../../assets/logo.png';
 import irjpicon from '../../../assets/irjplogo.png';
 import StudentListModal from '../../popups/StudentListModal';
 import AuthContext from '../../AuthProvider';
-import axiosInstancev2 from '../../../services/axiosInstancev2';
+import axiosApi from '../../../services/axiosApi';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axiosInstancev2.get('/check-auth');
+        const response = await axiosApi.get('/check-auth');
         if (response.data.success) {
           setAuthChecked(true);
         } else {
@@ -55,7 +55,7 @@ const AdminDashboard = () => {
       // Clear any stored admin auth data first
       localStorage.removeItem('adminToken'); // If you're using token-based auth
       
-      const response = await axiosInstancev2.post('/api/admin/logout');
+      const response = await axiosApi.post('/api/admin/logout');
       if (response.data.success) {
         // Force navigation to login and prevent back navigation
         window.location.replace('/adminlogin');
@@ -131,7 +131,7 @@ const UsersSection = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstancev2.get(`/api/users?type=${selectedType}`);
+        const response = await axiosApi.get(`/api/users?type=${selectedType}`);
         if (response.data.success) {
           setUsersData(response.data.users);
         }
@@ -144,7 +144,7 @@ const UsersSection = () => {
 
     const fetchUserStats = async () => {
       try {
-        const response = await axiosInstancev2.get('/api/user-stats');
+        const response = await axiosApi.get('/api/user-stats');
         if (response.data.success) {
           setUserStats({
             studentCount: response.data.studentCount,
@@ -165,7 +165,7 @@ const UsersSection = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await axiosInstancev2.delete(`/api/manage-users/${userId}?type=${selectedType}`);
+      const response = await axiosApi.delete(`/api/manage-users/${userId}?type=${selectedType}`);
       if (response.data.success) {
         alert('User deleted successfully!');
         setUsersData((prevUsers) => prevUsers.filter((user) => user._id !== userId));
@@ -256,7 +256,7 @@ const TagChart = () => {
   useEffect(() => {
     const fetchTagData = async () => {
       try {
-        const response = await axiosInstancev2.get('/api/student-tags');
+        const response = await axiosApi.get('/api/student-tags');
         if (response.data.success) {
           setTagData(response.data.tags);
         }
@@ -277,7 +277,7 @@ const TagChart = () => {
 
       setStudentsLoading(true);
       try {
-        const response = await axiosInstancev2.get('/api/students-by-tag', { params: { tag } });
+        const response = await axiosApi.get('/api/students-by-tag', { params: { tag } });
         if (response.data.success) {
           setStudents(response.data.students);
         }

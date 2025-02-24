@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './NewMessageModal.css'; // Create this CSS file for modal styling
-import axiosInstance from '../../services/axiosInstance'; // Import axios instance for API calls
+import axiosApi from '../../services/axiosApi'; // Import axios instance for API calls
 import profileicon from '../../assets/profileicon.png'; // Replace with actual icon path
 
 const NewMessageModal = ({ isOpen, onClose }) => {
@@ -12,7 +12,7 @@ const NewMessageModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axiosInstance.get('/api/userss', {
+        const response = await axiosApi.get('/api/userss', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -88,7 +88,7 @@ const NewMessageModal = ({ isOpen, onClose }) => {
       };
 
       // Send message to the server via API call instead of socket
-      axiosInstance.post('/api/messages', newMessage, {
+      axiosApi.post('/api/messages', newMessage, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

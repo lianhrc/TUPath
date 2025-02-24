@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import Header from '../../common/headerlogsign';
 import student from '../../../assets/studenticon.png';
 import employer from '../../../assets/employericon.png';
@@ -25,7 +25,7 @@ function Login() {
     const handleGoogleLogin = async (response) => {
         try {
             const googleToken = response.credential;
-            const res = await axiosInstance.post('/api/users/google-login', { token: googleToken, role });
+            const res = await axiosApi.post('/api/users/google-login', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 const redirectPath = res.data.redirectPath || '/homepage';
@@ -45,7 +45,7 @@ function Login() {
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
-            const response = await axiosInstance.post('/api/users/login', { email, password, role });
+            const response = await axiosApi.post('/api/users/login', { email, password, role });
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
                 const redirectPath = response.data.redirectPath || '/homepage';

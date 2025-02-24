@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import ProjectAssessmentModal from "./ProjectAssessmentModal";
 import "../popups/ProjectUpModal.css";
-import axiosInstance from "../../services/axiosInstance";
+import axiosApi from "../../services/axiosApi";
 import { toast } from "react-toastify"; // Import toastify
 import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
@@ -60,7 +60,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
 
   const fetchAssessmentQuestions = async (name, category) => {
     try {
-      const response = await axiosInstance.get(
+      const response = await axiosApi.get(
         `/api/assessment-questions?category=${category}&categoryName=${name}`
       );
   
@@ -189,7 +189,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     }
   
     try {
-      const response = await axiosInstance.post("/api/uploadProject", formData, {
+      const response = await axiosApi.post("/api/uploadProject", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

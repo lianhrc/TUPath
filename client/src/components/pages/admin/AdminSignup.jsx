@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AdminSignup.css';
-import axiosInstance from '../../../services/axiosInstance';
+import axiosApi from '../../../services/axiosApi';
 import adminheadericon from '../../../assets/logoicon2.png';
 import adminloginicon from '../../../assets/user-gear.png';
 import { motion } from 'framer-motion';
@@ -41,7 +41,7 @@ const AdminSignup = () => {
     }
 
     // Send data to backend
-    axiosInstance
+    axiosApi
       .post('/api/admin/signup', {
         username: formData.username,
         email: formData.email,

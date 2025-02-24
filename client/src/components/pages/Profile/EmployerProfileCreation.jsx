@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './EmployerProfileCreation.css';
-import axiosInstance from '../../../services/axiosInstance.js';
+import axiosApi from '../../../services/axiosApi';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../common/Loader.jsx';
 import EmployerProfileImageUploadModal from '../../popups/EmployerProfileImageUpload.jsx';
@@ -59,7 +59,7 @@ function EmployerProfileCreation() {
                 return;
             }
     
-            const response = await axiosInstance.post("/api/uploadProfileImage", imageData, {
+            const response = await axiosApi.post("/api/uploadProfileImage", imageData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ function EmployerProfileCreation() {
                 return;
             }
 
-            const response = await axiosInstance.post('/api/updateEmployerProfile', {
+            const response = await axiosApi.post('/api/updateEmployerProfile', {
                 ...formData,
                 profileImg: uploadedImage,
             }, {

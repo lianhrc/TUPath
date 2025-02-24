@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../../services/axiosInstance';
+import axiosApi from '../../../services/axiosApi';
 import HeaderHomepage from '../../common/headerhomepage';
 import './Profilepage.css';
 import avatar from '../../../assets/profileicon.png';
@@ -50,7 +50,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const profileResponse = await axiosInstance.get('/api/profile');
+        const profileResponse = await axiosApi.get('/api/profile');
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
 
@@ -92,7 +92,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
   // delete function to handle project removal
   const deleteProject = async (projectId) => {
     try {
-      const response = await axiosInstance.delete(`/api/projects/${projectId}`);
+      const response = await axiosApi.delete(`/api/projects/${projectId}`);
       if (response.data.success) {
         // Update the UI state to reflect the deletion
         setProjects((prevProjects) => prevProjects.filter((project) => project._id !== projectId));
@@ -108,7 +108,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
   // delete function to handle certificate removal
   const deleteCertificate = async (certificateId) => {
     try {
-      const response = await axiosInstance.delete(`/api/certificates/${certificateId}`);
+      const response = await axiosApi.delete(`/api/certificates/${certificateId}`);
       if (response.data.success) {
         // Update the UI state to reflect the deletion
         setCertificates((prevCertificates) => prevCertificates.filter((cert) => cert._id !== certificateId));
@@ -328,7 +328,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
                 : [newSkill]; // Ensure it's always an array
 
               // Save updated soft skills to the backend
-              axiosInstance.put(`/api/profile/update-skills`, { softSkills: updatedSoftSkills })
+              axiosApi.put(`/api/profile/update-skills`, { softSkills: updatedSoftSkills })
                 .then((response) => {
                   if (response.data.success) {
                     console.log('Soft skills updated successfully');

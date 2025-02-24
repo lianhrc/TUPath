@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axiosInstance from '../../../services/axiosInstance';
+import axiosApi from '../../../services/axiosApi';
 import HeaderHomepage from '../../common/headerhomepage';
 import ProjectPreviewModal2 from '../../popups/ProjectPreviewModal2';
 import CertPreviewModal2 from '../../popups/CertPreviewModal2';
@@ -25,7 +25,7 @@ function UserProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axiosInstance.get(`/api/profile/${id}`);
+        const response = await axiosApi.get(`/api/profile/${id}`);
         if (response.data.success) {
           setProfile(response.data.profile);
           setProjects(response.data.profile.profileDetails?.projects || []);

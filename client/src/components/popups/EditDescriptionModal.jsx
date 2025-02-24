@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import "./EditDescriptionModal.css";
-import axiosInstance from "../../services/axiosInstance";
+import axiosApi from "../../services/axiosApi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -55,7 +55,7 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
       formDataToSend.append("profileImg", file);
   
       try {
-        const response = await axiosInstance.post("/api/uploadProfileImage", formDataToSend, {
+        const response = await axiosApi.post("/api/uploadProfileImage", formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
@@ -100,7 +100,7 @@ const handleSave = async () => {
   updatedData.projects = projects;
 
   try {
-    const response = await axiosInstance.put("/api/updateProfile", updatedData, {
+    const response = await axiosApi.put("/api/updateProfile", updatedData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
