@@ -107,6 +107,7 @@ function StudentSignup() {
                         </div>
                     </div>*/}
                     <div className="form-group mb-3">
+                    <label>Email</label>
                         <input
                             type="email"
                             className="form-control"
@@ -117,6 +118,8 @@ function StudentSignup() {
                         />
                     </div>
                     <div className="form-group mb-3">
+                    <label>Password</label>
+
                         <input
                             type="password"
                             className="form-control"

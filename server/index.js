@@ -12,7 +12,7 @@ const express = require("express");
   const cookieParser = require('cookie-parser');
   
   //pushin purposes
- //require('dotenv').config()
+ require('dotenv').config()
 
 
   const adminsignup = require("./routes/adminsignup");
@@ -73,7 +73,8 @@ const express = require("express");
     next();
   });
 
-
+ 
+/*
 
    // MongoDB connection
     mongoose
@@ -81,15 +82,14 @@ const express = require("express");
       .then(() => console.log("MongoDB connected successfully"))
      .catch((err) => console.error("MongoDB connection error:", err));
 
- 
-/*
+*/
+
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
 )
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-*/
 
   // Configure multer for file uploads
     const storage = multer.diskStorage({
@@ -453,25 +453,34 @@ const Post = mongoose.model("Post", postSchema);
   });
 
     // Create a new post
-  app.post("/api/posts", verifyToken, async (req, res) => {
-    const userId = req.user.id; // Extract userId from the verified token
-    const { profileImg, name, content, postImg } = req.body;
-    try {
-        const newPost = new Post({
-            profileImg,
-            name,
-            content,
-            postImg,
-            userId, // Save userId for the post
-        });
-        await newPost.save();
-        res.status(201).json({ success: true, post: newPost });
-        io.emit("new_post", newPost);
-    } catch (err) {
-        console.error("Error creating post:", err);
-        res.status(500).json({ success: false, message: "Internal server error" });
-    }
+    app.post("/api/posts", verifyToken, async (req, res) => {
+      const userId = req.user.id; // Extract userId from the verified token
+      const userRole = req.user.role; // Extract role from the user token
+  
+      if (userRole !== "employer") {
+          return res.status(403).json({ success: false, message: "Only employers can post." });
+      }
+  
+      const { profileImg, name, content, postImg } = req.body;
+  
+      try {
+          const newPost = new Post({
+              profileImg,
+              name,
+              content,
+              postImg,
+              userId, // Save userId for the post
+          });
+  
+          await newPost.save();
+          res.status(201).json({ success: true, post: newPost });
+          io.emit("new_post", newPost);
+      } catch (err) {
+          console.error("Error creating post:", err);
+          res.status(500).json({ success: false, message: "Internal server error" });
+      }
   });
+  
 
   
   // update a post
@@ -718,85 +727,41 @@ const Post = mongoose.model("Post", postSchema);
 // });
 
 
-// Endpoint to fetch profile data including projects and certificates
-app.get('/api/profile', verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const role = req.user.role; // Extract role from the token
-
-    const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-    const user = await userModel.findById(userId)
-      .select('email role profileDetails createdAt googleSignup')
-      .populate({
-        path: 'profileDetails.projects',
-        select: 'projectName description tags tools thumbnail projectUrl',
-        strictPopulate: false, // Allow flexible population
-      });
-
-    if (!user) {
-      return res.status(404).json({ success: false, profile: 'User not Found' });
-    }
-
-    // Fetch certificates for the user
-    const certificates = await StudentCertificate.find({ StudId: userId });
-
-    // Return profile details tailored to the role
-    const profile = {
-      email: user.email,
-      role: user.role,
-      profileDetails: user.role === 'student' ? {
-        ...user.profileDetails,
-        certificates, // Include certificates in the profile details
-      } : {
-        ...user.profileDetails,
-        companyName: user.profileDetails.companyName || null,
-        industry: user.profileDetails.industry || null,
-        aboutCompany: user.profileDetails.aboutCompany || null,
-        preferredRoles: user.profileDetails.preferredRoles || [],
-        internshipOpportunities: user.profileDetails.internshipOpportunities || false,
-      },
-      createdAt: user.createdAt,
-      googleSignup: user.googleSignup,
-    };
-
-    res.status(200).json({ success: true, profile });
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
 
 // Endpoint to fetch profile data for a specific user including projects and certificates
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
+  const requestingUserId = req.user.id;
+  const requestingUserRole = req.user.role;
+
   try {
-    const user = await Tupath_usersModel.findById(id)
-      .populate({
-        path: 'profileDetails.projects',
-        strictPopulate: false,
-      }) || await Employer_usersModel.findById(id)
-      .populate({
-        path: 'profileDetails.projects',
-        strictPopulate: false,
-      });
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      select: 'projectName description tags tools thumbnail projectUrl'
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Fetch certificates for the user
-    const certificates = await StudentCertificate.find({ StudId: id });
+    let certificates = await StudentCertificate.find({ StudId: id });
 
-    // Include certificates in the profile details
-    const profile = {
-      ...user.toObject(),
-      profileDetails: {
-        ...user.profileDetails,
-        certificates,
+    // Hide projects and certificates if the requesting user is another student
+    if (requestingUserRole === 'student' && requestingUserId.toString() !== id.toString()) {
+      user.profileDetails.projects = [];
+      certificates = [];
+  }
+
+    res.status(200).json({
+      success: true,
+      profile: {
+        ...user.toObject(),
+        profileDetails: {
+          ...user.profileDetails,
+          certificates,
+        },
       },
-    };
-
-    res.status(200).json({ success: true, profile });
+    });
   } catch (err) {
     console.error('Error fetching profile:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -1372,7 +1337,7 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   // );
   
   
-  
+
   
   
   
@@ -1553,7 +1518,7 @@ app.get('/api/search', verifyToken, async (req, res) => {
   }
 });
 
-
+/*
 
 
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
@@ -1575,7 +1540,7 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
+*/
   
   app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
     try {

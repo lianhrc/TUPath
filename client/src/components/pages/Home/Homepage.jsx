@@ -27,6 +27,7 @@ const Homepage = () => {
     yearLevel: '',
     position: '',
     industry: '',
+    role: '',
   });
 
   const [newPostContent, setNewPostContent] = useState('');
@@ -97,7 +98,10 @@ const Homepage = () => {
       try {
         const response = await axiosApi.get('/api/profile');
         if (response.data.success) {
-          setProfileData(response.data.profile.profileDetails || {});
+          setProfileData({
+            ...response.data.profile.profileDetails,
+            role: response.data.profile.role, // Ensure role is stored
+        });
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -152,6 +156,12 @@ const Homepage = () => {
   };
 
   const handleAddPost = async () => {
+    if (profileData.role !== "employer") {
+      toast.error("Only employers can create posts.");
+      return;
+    }
+
+
     if (newPostContent.trim()) {
       try {
         const newPost = {
@@ -378,6 +388,7 @@ const Homepage = () => {
       
         {/* Notification for post success or failure */}
          
+        {profileData.role === "employer" && (
 
           <div className="post-input">
             <div className="postinputimg-container">
@@ -390,6 +401,7 @@ const Homepage = () => {
               </button>
             </div>
           </div>
+        )}
           {postsData.map(renderPost)}
         </main>
       </div>

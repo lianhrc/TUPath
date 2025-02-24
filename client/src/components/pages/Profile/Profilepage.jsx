@@ -16,17 +16,18 @@ import edit from '../../../assets/writemessage.png';
 import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
-import CorUpModal from '../../popups/CorUpModal';  // Import the new modal
+import GradesTable from "../../other/Gradestable"; // Adjust the path if needed
+
 
 function ProfilePage() {
   const [profileData, setProfileData] = useState({});
   const [projects, setProjects] = useState([]); // State for projects
   const [certificates, setCertificates] = useState([]); // State for certificates
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
+  const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
 
-const [showCorUploadModal, setShowCorUploadModal] = useState(false);
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -46,17 +47,16 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
   const [skillsModalOpen, setSkillsModalOpen] = useState(false);
   const [certificatesModalOpen, setCertificatesModalOpen] = useState(false);
 
-  // Fetch profile data
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const profileResponse = await axiosApi.get('/api/profile');
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
-
-          // Ensure both profileDetails and projects are set correctly
+  
+          // Ensure projects and certificates are correctly extracted
           const { projects, certificates, ...profileWithoutProjectsAndCertificates } = profileDetails;
-
+  
           setProfileData({
             ...profileWithoutProjectsAndCertificates,
             createdAt,
@@ -64,12 +64,14 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
             softSkills: Array.isArray(profileDetails.softSkills) ? profileDetails.softSkills : [],
             techSkills: Array.isArray(profileDetails.techSkills) ? profileDetails.techSkills : [],
           });
+  
           setUserRole(role);
+          setLoggedInUserEmail(email.toLowerCase()); // Ensure case consistency
           setDescription(profileDetails?.bio || profileDetails?.aboutCompany || '');
-
-          // Ensure that projects and certificates are also set correctly
-          setProjects(profileDetails?.projects || []); // Set projects if available
-          setCertificates(certificates || []); // Set certificates if available
+  
+          // Ensure projects and certificates are assigned correctly
+          setProjects(profileDetails?.projects || []);
+          setCertificates(certificates || []);
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -77,9 +79,10 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
         setLoading(false);
       }
     };
-
+  
     fetchProfileData();
-  }, [userRole]); // Re-fetch if userRole changes
+  }, []); // Removed [userRole] dependency to avoid unnecessary re-fetches
+  
 
   if (loading) {
     return <Loader />;
@@ -223,34 +226,49 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
         </div>
 
         {/* Project Section */}
-        {userRole === 'student' && (
+        {(userRole === 'employer' || (userRole === 'student' && profileData.email === loggedInUserEmail)) && (
+         
           <div className="project-section">
+          <div className="grademaincontainer">
+            <h3> Grades</h3>
+            <GradesTable />
+
+          
+          </div>
             <div className="projectscontainer">
-              <h3>My Projects</h3>
+              <h3>Projects</h3>
               <hr />
               <div className="projects-grid">
+              {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() && (
                 <div className="project-card add-project" onClick={() => setShowUploadModal(true)}>
                   <p>+</p>
                   <p>Add a Project</p>
                 </div>
+              )}
 
                 {/* Display Projects */}
-                {projects.length > 0 ? (
-                  projects.map((project) => (
-                    <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                      {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
-                      <p>{project.projectName}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No projects available</p>
-                )}
+                
+ {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() ? (
+  projects.length > 0 ? (
+    projects.map((project) => (
+      <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
+        {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
+        <p>{project.projectName}</p>
+      </div>
+    ))
+  ) : (
+    <p>No projects available</p>
+  )
+) : (
+  <p>Projects are hidden for other students.</p>
+)}
+
 
               </div>
             </div>
 
             <div className="achievementscontainer">
-              <h3>My Certificates</h3>
+              <h3> Certificates</h3>
               <hr />
               <div className="projects-grid">
                 <div className="project-card add-project" onClick={() => setCertificatesModalOpen(true)}>
@@ -258,10 +276,7 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
                   <p>Add a Certificate</p>
                 </div>
 
-                <div className="project-card add-project" onClick={() => setShowCorUploadModal(true)}>
-                      <p>+</p>
-                      <p>Upload COR & Rating Slip</p>
-                    </div>
+          
 
                 {/* Display Certificates */}
                 {certificates.length > 0 ? (
@@ -306,7 +321,6 @@ const [showCorUploadModal, setShowCorUploadModal] = useState(false);
           onCertificateUpload={(addCertificateToState)}
         />
 
-<CorUpModal show={showCorUploadModal} onClose={() => setShowCorUploadModal(false)} />
 
         <EditDescriptionModal
           show={showEditDescriptionModal}

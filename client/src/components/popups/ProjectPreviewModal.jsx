@@ -176,6 +176,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
               ) : (
                 <p>No attachments available</p>
               )}
+              
             </div>
           </div>
         </div>
