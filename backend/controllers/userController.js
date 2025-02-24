@@ -22,7 +22,7 @@ const login = async (req, res) => {
         await user.save()
 
         res.cookie('token', token, { httpOnly: true }) // Set the token in a cookie
-        res.status(200).json({ success: true, message: "Login successful", redirectPath })
+        res.status(200).json({ success: true, message: "Login successful", redirectPath, token })
     } catch (err) {
         res.status(500).json({ success: false, message: "Internal server error" })
     }
@@ -142,6 +142,7 @@ const studentSignup = async (req, res) => {
             success: true,
             message: "Signup successful",
             redirectPath: "/studentprofilecreation",
+            token
         })
     } catch (err) {
         console.error("Error during signup:", err)
@@ -221,6 +222,10 @@ const logout = (req, res) => {
     res.status(200).json({ message: "Logged out successfully" })
 }
 
+const trial = (req, res) => {
+    res.status(200).json({ message: "Try endpoint" })
+}
+
 module.exports = {
     login,
     googleSignup,
@@ -228,5 +233,6 @@ module.exports = {
     studentSignup,
     employerSignup,
     uploadProfileImage,
-    logout
+    logout,
+    trial
 }

@@ -14,6 +14,7 @@ const postRoute = require('./routes/postRoute');
 
 // Use cookie-parser middleware
 app.use(cookieParser());
+app.use(express.json());
 
 // Router
 app.use('/api/users', userRoute);

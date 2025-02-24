@@ -9,7 +9,8 @@ const {
     studentSignup,
     employerSignup,
     uploadProfileImage,
-    logout
+    logout,
+    trial
 } = require('../controllers/userController')
 
 const router = express.Router()
@@ -24,5 +25,6 @@ router.post('/student-signup', studentSignup)
 router.post('/employer-signup', employerSignup)
 router.post('/uploadProfileImage', verifyToken, uploadProfileImage) // Protect this route
 router.post('/logout', logout)
+router.post('/trial', trial)
 
 module.exports = router
