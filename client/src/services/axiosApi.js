@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const axiosInstancev2 = axios.create({
+const axiosApi = axios.create({
   baseURL: 'http://localhost:3001', // Update to your backend server's URL
   headers: {
     'Content-Type': 'application/json',
@@ -12,5 +12,5 @@ const axiosInstancev2 = axios.create({
 
 // Remove the interceptor since tokens are no longer stored in localStorage
 
-export default axiosInstancev2;
+export default axiosApi;
 ///
