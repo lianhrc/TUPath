@@ -19,13 +19,12 @@ function HeaderHomepage() {
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({});
+  /*
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [recentSearches, setRecentSearches] = useState(
-    JSON.parse(localStorage.getItem('recentSearches')) || []
-  );
-  const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+  const [recentSearches, setRecentSearches] = useState(JSON.parse(localStorage.getItem('recentSearches')) || []);
+  const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false); */
   const [unreadMessages, setUnreadMessages] = useState([]);
 
   // Debounced search function to delay API calls

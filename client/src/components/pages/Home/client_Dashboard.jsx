@@ -1,4 +1,10 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import _debounce from "lodash.debounce";
+import axiosInstance from "../../../services/axiosInstance";
+import profileicon from "../../../assets/profileicon.png";
+// import "/searchbar.css";
+import '../../../components/common/headerhomepage.css';
 import "./client_Dashboard.css";
 
 const Client_Dashboard = () => {
@@ -6,6 +12,46 @@ const Client_Dashboard = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState(
+    JSON.parse(localStorage.getItem("recentSearches")) || []
+  );
+  const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+
+  // Debounced search function to reduce API calls
+  const debouncedSearch = _debounce(async (query) => {
+    setIsSearching(true);
+    try {
+      const response = await axiosInstance.get("/api/search", {
+        params: { query },
+      });
+      if (response.data.success) {
+        setSearchResults(response.data.results);
+      }
+    } catch (error) {
+      console.error("Error during search:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, 500);
+
+  const handleSearch = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    setIsSearchFieldClicked(false);
+    if (query.length > 0) {
+      debouncedSearch(query);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleClearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem("recentSearches");
+  };
 
   const courses = [
     "Bachelor of Science in Information Technology",
@@ -18,7 +64,11 @@ const Client_Dashboard = () => {
     "Bachelor of Science in Information Technology": {
       "1st Year": {
         sections: ["Stem", "Non-Stem"],
-        subjects: ["Computer Programming I", "Mathematics for IT", "Networking Basics"],
+        subjects: [
+          "Computer Programming I",
+          "Mathematics for IT",
+          "Networking Basics",
+        ],
       },
       "2nd Year": {
         sections: ["Stem", "Non-Stem"],
@@ -51,7 +101,49 @@ const Client_Dashboard = () => {
   return (
     <div className="cd_dashboard-container">
       <aside className="cd_sidebar">
-        <input className="cdsearch" type="search" placeholder="Search..." />
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+          {isSearching ? (
+            <p>Searching...</p>
+          ) : searchResults.length > 0 ? (
+            <div className="search-results">
+              {searchResults.map((result, index) => (
+                <Link
+                  to={`/profile/${result._id}`}
+                  key={index}
+                  className="search-result-item"
+                >
+                  <img
+                    src={result.profileDetails?.profileImg || profileicon}
+                    alt="Profile"
+                  />
+                  <p>
+                    <strong>
+                      {result.profileDetails.firstName}{" "}
+                      {result.profileDetails.lastName}
+                    </strong>
+                  </p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            isSearchFieldClicked && <p>No results found for "{searchQuery}".</p>
+          )}
+          {recentSearches.length > 0 && (
+            <button
+              className="clear-recent-btn"
+              onClick={handleClearRecentSearches}
+            >
+              Clear
+            </button>
+          )}
+        </div>
         <h6>Categories</h6>
         <div className="cd_filters">
           <select
@@ -63,9 +155,13 @@ const Client_Dashboard = () => {
             }}
             value={selectedCourse}
           >
-            <option value="" hidden>Select a Course</option>
+            <option value="" hidden>
+              Select a Course
+            </option>
             {courses.map((course, index) => (
-              <option key={index} value={course}>{course}</option>
+              <option key={index} value={course}>
+                {course}
+              </option>
             ))}
           </select>
 
@@ -78,34 +174,43 @@ const Client_Dashboard = () => {
               }}
               value={selectedYear}
             >
-              <option value="" hidden>Select Year Level</option>
+              <option value="" hidden>
+                Select Year Level
+              </option>
               {years.map((year, index) => (
                 <option key={index}>{year}</option>
               ))}
             </select>
           )}
 
-          {selectedCourse && selectedYear && courseSections[selectedCourse]?.[selectedYear] && (
-            <select
-              onChange={(e) => {
-                setSelectedSection(e.target.value);
-                setSelectedSubject("");
-              }}
-              value={selectedSection}
-            >
-              <option value="" hidden>Select Section</option>
-              {courseSections[selectedCourse][selectedYear].sections.map((section, index) => (
-                <option key={index}>{section}</option>
-              ))}
-            </select>
-          )}
+          {selectedCourse &&
+            selectedYear &&
+            courseSections[selectedCourse]?.[selectedYear] && (
+              <select
+                onChange={(e) => {
+                  setSelectedSection(e.target.value);
+                  setSelectedSubject("");
+                }}
+                value={selectedSection}
+              >
+                <option value="" hidden>
+                  Select Section
+                </option>
+                {courseSections[selectedCourse][selectedYear].sections.map(
+                  (section, index) => (
+                    <option key={index}>{section}</option>
+                  )
+                )}
+              </select>
+            )}
         </div>
 
         <div className="cd_subjects-container">
-            {selectedCourse && selectedYear && selectedSection && (
-              <div className="cd_subjects-list">
-                <h6>Select a Subject:</h6>
-                {courseSections[selectedCourse][selectedYear].subjects.map((subject, index) => (
+          {selectedCourse && selectedYear && selectedSection && (
+            <div className="cd_subjects-list">
+              <h6>Select a Subject:</h6>
+              {courseSections[selectedCourse][selectedYear].subjects.map(
+                (subject, index) => (
                   <label key={index} className="cd_subject-label">
                     <input
                       type="radio"
@@ -116,47 +221,32 @@ const Client_Dashboard = () => {
                     />
                     {subject}
                   </label>
-                ))}
-              </div>
-            )}
-          </div>
-
+                )
+              )}
+            </div>
+          )}
+        </div>
       </aside>
 
       <main className="cd_main-content">
-
-              
-      
-      
         <section className="cd_dashboard-content">
-
-        <div className="cd_coursesoverview-container">
-              
-              <h3>Courses</h3>
+          <div className="cd_coursesoverview-container">
+            <h3>Courses</h3>
           </div>
 
           <div className="section3boxes">
-                  <div className="div1box">
-                    <div className="boxheadercd">
-                      BSIT
-                    </div>
-                    5
-                    </div>
-                  <div className="div2box">
-                  <div className="boxheadercd">
-                  BSCS
-                </div>
-                7
-                </div>
-                  <div className="div3box">
-                  <div className="boxheadercd">
-                  BSIS
-                </div>
-                  10
-                  </div>
-                  
-          </div>  
-          
+            <div className="div1box">
+              <div className="boxheadercd">BSIT</div>5
+            </div>
+            <div className="div2box">
+              <div className="boxheadercd">BSCS</div>7
+            </div>
+            <div className="div3box">
+              <div className="boxheadercd">BSIS</div>
+              10
+            </div>
+          </div>
+
           <div className="cd_grades-container">
             <div className="tableheadercd">
               <h3>{selectedSubject || "Select a Subject to View Grades"}</h3>
