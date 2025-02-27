@@ -1496,65 +1496,28 @@ app.get('/api/search', verifyToken, async (req, res) => {
   try {
     const regex = new RegExp(query, 'i'); // Case-insensitive regex
     const loggedInUserId = req.user.id; // Assuming verifyToken populates req.user with user details
-    let results = [];
 
-    if (req.user.role === 'student') {
-      // Students can search employers
-      const employerResults = await Employer_usersModel.find({
-        $and: [
-          {
-            $or: [
-              { 'profileDetails.firstName': regex },
-              { 'profileDetails.middleName': regex },
-              { 'profileDetails.lastName': regex }
-            ]
-          },
-          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
-        ]
-      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
+    // Search students only
+    const studentResults = await Tupath_usersModel.find({
+      $and: [
+        {
+          $or: [
+            { 'profileDetails.firstName': regex },
+            { 'profileDetails.middleName': regex },
+            { 'profileDetails.lastName': regex },
+            { bestTag: regex } // Search by `bestTag`
+          ]
+        },
+        { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
+      ]
+    }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg bestTag');
 
-      // Students can also search other students
-      const fellowStudentResults = await Tupath_usersModel.find({
-        $and: [
-          {
-            $or: [
-              { 'profileDetails.firstName': regex },
-              { 'profileDetails.middleName': regex },
-              { 'profileDetails.lastName': regex }
-            ]
-          },
-          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
-        ]
-      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg');
-
-      results = [...results, ...employerResults, ...fellowStudentResults];
-    } else if (req.user.role === 'employer') {
-      // Employers can search students (with bestTag)
-      const studentResults = await Tupath_usersModel.find({
-        $and: [
-          {
-            $or: [
-              { 'profileDetails.firstName': regex },
-              { 'profileDetails.middleName': regex },
-              { 'profileDetails.lastName': regex },
-              { bestTag: regex } // Search by `bestTag`
-            ]
-          },
-          { _id: { $ne: loggedInUserId } } // Exclude the logged-in user
-        ]
-      }).select('profileDetails.firstName profileDetails.middleName profileDetails.lastName profileDetails.profileImg bestTag');
-
-      results = [...results, ...studentResults];
-    }
-
-    res.status(200).json({ success: true, results });
+    res.status(200).json({ success: true, results: studentResults });
   } catch (err) {
     console.error('Error during search:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
-
 
 
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
