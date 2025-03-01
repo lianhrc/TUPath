@@ -89,6 +89,9 @@
     color: black;
     
   }
+  .cd_filters{
+    margin-top: 50px;
+  }
 
   .cd_grades-container h3{
     font-size: 12px;
