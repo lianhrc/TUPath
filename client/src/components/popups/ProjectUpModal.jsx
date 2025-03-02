@@ -165,8 +165,7 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
       return;
     }
 
-    setShowAssessmentModal(true); // Open assessment modal after clicking Submit
-
+   
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
@@ -176,39 +175,24 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     formData.append("projectUrl", projectUrl);
 
     selectedFiles.forEach((file) => formData.append("selectedFiles", file));
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-  
-    try {
-      const response = await axiosInstance.post("/api/uploadProject", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-  
-      if (response.data.success) {
-        // Show success toast notification
-        toast.success('Project uploaded successfully!', {
-          position: "top-center",
-          autoClose: 3000, // Toast will disappear in 3 seconds
-          hideProgressBar: false,
-          theme: "light",
-        });
-        
-        onProjectUpload(response.data.project);
-        onClose();
-      } else {
-        console.error("Project upload failed:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error uploading project:", error);
-    }
-    setIsSubmitting(false);
-    setShowAssessmentModal(false);
+  if (thumbnail) {
+    formData.append("thumbnail", thumbnail);
+  }
 
-  };
-  
+  try {
+    const response = await axiosInstance.post("/api/uploadProject", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    
+    if (response.data.success) {
+      setShowAssessmentModal(true); // Now only show ProjectAssessmentModal after submit
+    } else {
+      console.error("Upload failed:", response.data.message);
+    }
+  } catch (error) {
+    console.error("Error uploading project:", error);
+  }
+};
 
   return (
     <>

@@ -121,16 +121,6 @@ const projectSchema = new mongoose.Schema({
   thumbnail: { type: String }, // Thumbnail URL or path
   projectUrl: String, // Optional project link
   createdAt: { type: Date, default: Date.now }, // Automatically set creation date
-  assessment: [
-    {
-      question: {
-        text: { type: String, required: true },
-        scoring: { type: Map, of: Number, required: true },
-      },
-      rating: { type: Number, required: true, min: 1, max: 5 },
-      weightedScore: { type: Number, default: 0 },
-    },
-  ],
 });
 
 
@@ -190,27 +180,6 @@ const EmployerUserSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
-const AssessmentQuestionSchema = new mongoose.Schema({
-  text: { type: String, required: true }, // The question text
-  type: { type: String, enum: ['rating', 'indicator'], required: true }, // Specifies the input type
-  scale: {
-      min: { type: Number, default: 1 }, // Minimum value of the scale
-      max: { type: Number, default: 5 }, // Maximum value of the scale
-      step: { type: Number, default: 1 } // Step size for ratings (e.g., 1, 0.5)
-  },
-  required: { type: Boolean, default: true }, // Is the question mandatory?
-  category: { type: String, required: true }, // Optional grouping for questions
-  categoryName: { type: String, required: true }, // Allows differentiation for tools or tags
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  scoring: { // Define custom scores for each star
-    type: Map,
-    of: Number, // e.g., { "1": 3, "2": 5, "3": 10, "4": 15, "5": 20 }
-    required: true,
-  },
-});
-
-
 
 
 
@@ -267,7 +236,6 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
-const AssessmentQuestion = mongoose.model('AssessmentQuestion', AssessmentQuestionSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
 
 
@@ -276,6 +244,5 @@ module.exports = {
   Tupath_usersModel,
   Employer_usersModel,
   Project,
-  AssessmentQuestion,
   Admin,
 };
