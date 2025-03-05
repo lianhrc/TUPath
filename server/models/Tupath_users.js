@@ -114,14 +114,17 @@ TupathUserSchema.methods.calculateBestTag = async function () {
 const projectSchema = new mongoose.Schema({
   projectName: { type: String, required: true },
   description: { type: String, required: true },
-  selectedFiles: [{ type: String }], // Array of file paths or URLs
-  tag: { type: String, required: true }, // Updated to accept only one tag
+  selectedFiles: [{ type: String }],
+  tag: { type: String, required: true },
   tools: [{ type: String }],
   roles: [{ type: String }],
-  thumbnail: { type: String }, // Thumbnail URL or path
-  projectUrl: String, // Optional project link
-  createdAt: { type: Date, default: Date.now }, // Automatically set creation date
+  thumbnail: { type: String },
+  projectUrl: String,
+  subject: { type: String, required: true }, // New field for subject
+  grade: { type: String, required: true },   // New field for grade
+  createdAt: { type: Date, default: Date.now },
 });
+
 
 
 
@@ -231,12 +234,23 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 
 
 
+const AssessmentSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "Student_users", required: true },
+  subject: { type: String, required: true },
+  grade: { type: String, required: true }
+});
+
+
+
+
+
 
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
+const Assessment = mongoose.model("Assessment", AssessmentSchema);
 
 
 
@@ -245,4 +259,5 @@ module.exports = {
   Employer_usersModel,
   Project,
   Admin,
+  Assessment,
 };

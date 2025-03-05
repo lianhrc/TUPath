@@ -10,7 +10,8 @@ const express = require("express");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   const cookieParser = require('cookie-parser');
-  
+  const session = require("express-session");
+  const MongoStore = require("connect-mongo");
   //pushin purposes
  require('dotenv').config()
 
@@ -43,12 +44,22 @@ const express = require("express");
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
   app.use('/cor', express.static('cor'));
 
+  
+
 
 
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
   app.use(cookieParser());
-
+  
+  
+  app.use(session({
+    secret: "your_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/tupath_users" }), // Persistent session storage
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
+  }));
     //ROUTES
    
     app.use('/', users);
@@ -1214,37 +1225,57 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
 
   app.post("/api/uploadProject", verifyToken, upload.fields([
     { name: "thumbnail", maxCount: 1 },
-    { name: "selectedFiles", maxCount: 10 }
+    { name: "selectedFiles", maxCount: 10 },
+    { name: "corFile", maxCount: 1 }
   ]), async (req, res) => {
     try {
-      const { projectName, description, tag, tools, projectUrl, roles } = req.body;
-      
-      if (!projectName || !description || !tag || !roles.length) {
+      console.log("Received project upload request with data:", req.body);
+      console.log("Session before accessing assessmentData:", req.session);
+  
+      // Retrieve saved subject & grade from session
+      const { subject, grade, corFile } = req.session.assessmentData || {};
+  
+      console.log("Extracted assessment data from session:", { subject, grade, corFile });
+  
+      if (!subject || !grade) {
+        console.error("Missing subject or grade in session.");
         return res.status(400).json({ success: false, message: "Missing required fields." });
       }
-      
-      const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-      const selectedFiles = req.files["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-      
-      const newProject = new Project({ 
-        projectName, 
-        description, 
-        tag, 
-        tools, 
-        projectUrl, 
-        roles, 
-        status: "pending", 
-        thumbnail, 
-        selectedFiles 
+  
+      const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+      const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+      const corFilePath = req.files?.["corFile"]?.[0]?.filename ? `/uploads/${req.files["corFile"][0].filename}` : corFile;
+  
+      const newProject = new Project({
+        projectName: req.body.projectName,
+        description: req.body.description,
+        tag: req.body.tag,
+        tools: req.body.tools,
+        projectUrl: req.body.projectUrl,
+        roles: req.body.roles,
+        subject,
+        grade,
+        corFile: corFilePath,
+        status: "pending",
+        thumbnail,
+        selectedFiles
       });
-      
+  
       await newProject.save();
+  
+      // Clear session after successful save
+      delete req.session.assessmentData;
+  
+      console.log("Project successfully saved:", newProject);
+  
       res.status(201).json({ success: true, project: newProject });
     } catch (error) {
       console.error("Error saving project:", error);
       res.status(500).json({ success: false, message: "Server error" });
     }
   });
+  
+  
   
   
 
@@ -1621,6 +1652,32 @@ app.post('/api/admin/logout', (req, res) => {
   res.clearCookie('adminToken');
   res.json({ success: true, message: 'Logged out successfully' });
 });
+
+
+
+app.post("/api/saveAssessment", verifyToken, upload.single("corFile"), async (req, res) => {
+  try {
+    const { subject, grade } = req.body;
+    if (!subject || !grade) {
+      return res.status(400).json({ success: false, message: "Subject and grade are required." });
+    }
+
+    const corFilePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    req.session.assessmentData = { subject, grade, corFile: corFilePath };
+
+    // Debugging: Log the stored session data
+    console.log("Saved assessment data in session:", req.session.assessmentData);
+
+    res.status(200).json({ success: true, message: "Assessment saved successfully." });
+  } catch (error) {
+    console.error("Error saving assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
 
   // Server setup
   const PORT = process.env.PORT || 3001;

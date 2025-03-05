@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axiosInstance from "../../services/axiosInstance";
 import "./ProjectAssessmentModal.css";
 
 const subjects = [
@@ -8,85 +9,81 @@ const subjects = [
   { code: "CC104", name: "Database Management" },
 ];
 
-const ProjectAssessmentModal = ({ show, onClose, onFinalSubmit }) => {
-  const [selectedSubjects, setSelectedSubjects] = useState([""]);
-  const [ratings, setRatings] = useState([""]);
+const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [grade, setGrade] = useState("");
+  const [corFile, setCorFile] = useState(null);
 
   if (!show) return null;
 
-  const handleRatingChange = (index, rating) => {
-    const updatedRatings = [...ratings];
-    updatedRatings[index] = rating;
-    setRatings(updatedRatings);
-  };
-
-  const handleSubjectChange = (index, subjectCode) => {
-    const updatedSubjects = [...selectedSubjects];
-    updatedSubjects[index] = subjectCode;
-    setSelectedSubjects(updatedSubjects);
-  };
-
-  const handleSubmit = () => {
-    if (ratings.some((rating) => rating === "")) {
-      alert("Please provide a grade before submitting.");
+  const handleSubmit = async () => {
+    if (!selectedSubject) {
+      alert("Please select a subject.");
       return;
     }
 
-    if (selectedSubjects.some((subject) => subject === "")) {
-      alert("Please select a subject before submitting.");
+    if (!grade.trim()) {
+      alert("Please enter a grade.");
       return;
     }
 
-    const assessmentData = selectedSubjects.map((subject, index) => ({
-      subjectCode: subject,
-      grade: ratings[index],
-    }));
+    const formData = new FormData();
+    formData.append("subject", selectedSubject);
+    formData.append("grade", grade);
+    if (corFile) {
+      formData.append("corFile", corFile);
+    }
 
-    onFinalSubmit(assessmentData);
-    onClose();
+    try {
+      const response = await axiosInstance.post("/api/saveAssessment", {
+        subject: selectedSubject,
+        grade: grade,
+        corFile: corFile ? corFile.name : null, // Only send filename if provided
+      });
+      
+
+      if (response.data.success) {
+        onAssessmentSubmit({ subjectCode: selectedSubject, grade, corFile });
+        onClose(); // Redirect back to ProjectUpModal
+      } else {
+        alert("Failed to save assessment. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      alert("An error occurred while saving the assessment.");
+    }
   };
 
   return (
     <div className="assessment-modal-overlay" onClick={onClose}>
       <div className="assessment-modal-content" onClick={(e) => e.stopPropagation()}>
         <h3>Project Subject Categorization</h3>
-        <p>Please input your grade:</p>
+        <p>Please select a subject and input your grade:</p>
 
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Subject</th>
-              <th>Final Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                <select onChange={(e) => handleSubjectChange(0, e.target.value)} required>
-                  <option value="">Select Subject</option>
-                  {subjects.map((subject) => (
-                    <option key={subject.code} value={subject.code}>
-                      {subject.code} - {subject.name}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Enter grade"
-                  value={ratings[0] || ""}
-                  onChange={(e) => handleRatingChange(0, e.target.value)}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <label>Subject:</label>
+        <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} required>
+          <option value="">Select Subject</option>
+          {subjects.map((subject) => (
+            <option key={subject.code} value={subject.code}>
+              {subject.code} - {subject.name}
+            </option>
+          ))}
+        </select>
+
+        <label>Final Grade:</label>
+        <input
+          type="text"
+          placeholder="Enter grade"
+          value={grade}
+          onChange={(e) => setGrade(e.target.value)}
+        />
 
         <label>Attach COR if available:</label>
-        <input type="file" multiple accept=".zip,.rar,.pdf,.docx,.jpg,.png" />
+        <input
+          type="file"
+          accept=".zip,.rar,.pdf,.docx,.jpg,.png"
+          onChange={(e) => setCorFile(e.target.files[0])}
+        />
 
         <div className="assessment-buttons">
           <button onClick={handleSubmit} className="assessment-submit-btn">
