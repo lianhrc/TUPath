@@ -194,7 +194,7 @@ const Client_Dashboard = () => {
                 value={selectedSection}
               >
                 <option value="" hidden>
-                  Select Section
+                  Select Section 
                 </option>
                 {courseSections[selectedCourse][selectedYear].sections.map(
                   (section, index) => (

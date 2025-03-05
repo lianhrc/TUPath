@@ -7,6 +7,7 @@ import messageicon from '../../assets/email.png';
 import { motion } from 'framer-motion';
 import notificon from '../../assets/notif.png';
 import profileicon from '../../assets/profileicon.png';
+import clientdash from '../../assets/clientdashboard.png';
 import Loader from '../common/Loader';
 import _debounce from 'lodash.debounce';
 import { io } from 'socket.io-client';
@@ -19,6 +20,8 @@ function HeaderHomepage() {
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({});
+  const [userRole, setUserRole] = useState(null);
+
   /*
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -56,6 +59,7 @@ function HeaderHomepage() {
         const response = await axiosInstance.get('/api/profile');
         if (response.data.success) {
           setProfileData(response.data.profile.profileDetails || {});
+          setUserRole(response.data.profile.role); // ← Set the user role
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -291,64 +295,78 @@ function HeaderHomepage() {
             )}
           </div>
       */}
-
-          <div className="icon-buttons">
-            <nav className="homepagenav-links">
-              <Link to="/Homepage">
-                <img src={homeicon} alt="Home" className="nav-icon" />
-              </Link>
-              <Link to="/Inboxpage">
-                <img src={messageicon} alt="Messages" className="nav-icon" />
-              </Link>
-              <div className="dropdown" onClick={toggleNotifDropdown}>
-                <img src={notificon} alt="Notifications" className="nav-icon" />
-                {unreadMessages.length > 0 && (
-                  <span className="notification-badge">{unreadMessages.length}</span>
-                )}
-                {isNotifOpen && (
-                  <motion.div
-                    className="dropdown-menu notifications-menu"
-                    variants={dropdownVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <div className="notifdropdownheader">
-                      <h3>Notifications</h3>
+      
+      
+      <div className="icon-buttons">
+        <nav className="homepagenav-links">
+          {userRole === 'employer' && (
+            <Link to="/client_Dashboard">
+              <img className='nav-icon2' src={clientdash} alt="" />
+            </Link>
+          )}
+      
+          {[
+            { path: "/Homepage", icon: homeicon, alt: "Home" },
+            { path: "/Inboxpage", icon: messageicon, alt: "Messages" },
+          ].map((item, index) => (
+            <Link key={index} to={item.path}>
+              <img src={item.icon} alt={item.alt} className="nav-icon" />
+            </Link>
+          ))}
+      
+          {/* Notifications Dropdown */}
+          <div className="dropdown" onClick={toggleNotifDropdown}>
+            <img src={notificon} alt="Notifications" className="nav-icon" />
+            {unreadMessages.length > 0 && (
+              <span className="notification-badge">{unreadMessages.length}</span>
+            )}
+            {isNotifOpen && (
+              <motion.div
+                className="dropdown-menu notifications-menu"
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <div className="notifdropdownheader">
+                  <h3>Notifications</h3>
+                </div>
+                {unreadMessages
+                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                  .map((message, index) => (
+                    <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
+                      <div className="notifitemleft">
+                        <img src={message.sender.profileImg || profileicon} alt={`${message.sender.name}'s profile`} />
+                      </div>
+                      <div className='notifitemright'>
+                        <p><strong>{message.sender.name}</strong></p>
+                        <p>{message.messageContent.text}</p>
+                      </div>
                     </div>
-                    {unreadMessages
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
-                      .map((message, index) => (
-                        <div key={index} className="notification-item" onClick={() => handleNotificationClick(message)}>
-                          <div className="notifitemleft">
-                            <img src={message.sender.profileImg || profileicon} alt={`${message.sender.name}'s profile`} />
-                          </div>
-                          <div className='notifitemright'>
-                            <p><strong>{message.sender.name}</strong></p>
-                            <p>{message.messageContent.text}</p>
-                          </div>
-                        </div>
-                      ))}
-                  </motion.div>
-                )}
-              </div>
-              <div className="dropdown" onClick={toggleProfileDropdown}>
-                <img src={profileImageUrl} alt="Profile" className="nav-icon" />
-                {isProfileOpen && (
-                  <motion.div
-                    className="dropdown-menu profile-menu"
-                    variants={dropdownVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <Link to="/Profile">Profile</Link>
-                    <Link onClick={handleLogout}>Logout</Link>
-                  </motion.div>
-                )}
-              </div>
-            </nav>
+                  ))}
+              </motion.div>
+            )}
           </div>
+      
+          {/* Profile Dropdown */}
+          <div className="dropdown" onClick={toggleProfileDropdown}>
+            <img src={profileImageUrl} alt="Profile" className="nav-icon" />
+            {isProfileOpen && (
+              <motion.div
+                className="dropdown-menu profile-menu"
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <Link to="/Profile">Profile</Link>
+                <Link onClick={handleLogout}>Logout</Link>
+              </motion.div>
+            )}
+          </div>
+        </nav>
+    </div>
+    
         </header>
       )}
     </>
