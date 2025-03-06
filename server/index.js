@@ -1226,16 +1226,16 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   app.post("/api/uploadProject", verifyToken, upload.fields([
     { name: "thumbnail", maxCount: 1 },
     { name: "selectedFiles", maxCount: 10 },
-    { name: "corFile", maxCount: 1 }
+    { name: "ratingSlip", maxCount: 1 }
   ]), async (req, res) => {
     try {
       console.log("Received project upload request with data:", req.body);
       console.log("Session before accessing assessmentData:", req.session);
   
       // Retrieve saved subject & grade from session
-      const { subject, grade, corFile } = req.session.assessmentData || {};
+      const { subject, grade, ratingSlip } = req.session.assessmentData || {};
   
-      console.log("Extracted assessment data from session:", { subject, grade, corFile });
+      console.log("Extracted assessment data from session:", { subject, grade, ratingSlip });
   
       if (!subject || !grade) {
         console.error("Missing subject or grade in session.");
@@ -1244,7 +1244,9 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   
       const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
       const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-      const corFilePath = req.files?.["corFile"]?.[0]?.filename ? `/uploads/${req.files["corFile"][0].filename}` : corFile;
+      const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+      ? `/uploads/${req.files["ratingSlip"][0].filename}`
+      : ratingSlip;
   
       const newProject = new Project({
         projectName: req.body.projectName,
@@ -1255,7 +1257,7 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
         roles: req.body.roles,
         subject,
         grade,
-        corFile: corFilePath,
+        ratingSlip: ratingSlipPath, // <-- Save ratingSlip instead of corFile
         status: "pending",
         thumbnail,
         selectedFiles
@@ -1655,16 +1657,16 @@ app.post('/api/admin/logout', (req, res) => {
 
 
 
-app.post("/api/saveAssessment", verifyToken, upload.single("corFile"), async (req, res) => {
+app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
   try {
     const { subject, grade } = req.body;
     if (!subject || !grade) {
       return res.status(400).json({ success: false, message: "Subject and grade are required." });
     }
 
-    const corFilePath = req.file ? `/uploads/${req.file.filename}` : null;
+    const ratingSlipPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    req.session.assessmentData = { subject, grade, corFile: corFilePath };
+    req.session.assessmentData = { subject, grade, ratingSlip: ratingSlipPath };
 
     // Debugging: Log the stored session data
     console.log("Saved assessment data in session:", req.session.assessmentData);
@@ -1675,6 +1677,7 @@ app.post("/api/saveAssessment", verifyToken, upload.single("corFile"), async (re
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 

@@ -168,7 +168,7 @@ const ProjectUploadModal = ({ show, onClose}) => {
     formData.append("grade", grade);
     
     selectedFiles.forEach((file, index) => {
-        formData.append(`selectedFiles[${index}]`, file);
+      formData.append("selectedFiles", file);
     });
 
     if (thumbnail) {

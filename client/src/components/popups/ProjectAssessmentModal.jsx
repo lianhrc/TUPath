@@ -12,7 +12,7 @@ const subjects = [
 const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [grade, setGrade] = useState("");
-  const [corFile, setCorFile] = useState(null);
+  const [ratingSlip, setRatingSlip] = useState(null);
 
   if (!show) return null;
 
@@ -30,20 +30,20 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
     const formData = new FormData();
     formData.append("subject", selectedSubject);
     formData.append("grade", grade);
-    if (corFile) {
-      formData.append("corFile", corFile);
+    if (ratingSlip) {
+      formData.append("ratingSlip", ratingSlip); // <-- Append ratingSlip instead of corFile
     }
 
     try {
       const response = await axiosInstance.post("/api/saveAssessment", {
         subject: selectedSubject,
         grade: grade,
-        corFile: corFile ? corFile.name : null, // Only send filename if provided
+        ratingSlip: ratingSlip ? ratingSlip.name : null, // Only send filename if provided
       });
       
 
       if (response.data.success) {
-        onAssessmentSubmit({ subjectCode: selectedSubject, grade, corFile });
+        onAssessmentSubmit({ subjectCode: selectedSubject, grade, ratingSlip });
         onClose(); // Redirect back to ProjectUpModal
       } else {
         alert("Failed to save assessment. Please try again.");
