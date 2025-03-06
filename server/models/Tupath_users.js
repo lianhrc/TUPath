@@ -62,50 +62,49 @@ const TupathUserSchema = new mongoose.Schema({
 
 TupathUserSchema.methods.calculateBestTag = async function () {
   try {
-    const user = this;
+      const user = this;
 
-    // Fetch all projects associated with the user
-    const projects = await mongoose.model('Project').find({
-      _id: { $in: user.profileDetails.projects },
-    });
+      // Fetch all projects associated with the student
+      const projects = await mongoose.model("Project").find({
+          _id: { $in: user.profileDetails.projects }
+      });
 
-    // Aggregate cumulative scores by tag
-    const tagScores = projects.reduce((acc, project) => {
-      if (project.tag && project.assessment.length > 0) {
-        const weightedScore = project.assessment.reduce(
-          (sum, a) => sum + (a.weightedScore || a.rating * 10), // Use weightedScore if available, else calculate
-          0
-        );
+      if (!projects.length) return; // Exit if no projects are found
 
-        acc[project.tag] = (acc[project.tag] || 0) + weightedScore; // Accumulate scores
-      }
-      return acc;
-    }, {});
+      // Aggregate scores by tag
+      const tagScores = projects.reduce((acc, project) => {
+          if (project.tag && project.grade) {
+              const gradeValue = parseFloat(project.grade) || 0; // Convert grade to number
+              acc[project.tag] = (acc[project.tag] || 0) + gradeValue; // Sum grades per tag
+          }
+          return acc;
+      }, {});
 
-    // Update the bestTagScores map
-    user.bestTagScores = tagScores;
+      // Store tag scores
+      user.bestTagScores = tagScores;
 
-    // Determine the tag with the highest cumulative score
-    let bestTag = null;
-    let highestScore = 0;
+      // Determine the highest-scoring tag
+      let bestTag = null;
+      let highestScore = 0;
 
-    for (const [tag, score] of Object.entries(tagScores)) {
-      if (score > highestScore) {
-        bestTag = tag;
-        highestScore = score;
-      }
-    }
+      Object.entries(tagScores).forEach(([tag, score]) => {
+          if (score > highestScore) {
+              bestTag = tag;
+              highestScore = score;
+          }
+      });
 
-    // Update the user's bestTag field
-    user.bestTag = bestTag;
+      // Update user's bestTag field
+      user.bestTag = bestTag;
 
-    // Save the updated user document
-    await user.save();
+      // Save changes
+      await user.save();
   } catch (error) {
-    console.error("Error calculating best tag:", error);
-    throw error;
+      console.error("Error calculating best tag:", error);
+      throw error;
   }
 };
+
 
 
 

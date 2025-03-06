@@ -1221,7 +1221,81 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     }
   });
   
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "selectedFiles", maxCount: 10 },
+    { name: "ratingSlip", maxCount: 1 }
+]), async (req, res) => {
+    try {
+        console.log("Received project upload request with data:", req.body);
 
+        // Retrieve saved subject & grade from session
+        const { subject, grade, ratingSlip } = req.session.assessmentData || {};
+
+        if (!subject || !grade) {
+            console.error("Missing subject or grade in session.");
+            return res.status(400).json({ success: false, message: "Missing required fields." });
+        }
+
+        const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+        const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+        const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+            ? `/uploads/${req.files["ratingSlip"][0].filename}`
+            : ratingSlip;
+
+        // Create and save the new project
+        const newProject = new Project({
+            projectName: req.body.projectName,
+            description: req.body.description,
+            tag: req.body.tag,
+            tools: req.body.tools,
+            projectUrl: req.body.projectUrl,
+            roles: req.body.roles,
+            subject,
+            grade,
+            ratingSlip: ratingSlipPath,
+            status: "pending",
+            thumbnail,
+            selectedFiles
+        });
+
+        await newProject.save();
+
+        // Find student by ID and update their projects list
+        const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
+        if (!userId) {
+            console.error("User ID is missing.");
+            return res.status(400).json({ success: false, message: "User ID is required." });
+        }
+
+        const user = await Tupath_usersModel.findOneAndUpdate(
+            { _id: userId },
+            { $addToSet: { "profileDetails.projects": newProject._id } }, // Ensure project is stored in profile
+            { new: true }
+        );
+
+        if (!user) {
+            console.error("User not found.");
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Update best tag dynamically
+        await user.calculateBestTag();
+
+        // Clear session after successful save
+        delete req.session.assessmentData;
+
+        console.log("Project successfully saved and linked to user:", newProject);
+        res.status(201).json({ success: true, project: newProject });
+
+    } catch (error) {
+        console.error("Error uploading project:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+
+/* //BACKUP LATEST API
 
   app.post("/api/uploadProject", verifyToken, upload.fields([
     { name: "thumbnail", maxCount: 1 },
@@ -1277,7 +1351,7 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     }
   });
   
-  
+*/
   
   
 
@@ -1657,6 +1731,16 @@ app.post('/api/admin/logout', (req, res) => {
 
 
 
+
+
+
+
+
+
+
+// NEW API- HIWALAY KO LANG KASI BABAKLASIN KO TO
+
+
 app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
   try {
     const { subject, grade } = req.body;
@@ -1678,6 +1762,18 @@ app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async 
   }
 });
 
+app.get("/api/topStudentsByTag", async (req, res) => {
+  try {
+      const topStudents = await Tupath_usersModel.find({ bestTag: { $exists: true } })
+          .sort({ "bestTagScores": -1 })
+          .limit(10); // Get top 10 students
+
+      res.status(200).json(topStudents);
+  } catch (error) {
+      console.error("Error fetching top students:", error);
+      res.status(500).json({ message: "Server error", error });
+  }
+});
 
 
 
