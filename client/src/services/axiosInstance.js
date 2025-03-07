@@ -10,6 +10,7 @@ const axiosInstance = axios.create({
     'Cache-Control': 'no-store', // Disables caching for API responses
     Pragma: 'no-cache',           // HTTP/1.0 compatibility
   },
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(

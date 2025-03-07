@@ -30,7 +30,7 @@ const predefinedRoles = [
 
 
 
-const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
+const ProjectUploadModal = ({ show, onClose}) => {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -42,59 +42,44 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   const [projectUrl, setProjectUrl] = useState("");
   const [status] = useState("pending");
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  const [assessmentQuestions, setAssessmentQuestions] = useState([]);
-  const [assessmentRatings, setAssessmentRatings] = useState([]);
-  const [readyToSubmit, setReadyToSubmit] = useState(false);
+
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [grade, setGrade] = useState("");
 
   const thumbnailInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (tag) fetchAssessmentQuestions(tag, "tag");
+    const fetchAssessmentData = async () => {
+      try {
+        const response = await axiosInstance.get("/api/getSavedAssessment");
+        if (response.data.success) {
+          setSelectedSubject(response.data.subject);
+          setGrade(response.data.grade);
+        }
+      } catch (error) {
+        console.error("Error fetching saved assessment:", error);
+      }
+    };
   
-    // Avoid fetching the same tool questions multiple times
-    const uniqueTools = Array.from(new Set(tools));
-    uniqueTools.forEach((tool) => fetchAssessmentQuestions(tool, "tool"));
-  }, [tag, tools]);
+    if (show) {
+      fetchAssessmentData();
+    }
+  }, [show]);
+
   
 
-  const fetchAssessmentQuestions = async (name, category) => {
-    try {
-      const response = await axiosInstance.get(
-        `/api/assessment-questions?category=${category}&categoryName=${name}`
-      );
-  
-      if (response.data.success) {
-        const newQuestions = response.data.questions.map((q) => ({
-          text: q.text,
-          scoring: q.scoring,
-          category,
-          categoryName: name,
-        }));
-  
-        // Avoid duplicates by filtering new questions
-        setAssessmentQuestions((prev) => {
-          const existingQuestions = new Set(prev.map((q) => q.text + q.category + q.categoryName));
-          const uniqueQuestions = newQuestions.filter(
-            (q) => !existingQuestions.has(q.text + q.category + q.categoryName)
-          );
-          return [...prev, ...uniqueQuestions];
-        });
-  
-        setAssessmentRatings((prev) => {
-          const updatedRatings = [...prev, ...Array(newQuestions.length).fill(0)];
-          return updatedRatings.slice(0, assessmentQuestions.length + newQuestions.length);
-        });
-        
-      } else {
-        console.error("Failed to fetch assessment questions:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching assessment questions:", error);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!projectName.trim() || !description.trim() || !tag) {
+      alert("All fields are required.");
+      return;
     }
+    setShowAssessmentModal(true);
   };
   
-  if (!show) return null;
 
   const handleFileChange = (e) => {
     setSelectedFiles([...selectedFiles, ...Array.from(e.target.files)]);
@@ -141,29 +126,37 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
   };
 
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+  const handleAssessmentSubmit = async ({ subjectCode, grade }) => {
+    try {
+      const response = await axiosInstance.post("/api/saveAssessment", {
+        subject: subjectCode,
+        grade: grade,
+      });
   
-    if (!projectName.trim()) {
-      alert("Project name is required.");
-      return;
+      if (response.data.success) {
+        setSelectedSubject(subjectCode);
+        setGrade(grade);
+        setShowAssessmentModal(false);
+        toast.success("Subject and grade saved successfully!");
+      } else {
+        toast.error("Failed to save subject and grade.");
+      }
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      toast.error("An error occurred while saving the assessment.");
     }
-  
-    if (!description.trim()) {
-      alert("Description is required.");
-      return;
+  };
+
+   
+  const handleFinalSubmit = async () => {
+    if (!selectedSubject || !grade) {
+        alert("Please select a subject and enter a grade before final submission.");
+        return;
     }
-  
-    if (!tag) {
-      alert("Please select a tag.");
-      return;
-    }
-  
-    if (assessmentQuestions.length > 0 && !readyToSubmit) {
-      setShowAssessmentModal(true);
-      return;
-    }
-  
+
+    setIsSubmitting(true);
+
     const formData = new FormData();
     formData.append("projectName", projectName);
     formData.append("description", description);
@@ -171,49 +164,53 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
     tools.forEach((tool) => formData.append("tools", tool));
     roles.forEach((role) => formData.append("roles", role));
     formData.append("projectUrl", projectUrl);
-    formData.append(
-      "assessment",
-      JSON.stringify(
-        assessmentQuestions.map((question, index) => ({
-          question,
-          rating: assessmentRatings[index],
-          scoring: question.scoring,
-          category: question.category,
-          categoryName: question.categoryName,
-        }))
-      )
-    );
-    selectedFiles.forEach((file) => formData.append("selectedFiles", file));
+    formData.append("subject", selectedSubject);
+    formData.append("grade", grade);
+    
+    selectedFiles.forEach((file, index) => {
+      formData.append("selectedFiles", file);
+    });
+
     if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
+        formData.append("thumbnail", thumbnail);
     }
-  
+
+    // Debugging: Log Form Data
+    console.log("Submitting Project Data:");
+    console.log("Project Name:", projectName);
+    console.log("Description:", description);
+    console.log("Tag:", tag);
+    console.log("Tools:", tools);
+    console.log("Roles:", roles);
+    console.log("Project URL:", projectUrl);
+    console.log("Selected Subject:", selectedSubject);
+    console.log("Grade:", grade);
+    console.log("Thumbnail:", thumbnail ? thumbnail.name : "No thumbnail");
+    console.log("Selected Files:", selectedFiles.map(file => file.name));
+
     try {
-      const response = await axiosInstance.post("/api/uploadProject", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-  
-      if (response.data.success) {
-        // Show success toast notification
-        toast.success('Project uploaded successfully!', {
-          position: "top-center",
-          autoClose: 3000, // Toast will disappear in 3 seconds
-          hideProgressBar: false,
-          theme: "light",
+        const response = await axiosInstance.post("/api/uploadProject", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
         });
-        
-        onProjectUpload(response.data.project);
-        onClose();
-      } else {
-        console.error("Project upload failed:", response.data.message);
-      }
+
+        console.log("Server Response:", response.data);
+
+        if (response.data.success) {
+            toast.success("Project uploaded successfully!");
+            onClose();
+        } else {
+            console.error("Upload failed:", response.data.message);
+        }
     } catch (error) {
-      console.error("Error uploading project:", error);
+        console.error("Error uploading project:", error);
     }
-  };
-  
+
+    setIsSubmitting(false);
+};
+
+  if (!show) return null;
+
+
 
   return (
     <>
@@ -362,32 +359,24 @@ const ProjectUploadModal = ({ show, onClose, onProjectUpload }) => {
             </div>
           </form>
           <div className="submit-btn-container">
-            <button type="submit" onClick={handleSubmit}>
-              Submit
-            </button>
-          </div>
+  {selectedSubject && grade ? (
+    <button type="submit" onClick={handleFinalSubmit} disabled={isSubmitting}>
+      {isSubmitting ? "Submitting..." : "Final Submit"}
+    </button>
+  ) : (
+    <button type="submit" onClick={handleSubmit}>
+      Submit
+    </button>
+  )}
+</div>
         </motion.div>
       </div>
 
       {showAssessmentModal && (
         <ProjectAssessmentModal
-          show={showAssessmentModal}
-          onClose={() => setShowAssessmentModal(false)}
-          questions={assessmentQuestions}
-          ratings={assessmentRatings}
-          setRatings={setAssessmentRatings}
-          onFinalSubmit={() => {
-            setShowAssessmentModal(false);
-            setReadyToSubmit(true);
-            toast.success('Assessment completed successfully!', {
-              position: "top-center",
-              autoClose: 3000,  // Toast will disappear in 3 seconds
-              hideProgressBar: false,
-              theme: "light",
-            });
-            
-            
-          }}
+        show={showAssessmentModal}
+        onClose={() => setShowAssessmentModal(false)}
+        onAssessmentSubmit={handleAssessmentSubmit}
         />
       )}
     </>

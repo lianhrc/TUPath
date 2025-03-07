@@ -62,50 +62,49 @@ const TupathUserSchema = new mongoose.Schema({
 
 TupathUserSchema.methods.calculateBestTag = async function () {
   try {
-    const user = this;
+      const user = this;
 
-    // Fetch all projects associated with the user
-    const projects = await mongoose.model('Project').find({
-      _id: { $in: user.profileDetails.projects },
-    });
+      // Fetch all projects associated with the student
+      const projects = await mongoose.model("Project").find({
+          _id: { $in: user.profileDetails.projects }
+      });
 
-    // Aggregate cumulative scores by tag
-    const tagScores = projects.reduce((acc, project) => {
-      if (project.tag && project.assessment.length > 0) {
-        const weightedScore = project.assessment.reduce(
-          (sum, a) => sum + (a.weightedScore || a.rating * 10), // Use weightedScore if available, else calculate
-          0
-        );
+      if (!projects.length) return; // Exit if no projects are found
 
-        acc[project.tag] = (acc[project.tag] || 0) + weightedScore; // Accumulate scores
-      }
-      return acc;
-    }, {});
+      // Aggregate scores by tag
+      const tagScores = projects.reduce((acc, project) => {
+          if (project.tag && project.grade) {
+              const gradeValue = parseFloat(project.grade) || 0; // Convert grade to number
+              acc[project.tag] = (acc[project.tag] || 0) + gradeValue; // Sum grades per tag
+          }
+          return acc;
+      }, {});
 
-    // Update the bestTagScores map
-    user.bestTagScores = tagScores;
+      // Store tag scores
+      user.bestTagScores = tagScores;
 
-    // Determine the tag with the highest cumulative score
-    let bestTag = null;
-    let highestScore = 0;
+      // Determine the highest-scoring tag
+      let bestTag = null;
+      let highestScore = 0;
 
-    for (const [tag, score] of Object.entries(tagScores)) {
-      if (score > highestScore) {
-        bestTag = tag;
-        highestScore = score;
-      }
-    }
+      Object.entries(tagScores).forEach(([tag, score]) => {
+          if (score > highestScore) {
+              bestTag = tag;
+              highestScore = score;
+          }
+      });
 
-    // Update the user's bestTag field
-    user.bestTag = bestTag;
+      // Update user's bestTag field
+      user.bestTag = bestTag;
 
-    // Save the updated user document
-    await user.save();
+      // Save changes
+      await user.save();
   } catch (error) {
-    console.error("Error calculating best tag:", error);
-    throw error;
+      console.error("Error calculating best tag:", error);
+      throw error;
   }
 };
+
 
 
 
@@ -114,24 +113,18 @@ TupathUserSchema.methods.calculateBestTag = async function () {
 const projectSchema = new mongoose.Schema({
   projectName: { type: String, required: true },
   description: { type: String, required: true },
-  selectedFiles: [{ type: String }], // Array of file paths or URLs
-  tag: { type: String, required: true }, // Updated to accept only one tag
+  selectedFiles: [{ type: String }],
+  tag: { type: String, required: true },
   tools: [{ type: String }],
   roles: [{ type: String }],
-  thumbnail: { type: String }, // Thumbnail URL or path
-  projectUrl: String, // Optional project link
-  createdAt: { type: Date, default: Date.now }, // Automatically set creation date
-  assessment: [
-    {
-      question: {
-        text: { type: String, required: true },
-        scoring: { type: Map, of: Number, required: true },
-      },
-      rating: { type: Number, required: true, min: 1, max: 5 },
-      weightedScore: { type: Number, default: 0 },
-    },
-  ],
+  thumbnail: { type: String },
+  projectUrl: String,
+  subject: { type: String, required: true }, // New field for subject
+  grade: { type: String, required: true },   // New field for grade
+  createdAt: { type: Date, default: Date.now },
+  ratingSlip: String, // <-- Changed from corFile to ratingSlip
 });
+
 
 
 
@@ -190,27 +183,6 @@ const EmployerUserSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
-const AssessmentQuestionSchema = new mongoose.Schema({
-  text: { type: String, required: true }, // The question text
-  type: { type: String, enum: ['rating', 'indicator'], required: true }, // Specifies the input type
-  scale: {
-      min: { type: Number, default: 1 }, // Minimum value of the scale
-      max: { type: Number, default: 5 }, // Maximum value of the scale
-      step: { type: Number, default: 1 } // Step size for ratings (e.g., 1, 0.5)
-  },
-  required: { type: Boolean, default: true }, // Is the question mandatory?
-  category: { type: String, required: true }, // Optional grouping for questions
-  categoryName: { type: String, required: true }, // Allows differentiation for tools or tags
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  scoring: { // Define custom scores for each star
-    type: Map,
-    of: Number, // e.g., { "1": 3, "2": 5, "3": 10, "4": 15, "5": 20 }
-    required: true,
-  },
-});
-
-
 
 
 
@@ -267,7 +239,6 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
-const AssessmentQuestion = mongoose.model('AssessmentQuestion', AssessmentQuestionSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
 
 
@@ -276,6 +247,5 @@ module.exports = {
   Tupath_usersModel,
   Employer_usersModel,
   Project,
-  AssessmentQuestion,
   Admin,
 };

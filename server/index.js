@@ -10,7 +10,8 @@ const express = require("express");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   const cookieParser = require('cookie-parser');
-  
+  const session = require("express-session");
+  const MongoStore = require("connect-mongo");
   //pushin purposes
  require('dotenv').config()
 
@@ -43,12 +44,22 @@ const express = require("express");
   app.use("/certificates", express.static(path.join(__dirname, "certificates")));
   app.use('/cor', express.static('cor'));
 
+  
+
 
 
   app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
   app.use(cookieParser());
-
+  
+  
+  app.use(session({
+    secret: "your_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/tupath_users" }), // Persistent session storage
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
+  }));
     //ROUTES
    
     app.use('/', users);
@@ -72,7 +83,7 @@ const express = require("express");
   });
 
  
-/*
+
 
    // MongoDB connection
     mongoose
@@ -80,7 +91,7 @@ const express = require("express");
       .then(() => console.log("MongoDB connected successfully"))
      .catch((err) => console.error("MongoDB connection error:", err));
 
-*/
+/*
 
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
@@ -88,7 +99,7 @@ mongoose.connect(
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-
+*/
   // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -451,25 +462,34 @@ const Post = mongoose.model("Post", postSchema);
   });
 
     // Create a new post
-  app.post("/api/posts", verifyToken, async (req, res) => {
-    const userId = req.user.id; // Extract userId from the verified token
-    const { profileImg, name, content, postImg } = req.body;
-    try {
-        const newPost = new Post({
-            profileImg,
-            name,
-            content,
-            postImg,
-            userId, // Save userId for the post
-        });
-        await newPost.save();
-        res.status(201).json({ success: true, post: newPost });
-        io.emit("new_post", newPost);
-    } catch (err) {
-        console.error("Error creating post:", err);
-        res.status(500).json({ success: false, message: "Internal server error" });
-    }
+    app.post("/api/posts", verifyToken, async (req, res) => {
+      const userId = req.user.id; // Extract userId from the verified token
+      const userRole = req.user.role; // Extract role from the user token
+  
+      if (userRole !== "employer") {
+          return res.status(403).json({ success: false, message: "Only employers can post." });
+      }
+  
+      const { profileImg, name, content, postImg } = req.body;
+  
+      try {
+          const newPost = new Post({
+              profileImg,
+              name,
+              content,
+              postImg,
+              userId, // Save userId for the post
+          });
+  
+          await newPost.save();
+          res.status(201).json({ success: true, post: newPost });
+          io.emit("new_post", newPost);
+      } catch (err) {
+          console.error("Error creating post:", err);
+          res.status(500).json({ success: false, message: "Internal server error" });
+      }
   });
+  
 
   
   // update a post
@@ -716,85 +736,41 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
 });
 
 
-// Endpoint to fetch profile data including projects and certificates
-app.get('/api/profile', verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const role = req.user.role; // Extract role from the token
-
-    const userModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-    const user = await userModel.findById(userId)
-      .select('email role profileDetails createdAt googleSignup')
-      .populate({
-        path: 'profileDetails.projects',
-        select: 'projectName description tags tools thumbnail projectUrl',
-        strictPopulate: false, // Allow flexible population
-      });
-
-    if (!user) {
-      return res.status(404).json({ success: false, profile: 'User not Found' });
-    }
-
-    // Fetch certificates for the user
-    const certificates = await StudentCertificate.find({ StudId: userId });
-
-    // Return profile details tailored to the role
-    const profile = {
-      email: user.email,
-      role: user.role,
-      profileDetails: user.role === 'student' ? {
-        ...user.profileDetails,
-        certificates, // Include certificates in the profile details
-      } : {
-        ...user.profileDetails,
-        companyName: user.profileDetails.companyName || null,
-        industry: user.profileDetails.industry || null,
-        aboutCompany: user.profileDetails.aboutCompany || null,
-        preferredRoles: user.profileDetails.preferredRoles || [],
-        internshipOpportunities: user.profileDetails.internshipOpportunities || false,
-      },
-      createdAt: user.createdAt,
-      googleSignup: user.googleSignup,
-    };
-
-    res.status(200).json({ success: true, profile });
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
 
 // Endpoint to fetch profile data for a specific user including projects and certificates
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
+  const requestingUserId = req.user.id;
+  const requestingUserRole = req.user.role;
+
   try {
-    const user = await Tupath_usersModel.findById(id)
-      .populate({
-        path: 'profileDetails.projects',
-        strictPopulate: false,
-      }) || await Employer_usersModel.findById(id)
-      .populate({
-        path: 'profileDetails.projects',
-        strictPopulate: false,
-      });
+    const user = await Tupath_usersModel.findById(id).populate({
+      path: 'profileDetails.projects',
+      select: 'projectName description tags tools thumbnail projectUrl'
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Fetch certificates for the user
-    const certificates = await StudentCertificate.find({ StudId: id });
+    let certificates = await StudentCertificate.find({ StudId: id });
 
-    // Include certificates in the profile details
-    const profile = {
-      ...user.toObject(),
-      profileDetails: {
-        ...user.profileDetails,
-        certificates,
+    // Hide projects and certificates if the requesting user is another student
+    if (requestingUserRole === 'student' && requestingUserId.toString() !== id.toString()) {
+      user.profileDetails.projects = [];
+      certificates = [];
+  }
+
+    res.status(200).json({
+      success: true,
+      profile: {
+        ...user.toObject(),
+        profileDetails: {
+          ...user.profileDetails,
+          certificates,
+        },
       },
-    };
-
-    res.status(200).json({ success: true, profile });
+    });
   } catch (err) {
     console.error('Error fetching profile:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -1245,135 +1221,140 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     }
   });
   
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "selectedFiles", maxCount: 10 },
+    { name: "ratingSlip", maxCount: 1 }
+]), async (req, res) => {
+    try {
+        console.log("Received project upload request with data:", req.body);
 
+        // Retrieve saved subject & grade from session
+        const { subject, grade, ratingSlip } = req.session.assessmentData || {};
 
-  app.post(
-    "/api/uploadProject",
-    verifyToken,
-    upload.fields([
-      { name: "thumbnail", maxCount: 1 },
-      { name: "selectedFiles", maxCount: 10 },
-    ]),
-    async (req, res) => {
-      try {
-        const userId = req.user.id;
-        const { projectName, description, tag, tools, projectUrl, assessment,roles } = req.body;
-  
-        // Validate required fields
-        if (!projectName || !projectName.trim()) {
-          return res.status(400).json({ success: false, message: "Project name is required." });
+        if (!subject || !grade) {
+            console.error("Missing subject or grade in session.");
+            return res.status(400).json({ success: false, message: "Missing required fields." });
         }
-  
-        if (!description || !description.trim()) {
-          return res.status(400).json({ success: false, message: "Description is required." });
-        }
-  
-        if (!tag || !tag.trim()) {
-          return res.status(400).json({ success: false, message: "A single tag is required." });
-        }
-  
-        // Ensure tools is always an array
-        const toolsArray = Array.isArray(tools) ? tools : tools ? [tools] : [];
-        const rolesArray = Array.isArray(roles) ? roles : roles ? [roles] : [];
 
-              // Validate roles
-      if (!rolesArray.length) {
-        return res.status(400).json({ success: false, message: "At least one role must be selected." });
-      }
+        const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+        const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+        const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+            ? `/uploads/${req.files["ratingSlip"][0].filename}`
+            : ratingSlip;
 
-        // Parse assessment data
-        const parsedAssessment = assessment
-          ? JSON.parse(assessment).map((q) => ({
-              ...q,
-              weightedScore: q.scoring[q.rating],
-            }))
-          : [];
-  
-        // Validate assessment data for required categories (tags and tools)
-        const requiredCategories = [
-          { type: "tag", name: tag },
-          ...toolsArray.map((tool) => ({ type: "tool", name: tool })),
-        ];
-  
-        for (const category of requiredCategories) {
-          const relevantAssessment = parsedAssessment.filter(
-            (a) => a.category === category.type && a.categoryName === category.name
-          );
-  
-          if (!relevantAssessment.length) {
-            return res.status(400).json({
-              success: false,
-              message: `Assessment is required for ${category.type} '${category.name}'.`,
-            });
-          }
-  
-          const isValidAssessment = relevantAssessment.every(
-            (item) => item.question && item.rating >= 1 && item.rating <= 5
-          );
-  
-          if (!isValidAssessment) {
-            return res.status(400).json({
-              success: false,
-              message: `Invalid assessment data for ${category.type} '${category.name}'. Ratings must be between 1 and 5.`,
-            });
-          }
-        }
-  
-        // Retrieve files from multer
-        const thumbnail = req.files["thumbnail"]
-          ? `/uploads/${req.files["thumbnail"][0].filename}`
-          : null;
-  
-        const selectedFiles = req.files["selectedFiles"]
-          ? req.files["selectedFiles"].map((file) => file.path)
-          : [];
-  
-        // Create a new project document
+        // Create and save the new project
         const newProject = new Project({
-          projectName,
-          description,
-          tag,
-          tools: toolsArray,
-          selectedFiles,
-          thumbnail,
-          projectUrl,
-          roles: rolesArray,
-          status: "pending",
-          assessment: parsedAssessment,
+            projectName: req.body.projectName,
+            description: req.body.description,
+            tag: req.body.tag,
+            tools: req.body.tools,
+            projectUrl: req.body.projectUrl,
+            roles: req.body.roles,
+            subject,
+            grade,
+            ratingSlip: ratingSlipPath,
+            status: "pending",
+            thumbnail,
+            selectedFiles
         });
-  
-        // Save project to the database
-        const savedProject = await newProject.save();
-  
-        // Associate the project with the user
-        const user = await Tupath_usersModel.findById(userId);
-  
-        if (!user) {
-          return res.status(404).json({ success: false, message: "User not found" });
+
+        await newProject.save();
+
+        // Find student by ID and update their projects list
+        const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
+        if (!userId) {
+            console.error("User ID is missing.");
+            return res.status(400).json({ success: false, message: "User ID is required." });
         }
-  
-        user.profileDetails.projects.push(savedProject._id);
-  
-        // Recalculate the best tag and cumulative scores
+
+        const user = await Tupath_usersModel.findOneAndUpdate(
+            { _id: userId },
+            { $addToSet: { "profileDetails.projects": newProject._id } }, // Ensure project is stored in profile
+            { new: true }
+        );
+
+        if (!user) {
+            console.error("User not found.");
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Update best tag dynamically
         await user.calculateBestTag();
-  
-        // Save the updated user
-        await user.save();
-  
-        res.status(201).json({
-          success: true,
-          message: "Project uploaded successfully",
-          project: savedProject,
-        });
-      } catch (error) {
+
+        // Clear session after successful save
+        delete req.session.assessmentData;
+
+        console.log("Project successfully saved and linked to user:", newProject);
+        res.status(201).json({ success: true, project: newProject });
+
+    } catch (error) {
         console.error("Error uploading project:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
-      }
+        res.status(500).json({ success: false, message: "Server error" });
     }
-  );
+});
+
+
+/* //BACKUP LATEST API
+
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "selectedFiles", maxCount: 10 },
+    { name: "ratingSlip", maxCount: 1 }
+  ]), async (req, res) => {
+    try {
+      console.log("Received project upload request with data:", req.body);
+      console.log("Session before accessing assessmentData:", req.session);
+  
+      // Retrieve saved subject & grade from session
+      const { subject, grade, ratingSlip } = req.session.assessmentData || {};
+  
+      console.log("Extracted assessment data from session:", { subject, grade, ratingSlip });
+  
+      if (!subject || !grade) {
+        console.error("Missing subject or grade in session.");
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+      }
+  
+      const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+      const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+      const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+      ? `/uploads/${req.files["ratingSlip"][0].filename}`
+      : ratingSlip;
+  
+      const newProject = new Project({
+        projectName: req.body.projectName,
+        description: req.body.description,
+        tag: req.body.tag,
+        tools: req.body.tools,
+        projectUrl: req.body.projectUrl,
+        roles: req.body.roles,
+        subject,
+        grade,
+        ratingSlip: ratingSlipPath, // <-- Save ratingSlip instead of corFile
+        status: "pending",
+        thumbnail,
+        selectedFiles
+      });
+  
+      await newProject.save();
+  
+      // Clear session after successful save
+      delete req.session.assessmentData;
+  
+      console.log("Project successfully saved:", newProject);
+  
+      res.status(201).json({ success: true, project: newProject });
+    } catch (error) {
+      console.error("Error saving project:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  });
+  
+*/
   
   
-  
+
   
   
   
@@ -1710,6 +1691,55 @@ app.post('/api/admin/logout', (req, res) => {
   res.clearCookie('adminToken');
   res.json({ success: true, message: 'Logged out successfully' });
 });
+
+
+
+
+
+
+
+
+
+
+// NEW API- HIWALAY KO LANG KASI BABAKLASIN KO TO
+
+
+app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
+  try {
+    const { subject, grade } = req.body;
+    if (!subject || !grade) {
+      return res.status(400).json({ success: false, message: "Subject and grade are required." });
+    }
+
+    const ratingSlipPath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    req.session.assessmentData = { subject, grade, ratingSlip: ratingSlipPath };
+
+    // Debugging: Log the stored session data
+    console.log("Saved assessment data in session:", req.session.assessmentData);
+
+    res.status(200).json({ success: true, message: "Assessment saved successfully." });
+  } catch (error) {
+    console.error("Error saving assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+app.get("/api/topStudentsByTag", async (req, res) => {
+  try {
+      const topStudents = await Tupath_usersModel.find({ bestTag: { $exists: true } })
+          .sort({ "bestTagScores": -1 })
+          .limit(10); // Get top 10 students
+
+      res.status(200).json(topStudents);
+  } catch (error) {
+      console.error("Error fetching top students:", error);
+      res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+
 
   // Server setup
   const PORT = process.env.PORT || 3001;

@@ -1,110 +1,94 @@
 import React, { useState } from "react";
+import axiosInstance from "../../services/axiosInstance";
 import "./ProjectAssessmentModal.css";
 
+const subjects = [
+  { code: "CC101", name: "Computer Programming 1" },
+  { code: "CC102", name: "Computer Programming 2" },
+  { code: "CC103", name: "Data Structures" },
+  { code: "CC104", name: "Database Management" },
+];
 
-const ProjectAssessmentModal = ({
-  show,
-  onClose,
-  questions, // List of questions to display
-  ratings, // Ratings for each question
-  setRatings, // Function to update ratings
-  onFinalSubmit, // Callback when all questions are answered
-}) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const questionsPerPage = 5; // Number of questions per page
-  const totalPages = Math.ceil(questions.length / questionsPerPage);
+const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [grade, setGrade] = useState("");
+  const [ratingSlip, setRatingSlip] = useState(null);
 
   if (!show) return null;
 
-  // Handle rating updates
-  const handleRatingChange = (index, rating) => {
-    const updatedRatings = [...ratings];
-    updatedRatings[index] = rating;
-    setRatings(updatedRatings);
-  };
-
-  // Navigation between pages
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
-  };
-
-  // Submit assessment
-  const handleSubmit = () => {
-    if (ratings.some((rating) => rating === 0)) {
-      alert("Please provide ratings for all questions before submitting.");
+  const handleSubmit = async () => {
+    if (!selectedSubject) {
+      alert("Please select a subject.");
       return;
     }
-    onFinalSubmit();
-    onClose();
-  };
 
-  // Calculate questions for the current page
-  const startIndex = currentPage * questionsPerPage;
-  const currentQuestions = questions.slice(
-    startIndex,
-    startIndex + questionsPerPage
-  );
+    if (!grade.trim()) {
+      alert("Please enter a grade.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("subject", selectedSubject);
+    formData.append("grade", grade);
+    if (ratingSlip) {
+      formData.append("ratingSlip", ratingSlip); // <-- Append ratingSlip instead of corFile
+    }
+
+    try {
+      const response = await axiosInstance.post("/api/saveAssessment", {
+        subject: selectedSubject,
+        grade: grade,
+        ratingSlip: ratingSlip ? ratingSlip.name : null, // Only send filename if provided
+      });
+      
+
+      if (response.data.success) {
+        onAssessmentSubmit({ subjectCode: selectedSubject, grade, ratingSlip });
+        onClose(); // Redirect back to ProjectUpModal
+      } else {
+        alert("Failed to save assessment. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      alert("An error occurred while saving the assessment.");
+    }
+  };
 
   return (
     <div className="assessment-modal-overlay" onClick={onClose}>
-      <div
-        className="assessment-modal-content"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3>Project Assessment</h3>
-        <p>Please rate the following questions:</p>
-        <div className="assessment-questions">
-          {currentQuestions.map((question, index) => (
-            <div
-              key={startIndex + index}
-              className="assessment-question"
-            >
-              <p>
-                <strong>{question.categoryName}:</strong> {question.text}
-              </p>
-              <div className="star-rating">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    className={`star ${
-                      star <= ratings[startIndex + index] ? "selected" : ""
-                    }`}
-                    onClick={() =>
-                      handleRatingChange(startIndex + index, star)
-                    }
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
+      <div className="assessment-modal-content" onClick={(e) => e.stopPropagation()}>
+        <h3>Project Subject Categorization</h3>
+        <p>Please select a subject and input your grade:</p>
+
+        <label>Subject:</label>
+        <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} required>
+          <option value="">Select Subject</option>
+          {subjects.map((subject) => (
+            <option key={subject.code} value={subject.code}>
+              {subject.code} - {subject.name}
+            </option>
           ))}
-        </div>
+        </select>
+
+        <label>Final Grade:</label>
+        <input
+          type="text"
+          placeholder="Enter grade"
+          value={grade}
+          onChange={(e) => setGrade(e.target.value)}
+        />
+
+        <label>Attach COR if available:</label>
+        <input
+          type="file"
+          accept=".zip,.rar,.pdf,.docx,.jpg,.png"
+          onChange={(e) => setCorFile(e.target.files[0])}
+        />
+
         <div className="assessment-buttons">
-          {currentPage > 0 && (
-            <button
-              onClick={handlePreviousPage}
-              className="assessment-nav-btn"
-            >
-              Previous
-            </button>
-          )}
-          {currentPage < totalPages - 1 ? (
-            <button
-              onClick={handleNextPage}
-              className="assessment-nav-btn"
-            >
-              Next
-            </button>
-          ) : (
-            <button onClick={handleSubmit} className="assessment-submit-btn">
-              Submit
-            </button>
-          )}
+          <button onClick={handleSubmit} className="assessment-submit-btn">
+            Submit
+          </button>
         </div>
       </div>
     </div>
