@@ -244,7 +244,7 @@ function ProfilePage() {
         </div>
 
         {/* Project Section */}
-        {(userRole === 'employer' || (userRole === 'student' && profileData.email === loggedInUserEmail)) && (
+        {(userRole === 'student' && profileData.email === loggedInUserEmail) && (
          
           <div className="project-section">
           <div className="grademaincontainer">
