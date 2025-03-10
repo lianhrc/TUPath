@@ -1,21 +1,20 @@
 .cd_dashboard-container {
-     display: flex;
-    margin: 0;
+    display: flex;
     padding: 20px;
-    padding-top: 50px;
+    padding-top: 120px;
     height: 100vh;
     font-family: 'Arial', sans-serif;
-    background: url(../../../assets/loadersbg.jpg);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+    overflow: none;
+    background-color: #F4F2EE;
     background-blend-mode: overlay;
-    background-color: rgba(0, 0, 0, 0.5);
     position: relative; /* Added to allow absolute positioning inside */
   }
   
   .cd_sidebar {
-    
+    margin-top: -30px;
     width: 320px;
   }
   
@@ -33,17 +32,19 @@
   
   .cd_main-content {
     flex-grow: 1;
+    margin: 0 20px;
   }
 
   
   .cd_dashboard-content {
     padding: 20px;
     width: 100%;
+
   }
   
   .cd_courses-container {
     width: 80%;
-    margin-bottom: 20px;
+    
   }
   
   .courses {
@@ -53,7 +54,6 @@
   
   .course-box {
     background-color: white;
-    color: #4a0d0d;
     padding: 20px;
     text-align: center;
     font-size: 18px;
@@ -72,6 +72,8 @@
     display: flex;
     height: 35px;
     padding: 10px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
     background-color: #A82632;
     color: white;
   }
@@ -85,8 +87,8 @@
     
   .cd_grades-container {
     width: 100%;
-    background-color: white;
     color: black;
+    margin-top: 10px;
     
   }
   .cd_filters{
@@ -118,21 +120,14 @@
 
   
 
-  .cdsearch{
-    width: 100%;
-    padding: 5px;  
-    font-size: 10px;
-
-  }
-
-  .cdsearch::placeholder{
-    font-size: 10px;
-  }
-
+ 
+ 
   table {
     width: 100%;
     border-collapse: collapse;
     border: none;
+    margin-top: 10px;
+
   }
   
 
@@ -140,8 +135,6 @@
     display: flex;
     height: 35px;
     padding: 10px;
-    background-color: #A82632;
-    color: white;
   }
 
   .tableheadercd h3{
@@ -153,6 +146,7 @@
     border: 1px solid black;
     text-align: left;
     border: none;
+    font-weight: normal;
     font-size: 12px;
   }
   .cd_grades-container tbody tr:hover{
@@ -161,8 +155,8 @@
   }
 
   .cd_grades-container th {
-    color: #A82632;
-    border: none;
+    background-color: #A82632;
+    border: none; 
  
   }
   

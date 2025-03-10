@@ -83,6 +83,7 @@ const express = require("express");
   });
 
  
+/*
 
 
    // MongoDB connection
@@ -91,7 +92,7 @@ const express = require("express");
       .then(() => console.log("MongoDB connected successfully"))
      .catch((err) => console.error("MongoDB connection error:", err));
 
-/*
+*/
 
 mongoose.connect(
   "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
@@ -99,7 +100,6 @@ mongoose.connect(
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-*/
   // Configure multer for file uploads
     const storage = multer.diskStorage({
       destination: (req, file, cb) => {

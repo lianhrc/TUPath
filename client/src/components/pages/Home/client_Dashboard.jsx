@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import _debounce from "lodash.debounce";
 import axiosInstance from "../../../services/axiosInstance";
 import profileicon from "../../../assets/profileicon.png";
+import HeaderHomepage from "../../../components/common/headerhomepage"
 // import "/searchbar.css";
 import '../../../components/common/headerhomepage.css';
 import "./client_Dashboard.css";
@@ -48,10 +49,10 @@ const Client_Dashboard = () => {
     }
   };
 
-  const handleClearRecentSearches = () => {
-    setRecentSearches([]);
-    localStorage.removeItem("recentSearches");
-  };
+  // const handleClearRecentSearches = () => {
+  //   setRecentSearches([]);
+  //   localStorage.removeItem("recentSearches");
+  // };
 
   const courses = [
     "Bachelor of Science in Information Technology",
@@ -100,51 +101,8 @@ const Client_Dashboard = () => {
 
   return (
     <div className="cd_dashboard-container">
-      <aside className="cd_sidebar">
-        <div className="search-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-          {isSearching ? (
-            <p>Searching...</p>
-          ) : searchResults.length > 0 ? (
-            <div className="search-results">
-              {searchResults.map((result, index) => (
-                <Link
-                  to={`/profile/${result._id}`}
-                  key={index}
-                  className="search-result-item"
-                >
-                  <img
-                    src={result.profileDetails?.profileImg || profileicon}
-                    alt="Profile"
-                  />
-                  <p>
-                    <strong>
-                      {result.profileDetails.firstName}{" "}
-                      {result.profileDetails.lastName}
-                    </strong>
-                  </p>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            isSearchFieldClicked && <p>No results found for "{searchQuery}".</p>
-          )}
-          {recentSearches.length > 0 && (
-            <button
-              className="clear-recent-btn"
-              onClick={handleClearRecentSearches}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-        <h6>Categories</h6>
+    <HeaderHomepage />
+    <aside className="cd_sidebar">
         <div className="cd_filters">
           <select
             onChange={(e) => {
