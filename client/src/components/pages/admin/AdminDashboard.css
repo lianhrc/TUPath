@@ -26,6 +26,8 @@
     position: relative;
 }
 
+
+
 .adminsidebar:hover {
     width: 150px; /* Expand width on hover */
     padding-left: 0px;
@@ -79,8 +81,8 @@
     background-color: #A71A1B;
     outline: none; /* Removing default focus outline */
     box-shadow: 0 0 4px #FFF; /* Adding a subtle glow for focus */
+   
 }
-
 .adminsidebar nav ul li .icon {
     font-size: 18px;
     margin-right: 10px; /* Spacing for expanded view */
@@ -150,7 +152,7 @@
   height: 80vh;
   width: 100%;
   overflow: hidden;
-  padding-top: 5%;
+  padding-top: 2%;
 }
 
 

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo} from 'react';
 import './AdminDashboard.css';
-import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing icons
+import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing 
+import WordCloud from "react-d3-cloud";
 import { Pie, Bar } from 'react-chartjs-2';
 import tupicon from '../../../assets/logo.png';
 import irjpicon from '../../../assets/irjplogo.png';
@@ -99,10 +100,21 @@ const AdminDashboard = () => {
               <FaTags className="icon" />
               <span className="text">Best</span>
             </li>
+
+            <li
+            onClick={() => setActiveSection('ActiveTagSection')}
+            className={activeSection === 'ActiveTagSection' ? 'active' : ''}
+          >
+            <FaTags className="icon" />
+            <span className="text"> Popular</span>
+          </li>
+
             <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
+
+           
           </ul>
         </nav>
       </div>
@@ -111,6 +123,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Tags' && <TagChart />}
+        {activeSection === 'ActiveTagSection' && <ActiveTags />}
       </div>
     </div>
   );
@@ -245,6 +258,7 @@ const UsersSection = () => {
   );
 };
 
+
 // Tags Section Component
 const TagChart = () => {
   const [tagData, setTagData] = useState([]);
@@ -334,6 +348,93 @@ const TagChart = () => {
       </div>
     </div>
   );
-};// pushin purposes
+};
+
+
+
+// Popular Tags Section Component
+const ActiveTags = () => {
+  const [hoveredWord, setHoveredWord] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+  const words = [
+    { text: "React", value: 30 },
+    { text: "Node.js", value: 5 },
+    { text: "AI", value: 5 },
+    { text: "Machine Learning", value: 5 },
+    { text: "Cybersecurity", value: 5 },
+    { text: "Python", value: 5 },
+    { text: "JavaScript", value: 5 },
+    { text: "Data Science", value: 5 },
+    { text: "Web Development", value: 30 },
+  ];
+
+  // Font size mapping
+  const fontSizeMapper = (word) => Math.log2(word.value) * 10;
+
+  // Fixed colors for consistency
+  const colors = ["#FF5733", "#33FF57", "#3357FF", "#F39C12", "#8E44AD", "#E91E63", "#03A9F4"];
+  const colorMap = useMemo(() => {
+    return words.reduce((acc, word, index) => {
+      acc[word.text] = colors[index % colors.length]; // Assign fixed colors
+      return acc;
+    }, {});
+  }, []);
+
+  // Memoized word positions (para hindi gumalaw sa hover)
+  const fixedWords = useMemo(() => words, []);
+
+  return (
+    <div style={{ textAlign: "center", padding: "20px", position: "relative" }}>
+      <h2 style={{ color: "white", fontSize: 20 }}>Popular Project Tags & Categories</h2>
+      <span style={{ color: "#B0B0B0" }}>Trending subjects & tech stacks used</span>
+
+      {/* Word Cloud */}
+      <div style={{ width: "100%", height: "300px", overflow: "hidden", marginTop: 50 }}>
+        <WordCloud
+          data={fixedWords}
+          fontSize={fontSizeMapper}
+          padding={5}
+          fill={(word) => colorMap[word.text]} // Fixed color per word
+          width={800}
+          height={300}
+          rotate={0}
+          spiral="archimedean" // Stable layout
+          onWordMouseOver={(event, d) => {
+            setHoveredWord(null);
+
+          }}
+          onWordMouseMove={(event) => {
+            setHoveredWord(null);
+
+          }}
+          onWordMouseOut={() => {
+            setHoveredWord(null);
+          }}
+        />
+      </div>
+
+      {/* Tooltip */}
+      {hoveredWord && (
+        <div
+          style={{
+            position: "absolute",
+            backgroundColor: "black",
+            color: "white",
+            padding: "5px 10px",
+            borderRadius: "5px",
+            fontSize: "14px",
+            top: tooltipPosition.y + 10,
+            left: tooltipPosition.x + 10,
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {hoveredWord.text}: {hoveredWord.value}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AdminDashboard;
