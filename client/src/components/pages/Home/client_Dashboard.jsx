@@ -4,6 +4,7 @@ import _debounce from "lodash.debounce";
 import axiosInstance from "../../../services/axiosInstance";
 import profileicon from "../../../assets/profileicon.png";
 import HeaderHomepage from "../../../components/common/headerhomepage"
+import AddSubjectModal from "../../popups/AddSubjectModal";
 // import "/searchbar.css";
 import '../../../components/common/headerhomepage.css';
 import "./client_Dashboard.css";
@@ -13,13 +14,7 @@ const Client_Dashboard = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [recentSearches, setRecentSearches] = useState(
-    JSON.parse(localStorage.getItem("recentSearches")) || []
-  );
-  const [isSearchFieldClicked, setIsSearchFieldClicked] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debounced search function to reduce API calls
   const debouncedSearch = _debounce(async (query) => {
@@ -208,6 +203,9 @@ const Client_Dashboard = () => {
           <div className="cd_grades-container">
             <div className="tableheadercd">
               <h3>{selectedSubject || "Select a Subject to View Grades"}</h3>
+              <button onClick={() => setIsModalOpen(true)}>Add Subject</button>
+
+      <AddSubjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             </div>
             {selectedSubject ? (
               <table>
