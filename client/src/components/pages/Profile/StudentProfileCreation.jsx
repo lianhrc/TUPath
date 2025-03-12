@@ -100,7 +100,7 @@ function StudentProfileCreation() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        setFormData({ ...formData, [name]: value.toUpperCase() });
     };
 
     const renderFormFields = () => {
