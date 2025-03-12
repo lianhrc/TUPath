@@ -140,7 +140,7 @@ const handleSave = async () => {
   
   
 
-  const excludedFields = ["createdAt", "projectFiles", "certificatePhotos"];
+  const excludedFields = ["createdAt", "projectFiles", "certificatePhotos", "corDocuments", "ratingSlips"];
 
   if (!show) return null;
   

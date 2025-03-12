@@ -70,13 +70,28 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
           ))}
         </select>
 
-        <label>Final Grade:</label>
-        <input
-          type="text"
-          placeholder="Enter grade"
+        <label htmlFor="finalGrade">Final Grade:</label>
+        <select
+          id="finalGrade"
           value={grade}
           onChange={(e) => setGrade(e.target.value)}
-        />
+        >
+          <option value="">Select Grade</option>
+          <option value="1.0">1.0</option>
+          <option value="1.25">1.25</option>
+          <option value="1.5">1.5</option>
+          <option value="1.75">1.75</option>
+          <option value="2.0">2.0</option>
+          <option value="2.25">2.25</option>
+          <option value="2.5">2.5</option>
+          <option value="2.75">2.75</option>
+          <option value="3.0">3.0</option>
+          <option value="4.0">4.0 (Conditional Failure)</option>
+          <option value="5.0">5.0 (Failure)</option>
+          <option value="INC">INC (Incomplete)</option>
+          <option value="DRP">DRP (Dropped)</option>
+        </select>
+        
 
         <label>Attach COR if available:</label>
         <input

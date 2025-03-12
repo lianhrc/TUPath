@@ -3,8 +3,11 @@ import "./Gradestable.css";
 
 const GradesTable = () => {
   const [grades, setGrades] = useState([
-    { id: 1, code: "CC131L-M", description: "Computer Programming 1, Lab", grade: "1.50", submitted: true }
+    { id: 1, code: "CC131L-M", description: "Computer Programming 1, Lab", grade: "1.50", submitted: true, corFile: "sample.pdf" },
+    { id: 2, code: "CC132L-M", description: "Computer Programming 2, Lab", grade: "1.75", submitted: true, corFile: null }
   ]);
+  
+  
 
   // Function to add a new row
   const addRow = () => {
@@ -40,6 +43,7 @@ const GradesTable = () => {
             <th>Subject Code</th>
             <th>Description</th>
             <th>Final Grade</th>
+            <th>COR</th>
            
           </tr>
         </thead>
@@ -74,6 +78,18 @@ const GradesTable = () => {
                   />
                 )}
               </td>
+
+              <td>
+              {/* PDF Icon Display Logic */}
+              {row.corFile ? (
+                <a href={`/uploads/${row.corFile}`} target="_blank" rel="noopener noreferrer">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" width="30" alt="PDF Icon" />
+                </a>
+              ) : (
+                <span>No file</span>
+              )}
+            </td>
+
             
             </tr>
           ))}

@@ -9,6 +9,8 @@ import avatar from '../../../assets/profileicon.png';
 import location from '../../../assets/location.png';
 import since from '../../../assets/since.png';
 import Loader from '../../common/Loader';
+import GradesTable from "../../other/Gradestable"; // Adjust the path if needed
+
 
 function UserProfile() {
   const { id } = useParams();
@@ -195,8 +197,15 @@ function UserProfile() {
           
 
         {/* Project Section (for students only) */}
+
         {profile.role === 'student' && (
           <div className="userproject-section">
+          <div className="grademaincontainer">
+            <h3> Grades</h3>
+            <GradesTable />
+
+          
+          </div>
             <h3>Projects</h3>
             <div className="projects-grid">
               {projects.length > 0 ? (
