@@ -29,29 +29,37 @@
   
   /* Modal Heading */
   .add-subject-modal-content h2 {
-    font-size: 20px;
+    font-size: 12px;
     font-weight: 600;
     margin-bottom: 10px;
     color: #333;
+    display: block;
+    text-align: left;
+    width: 100%;
   }
   
-  /* Form Styling */
-  .add-subject-modal-content label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    margin: 10px 0;
+  /* Ensure proper left alignment */
+.add-subject-modal-content label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 10px 0;
+  
+  text-align: left;
+  color: #444;
 
-    text-align: left;
-    color: #444;
-  }
+  /* Additional fixes */
+  width: 100%;  /* Ensures it takes full width */
+  padding-left: 5px; /* Removes any left padding */
+}
+
   
   .add-subject-modal-content input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 12px;
     outline: none;
     transition: border 0.2s ease-in-out;
   }
@@ -63,8 +71,13 @@
   /* Buttons Container */
   .add-subject-modal-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
+    margin-top: 50px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .add-subject-modal-buttons button{
+    font-size: 10px;
   }
   
   /* Save Button */
@@ -74,8 +87,7 @@
     color: white;
     border: none;
     padding: 10px 0;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease-in-out;
@@ -93,8 +105,6 @@
     color: #333;
     border: none;
     padding: 10px 0;
-    font-size: 14px;
-    font-weight: 500;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease-in-out;

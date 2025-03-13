@@ -17,10 +17,10 @@ const AddSubjectModal = ({ isOpen, onClose }) => {
       >
         <h2>Add Subject</h2>
         <form>
-          <label>Subject Name:</label>
+          <label>Subject Name </label>
           <input type="text" placeholder="Enter subject name" required />
 
-          <label>Subject Details:</label>
+          <label>Subject Details</label>
           <input type="text" placeholder="Enter a related tags" required />
 
 
