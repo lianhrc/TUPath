@@ -26,6 +26,7 @@ const TupathUserSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  deletedAt: { type: Date, default: null },
   role: { type: String, default: 'student' },
   profileDetails: {
     firstName: String,
@@ -58,7 +59,8 @@ const TupathUserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, // Defaults to current date when a user is created
   }
-}, { timestamps: true }); // This will add createdAt and updatedAt automatically
+}, 
+{ timestamps: true }); // This will add createdAt and updatedAt automatically
 
 TupathUserSchema.methods.calculateBestTag = async function () {
   try {
@@ -155,6 +157,7 @@ const EmployerUserSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  deletedAt: { type: Date, default: null },
   role: { type: String, default: 'employer' },
   profileDetails: {
     firstName: String,
