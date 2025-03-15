@@ -25,7 +25,7 @@ function Login() {
     const handleGoogleLogin = async (response) => {
         try {
             const googleToken = response.credential;
-            const res = await axiosInstance.post('/google-login', { token: googleToken, role });
+            const res = await axiosInstance.post('/api/google-login', { token: googleToken, role });
             if (res.data.success) {
                 localStorage.setItem('token', res.data.token);
                 const redirectPath = res.data.redirectPath || '/homepage';
@@ -45,7 +45,7 @@ function Login() {
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
-            const response = await axiosInstance.post('/login', { email, password, role });
+            const response = await axiosInstance.post('/api/login', { email, password, role });
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
                 const redirectPath = response.data.redirectPath || '/homepage';

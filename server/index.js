@@ -74,7 +74,7 @@ app.use('/', adminDelete);
 app.use('/', checkAuth);
 app.use('/', adminLogout);
 app.use('/', corRoutes);
-app.use('/', authRoute); // Use the auth routes
+app.use('/api', authRoute); // Use the auth routes
 
 // Middleware for setting COOP headers
 app.use((req, res, next) => {

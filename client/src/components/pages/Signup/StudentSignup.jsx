@@ -23,7 +23,7 @@ function StudentSignup() {
         }
     
         try {
-            const response = await axiosInstance.post('/studentsignup', {
+            const response = await axiosInstance.post('/api/studentsignup', {
                 // firstName,
                 // lastName,
                 email,
@@ -47,7 +47,7 @@ function StudentSignup() {
         const role = "student"; // Explicitly define the role
     
         try {
-            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
+            const res = await axiosInstance.post('/api/google-signup', { token: googleToken, role });
     
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');

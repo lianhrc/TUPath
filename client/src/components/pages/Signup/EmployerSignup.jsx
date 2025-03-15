@@ -22,7 +22,7 @@ function EmployerSignup() {
         }
     
         try {
-            const response = await axiosInstance.post('/employersignup', {
+            const response = await axiosInstance.post('/api/employersignup', {
                 // firstName,
                 // lastName,
                 email,
@@ -46,7 +46,7 @@ function EmployerSignup() {
         const role = "employer"; // Define the role explicitly
     
         try {
-            const res = await axiosInstance.post('/google-signup', { token: googleToken, role });
+            const res = await axiosInstance.post('/api/google-signup', { token: googleToken, role });
     
             if (res.data.message === 'Account already exists. Please log in.') {
                 setMessage('Account already exists. Please log in.');
