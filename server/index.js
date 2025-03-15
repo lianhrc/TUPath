@@ -26,7 +26,7 @@ const corRoutes = require("./routes/corRoutes");
 
 const checkAuth = require('./middleware/authv2')
 const adminLogout = require('./routes/adminLogout')
-const authRoutes = require("./routes/authRoutes"); // Add the auth routes
+const authRoute = require("./routes/authRoute"); // Add the auth routes
 
 // Environment variables
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -74,7 +74,7 @@ app.use('/', adminDelete);
 app.use('/', checkAuth);
 app.use('/', adminLogout);
 app.use('/', corRoutes);
-app.use('/', authRoutes); // Use the auth routes
+app.use('/', authRoute); // Use the auth routes
 
 // Middleware for setting COOP headers
 app.use((req, res, next) => {
