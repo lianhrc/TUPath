@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../../services/axiosInstance";
 import "./ProjectAssessmentModal.css";
 
@@ -9,10 +9,16 @@ const subjects = [
   { code: "CC104", name: "Database Management" },
 ];
 
-const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
-  const [selectedSubject, setSelectedSubject] = useState("");
+const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselectedSubject }) => {
+  const [selectedSubject, setSelectedSubject] = useState(preselectedSubject || "");
   const [grade, setGrade] = useState("");
   const [ratingSlip, setRatingSlip] = useState(null);
+
+  useEffect(() => {
+    if (preselectedSubject) {
+      setSelectedSubject(preselectedSubject);
+    }
+  }, [preselectedSubject]);
 
   if (!show) return null;
 
@@ -31,20 +37,19 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
     formData.append("subject", selectedSubject);
     formData.append("grade", grade);
     if (ratingSlip) {
-      formData.append("ratingSlip", ratingSlip); // <-- Append ratingSlip instead of corFile
+      formData.append("ratingSlip", ratingSlip);
     }
 
     try {
       const response = await axiosInstance.post("/api/saveAssessment", {
         subject: selectedSubject,
         grade: grade,
-        ratingSlip: ratingSlip ? ratingSlip.name : null, // Only send filename if provided
+        ratingSlip: ratingSlip ? ratingSlip.name : null,
       });
-      
 
       if (response.data.success) {
         onAssessmentSubmit({ subjectCode: selectedSubject, grade, ratingSlip });
-        onClose(); // Redirect back to ProjectUpModal
+        onClose();
       } else {
         alert("Failed to save assessment. Please try again.");
       }
@@ -61,7 +66,12 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
         <p>Please select a subject and input your grade:</p>
 
         <label>Subject:</label>
-        <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} required>
+        <select 
+          value={selectedSubject} 
+          onChange={(e) => setSelectedSubject(e.target.value)} 
+          required 
+          disabled={!!preselectedSubject}
+        >
           <option value="">Select Subject</option>
           {subjects.map((subject) => (
             <option key={subject.code} value={subject.code}>
@@ -93,11 +103,11 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
         </select>
         
 
-        <label>Attach COR if available:</label>
+        <label>Attach Rating Slip (if available):</label>
         <input
           type="file"
           accept=".zip,.rar,.pdf,.docx,.jpg,.png"
-          onChange={(e) => setCorFile(e.target.files[0])}
+          onChange={(e) => setRatingSlip(e.target.files[0])}
         />
 
         <div className="assessment-buttons">

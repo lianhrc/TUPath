@@ -96,10 +96,22 @@ const ProjectUploadModal = ({ show, onClose}) => {
     }
   };
 
-  const handleTagSelect = (e) => {
+  const handleTagSelect = async (e) => {
     const selectedTag = e.target.value;
     setTag(selectedTag);
-  };
+
+    try {
+        const response = await axiosInstance.get(`/api/getSubjectByTag?tag=${selectedTag}`);
+        if (response.data.success) {
+            setSelectedSubject(response.data.subjectCode); // Auto-fill subject
+        } else {
+            setSelectedSubject(""); // Reset subject if no mapping found
+        }
+    } catch (error) {
+        console.error("Error fetching subject:", error);
+    }
+};
+
 
   const handleToolSelect = (e) => {
     const selectedTool = e.target.value;
@@ -377,6 +389,7 @@ const ProjectUploadModal = ({ show, onClose}) => {
         show={showAssessmentModal}
         onClose={() => setShowAssessmentModal(false)}
         onAssessmentSubmit={handleAssessmentSubmit}
+        preselectedSubject={selectedSubject} // Pass the subject
         />
       )}
     </>
