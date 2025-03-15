@@ -6,7 +6,7 @@ const express = require("express");
   const axios = require("axios");
   const http = require("http");
   const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
+  const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping} = require("./models/Tupath_users");
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   const cookieParser = require('cookie-parser');
@@ -1735,6 +1735,22 @@ app.get("/api/topStudentsByTag", async (req, res) => {
   } catch (error) {
       console.error("Error fetching top students:", error);
       res.status(500).json({ message: "Server error", error });
+  }
+});
+
+app.get("/api/getSubjectByTag", async (req, res) => {
+  try {
+      const { tag } = req.query;
+      const mapping = await SubjectTagMapping.findOne({ tag });
+
+      if (!mapping) {
+          return res.status(404).json({ success: false, message: "No subject found for this tag." });
+      }
+
+      res.json({ success: true, subjectCode: mapping.subjectCode });
+  } catch (error) {
+      console.error("Error fetching subject:", error);
+      res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
