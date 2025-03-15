@@ -12,9 +12,7 @@ const crypto = require("crypto");
 const cookieParser = require('cookie-parser');
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-//pushin purposes
-require('dotenv').config()
-
+require('dotenv').config();
 
 const adminsignup = require("./routes/adminsignup");
 const adminLogin = require("./routes/adminLogin");
@@ -29,9 +27,16 @@ const corRoutes = require("./routes/corRoutes");
 const checkAuth = require('./middleware/authv2')
 const adminLogout = require('./routes/adminLogout')
 
-
-const JWT_SECRET = "your-secret-key";
-const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
+// Environment variables
+const JWT_SECRET = process.env.JWT_SECRET;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_URL = process.env.CLIENT_URL;
+const PORT = process.env.PORT || 3001;
+const MONGO_URI = process.env.MONGO_URI;
+const MONGO_LOCAL_URI = process.env.MONGO_LOCAL_URI;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const app = express();
 const server = http.createServer(app);
@@ -39,24 +44,24 @@ const multer = require("multer");
 const path = require("path");
 
 // Middleware setup
-app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
+app.use(cors({ origin: CLIENT_URL, credentials: true })); // Use environment variable for CORS
 app.use('/uploads', express.static('uploads'));
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use('/cor', express.static('cor'));
 
-app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 app.use(session({
-  secret: "your_secret_key",
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/tupath_users" }), // Persistent session storage
+  store: MongoStore.create({ mongoUrl: MONGO_URI || MONGO_LOCAL_URI }),
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
-//ROUTES
 
+// ROUTES
 app.use('/', users);
 app.use('/', adminsignup);
 app.use('/', adminLogin);
@@ -69,7 +74,6 @@ app.use('/', checkAuth);
 app.use('/', adminLogout);
 app.use('/', corRoutes);
 
-
 // Middleware for setting COOP headers
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups'); // Added COOP header
@@ -77,22 +81,9 @@ app.use((req, res, next) => {
   next();
 });
 
-
-/*
-
-
-   // MongoDB connection
-    mongoose
-     .connect("mongodb://127.0.0.1:27017/tupath_users")
-      .then(() => console.log("MongoDB connected successfully"))
-     .catch((err) => console.error("MongoDB connection error:", err));
-
-*/
-
-mongoose.connect(
-  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
-)
-  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+// Connect to MongoDB using environment variables
+mongoose.connect(MONGO_URI || MONGO_LOCAL_URI)
+  .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Configure multer for file uploads
@@ -110,8 +101,6 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
 });
 
-
-// JWT verification middleware
 // JWT verification middleware with added debugging and error handling
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -137,11 +126,10 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: CLIENT_URL,
     methods: ["GET", "POST"],
   },
 });
@@ -192,7 +180,6 @@ app.get('/api/userss', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
 
 // REST endpoint to fetch chat messages
 app.get("/api/messages", verifyToken, async (req, res) => {
@@ -337,7 +324,6 @@ app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res
   }
 });
 
-
 // Edit a comment on a post
 app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
   const userId = req.user.id; // Extract userId from the verified token
@@ -382,7 +368,6 @@ app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) =
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
 
 // Increment upvotes for a post
 app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
@@ -468,8 +453,6 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
-
-
 // Create a new post
 app.post("/api/posts", verifyToken, async (req, res) => {
   const userId = req.user.id; // Extract userId from the verified token
@@ -498,8 +481,6 @@ app.post("/api/posts", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
-
 
 // update a post
 app.put("/api/posts/:postId", verifyToken, async (req, res) => {
@@ -535,7 +516,6 @@ app.put("/api/posts/:postId", verifyToken, async (req, res) => {
   }
 });
 
-
 // delete a post with soft delete 
 app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
   const userId = req.user.id; // Extract userId from the verified token
@@ -568,9 +548,6 @@ app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error", error: err.message });
   }
 });
-
-
-
 
 // Socket.IO events for real-time chat and certificates
 io.on("connection", (socket) => {
@@ -741,8 +718,6 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
   }
 });
 
-
-
 // Endpoint to fetch profile data for a specific user including projects and certificates
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
@@ -782,7 +757,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
 
 // Login endpoint
 app.post("/login", async (req, res) => {
@@ -867,10 +841,6 @@ app.post("/google-signup", async (req, res) => {
   }
 });
 
-
-
-
-
 // Google login endpoint
 app.post("/google-login", async (req, res) => {
   const { token, role } = req.body;
@@ -943,7 +913,6 @@ app.post("/studentsignup", async (req, res) => {
   }
 });
 
-
 // Employer signup endpoint
 app.post("/employersignup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -978,8 +947,6 @@ app.post("/employersignup", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
-
 
 //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
@@ -1149,50 +1116,6 @@ app.get('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
-
-
-/*app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
-   try {
-       const userId = req.user.id;
-
-       // Validate if file exists
-       if (!req.file) {
-           return res.status(400).json({ success: false, message: "No file uploaded" });
-       }
-
-       const profileImgPath = `/uploads/${req.file.filename}`;
-       console.log("Uploaded file path:", profileImgPath); // Debugging
-
-       // Update for both student and employer models
-       const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
-           userId,
-           { $set: { "profileDetails.profileImg": profileImgPath } },
-           { new: true }
-       );
-
-       const updatedEmployer = await Employer_usersModel.findByIdAndUpdate(
-           userId,
-           { $set: { "profileDetails.profileImg": profileImgPath } },
-           { new: true }
-       );
-
-       // If no user was updated, return an error
-       if (!updatedStudent && !updatedEmployer) {
-           console.log("User not found for ID:", userId); // Debugging
-           return res.status(404).json({ success: false, message: "User not found" });
-       }
-
-       res.status(200).json({
-           success: true,
-           message: "Profile image uploaded successfully",
-           profileImg: profileImgPath,
-       });
-   } catch (error) {
-       console.error("Error uploading profile image:", error);
-       res.status(500).json({ success: false, message: "Internal server error" });
-   }
- });
- */
 // api upload image endpoint
 app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
@@ -1300,65 +1223,6 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
   }
 });
 
-
-/* //BACKUP LATEST API
-
-  app.post("/api/uploadProject", verifyToken, upload.fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "selectedFiles", maxCount: 10 },
-    { name: "ratingSlip", maxCount: 1 }
-  ]), async (req, res) => {
-    try {
-      console.log("Received project upload request with data:", req.body);
-      console.log("Session before accessing assessmentData:", req.session);
-  
-      // Retrieve saved subject & grade from session
-      const { subject, grade, ratingSlip } = req.session.assessmentData || {};
-  
-      console.log("Extracted assessment data from session:", { subject, grade, ratingSlip });
-  
-      if (!subject || !grade) {
-        console.error("Missing subject or grade in session.");
-        return res.status(400).json({ success: false, message: "Missing required fields." });
-      }
-  
-      const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-      const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-      const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
-  
-      const newProject = new Project({
-        projectName: req.body.projectName,
-        description: req.body.description,
-        tag: req.body.tag,
-        tools: req.body.tools,
-        projectUrl: req.body.projectUrl,
-        roles: req.body.roles,
-        subject,
-        grade,
-        ratingSlip: ratingSlipPath, // <-- Save ratingSlip instead of corFile
-        status: "pending",
-        thumbnail,
-        selectedFiles
-      });
-  
-      await newProject.save();
-  
-      // Clear session after successful save
-      delete req.session.assessmentData;
-  
-      console.log("Project successfully saved:", newProject);
-  
-      res.status(201).json({ success: true, project: newProject });
-    } catch (error) {
-      console.error("Error saving project:", error);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-  });
-  
-*/
-
 app.get("/api/projects", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -1437,9 +1301,6 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
   }
 });
 
-
-
-
 // Endpoint for uploading certificate photos
 app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
   try {
@@ -1497,7 +1358,6 @@ app.get('/api/search', verifyToken, async (req, res) => {
   }
 });
 
-
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
@@ -1517,7 +1377,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
 
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
@@ -1566,8 +1425,6 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
 //----------------------------------------------------DECEMBER 13
 // Step 1: Add a reset token field to the user schemas
 
-
-
 // Step 2: Endpoint to request password reset
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
@@ -1583,16 +1440,16 @@ app.post("/api/forgot-password", async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // Token valid for 1 hour
     await user.save();
 
-    // Send email
+    // Send email with environment variables
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "woojohnhenry2@gmail.com",
-        pass: "efqk hxyw jpeq sndo",
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
       },
     });
 
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetLink = `${CLIENT_URL}/reset-password/${resetToken}`;
     const mailOptions = {
       to: user.email,
       from: "no-reply@yourdomain.com",
@@ -1689,17 +1546,7 @@ app.post('/api/admin/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
-
-
-
-
-
-
-
-
-
 // NEW API- HIWALAY KO LANG KASI BABAKLASIN KO TO
-
 
 app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
   try {
@@ -1735,11 +1582,7 @@ app.get("/api/topStudentsByTag", async (req, res) => {
   }
 });
 
-
-
-
-// Server setup
-const PORT = process.env.PORT || 3001;
+// Server setup using environment variable PORT
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
