@@ -438,8 +438,13 @@ const Post = mongoose.model("Post", postSchema);
 // Get all non-deleted posts with non-deleted comments
 app.get("/api/posts", async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 5; // Default limit is 5 posts
+    const skip = parseInt(req.query.skip) || 0;  // Default skip is 0
+    
     const posts = await Post.find({ deletedAt: null }) // Exclude soft-deleted posts
       .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean(); // Convert to a plain JavaScript object for manipulation
 
     // Filter out soft-deleted comments
@@ -448,7 +453,15 @@ app.get("/api/posts", async (req, res) => {
       comments: post.comments.filter(comment => !comment.deletedAt), // Only include non-deleted comments
     }));
 
-    res.json(filteredPosts);
+    // Check if there are more posts available
+    const total = await Post.countDocuments({ deletedAt: null });
+    const hasMore = total > skip + posts.length;
+
+    res.json({
+      posts: filteredPosts,
+      hasMore,
+      total
+    });
   } catch (err) {
     console.error("Error fetching posts:", err);
     res.status(500).json({ success: false, message: "Internal server error" });

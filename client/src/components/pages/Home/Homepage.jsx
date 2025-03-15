@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Homepage.css';
@@ -19,6 +19,9 @@ const socket = io('http://localhost:3001');
 
 const Homepage = () => {
   const [postsData, setPostsData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [profileData, setProfileData] = useState({
     firstName: '',
     middleName: '',
@@ -32,6 +35,22 @@ const Homepage = () => {
     industry: '',
     role: '',
   });
+
+  // Observer for infinite scrolling
+  const observer = useRef();
+  const lastPostElementRef = useCallback(node => {
+    if (loading) return;
+    
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePosts();
+      }
+    }, { threshold: 0.5 });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
 
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
@@ -90,19 +109,35 @@ const Homepage = () => {
     }
   };
 
-  const fetchPostsData = async () => {
+  const fetchPostsData = async (skipCount = 0) => {
     try {
-      const response = await fetch('http://localhost:3001/api/posts');
+      setLoading(true);
+      const response = await fetch(`http://localhost:3001/api/posts?limit=5&skip=${skipCount}`);
       const data = await response.json();
-      const updatedPosts = data.map((post) => ({
+      
+      const updatedPosts = data.posts.map((post) => ({
         ...post,
         showComments: false,
       }));
-
-      setPostsData(updatedPosts);
+      
+      if (skipCount === 0) {
+        setPostsData(updatedPosts);
+      } else {
+        setPostsData(prevPosts => [...prevPosts, ...updatedPosts]);
+      }
+      
+      setHasMore(data.hasMore);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setLoading(false);
     }
+  };
+  
+  const loadMorePosts = () => {
+    const nextPage = page + 1;
+    fetchPostsData(nextPage * 5); // 5 posts per page
+    setPage(nextPage);
   };
 
   useEffect(() => {
@@ -223,6 +258,7 @@ const Homepage = () => {
           handleClosePopup();
           setNewPostContent('');
           setNewPostImage(null);
+          fetchPostsData(); // Refresh posts after adding a new one
         } else {
           toast.error("Failed to add post. Please try again.");  // Error toast
           setPostSuccess(false); // Indicate post failed
@@ -318,7 +354,11 @@ const Homepage = () => {
     const hasUpvoted = post.votedUsers.includes(userId);
   
     return (
-      <div className="post" key={post._id || index}>
+      <div 
+        className="post" 
+        key={post._id || index}
+        ref={index === postsData.length - 1 ? lastPostElementRef : null}
+      >
         <div className="toppostcontent">
           <div className="topleftpostcontent">
             <img
@@ -455,6 +495,19 @@ const Homepage = () => {
           </div>
         )}
           {postsData.map(renderPost)}
+          
+          {loading && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading more posts...</p>
+            </div>
+          )}
+          
+          {!hasMore && postsData.length > 0 && (
+            <div className="no-more-posts">
+              <p>No more posts to load</p>
+            </div>
+          )}
         </main>
       </div>
       <Messagepop />
