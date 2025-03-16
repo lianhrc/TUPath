@@ -2,23 +2,31 @@ import React, { useState, useEffect } from "react";
 import axiosInstance from "../../services/axiosInstance";
 import "./ProjectAssessmentModal.css";
 
-const subjects = [
-  { code: "CC101", name: "Computer Programming 1" },
-  { code: "CC102", name: "Computer Programming 2" },
-  { code: "CC103", name: "Data Structures" },
-  { code: "CC104", name: "Database Management" },
-];
+const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselectedTag, availableSubjects }) => {
 
-const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselectedSubject }) => {
-  const [selectedSubject, setSelectedSubject] = useState(preselectedSubject || "");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [grade, setGrade] = useState("");
   const [ratingSlip, setRatingSlip] = useState(null);
 
   useEffect(() => {
-    if (preselectedSubject) {
-      setSelectedSubject(preselectedSubject);
+    if (preselectedTag) {
+      fetchSubjects(preselectedTag);
     }
-  }, [preselectedSubject]);
+  }, [preselectedTag]);
+
+  const fetchSubjects = async (tag) => {
+    try {
+        const response = await axiosInstance.get(`/api/getSubjectByTag?tag=${tag}`);
+        console.log("Subjects Fetched:", response.data); // Debugging
+        if (response.data.success) {
+            setAvailableSubjects(response.data.subjects);
+        } else {
+            setAvailableSubjects([]);
+        }
+    } catch (error) {
+        console.error("Error fetching subjects:", error);
+    }
+};
 
   if (!show) return null;
 
@@ -66,19 +74,23 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselected
         <p>Please select a subject and input your grade:</p>
 
         <label>Subject:</label>
-        <select 
-          value={selectedSubject} 
-          onChange={(e) => setSelectedSubject(e.target.value)} 
-          required 
-          disabled={!!preselectedSubject}
-        >
-          <option value="">Select Subject</option>
-          {subjects.map((subject) => (
-            <option key={subject.code} value={subject.code}>
-              {subject.code} - {subject.name}
-            </option>
-          ))}
-        </select>
+          {availableSubjects.length > 0 ? (
+            <select 
+                value={selectedSubject} 
+                onChange={(e) => setSelectedSubject(e.target.value)} 
+                required
+            >
+                <option value="">Select Subject</option>
+                {availableSubjects.map((subject) => (
+                    <option key={subject.subjectCode} value={subject.subjectCode}>
+                        {subject.subjectCode} - {subject.subjectName}
+                    </option>
+                ))}
+            </select>
+          ) : (
+            <p>No subjects available for the selected tag.</p>
+          )}
+
 
         <label htmlFor="finalGrade">Final Grade:</label>
         <select
