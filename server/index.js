@@ -1743,16 +1743,17 @@ app.get("/api/getSubjectByTag", async (req, res) => {
       const { tag } = req.query;
       const mapping = await SubjectTagMapping.findOne({ tag });
 
-      if (!mapping) {
-          return res.status(404).json({ success: false, message: "No subject found for this tag." });
+      if (!mapping || !mapping.subjects.length) {
+          return res.json({ success: false, message: "No subjects found for this tag." });
       }
 
-      res.json({ success: true, subjectCode: mapping.subjectCode });
+      res.json({ success: true, subjects: mapping.subjects });
   } catch (error) {
-      console.error("Error fetching subject:", error);
+      console.error("Error fetching subjects:", error);
       res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 

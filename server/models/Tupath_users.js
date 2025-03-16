@@ -235,9 +235,13 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 
 
 const SubjectTagMappingSchema = new mongoose.Schema({
-    tag: { type: String, required: true, unique: true }, // Project Tag
-    subjectCode: { type: String, required: true }, // Mapped Subject Code
-    subjectName: { type: String, required: true } // Subject Name
+  tag: { type: String, required: true, unique: true }, // Project Tag
+  subjects: [
+      {
+          subjectCode: { type: String, required: true },
+          subjectName: { type: String, required: true }
+      }
+  ]
 });
 
 

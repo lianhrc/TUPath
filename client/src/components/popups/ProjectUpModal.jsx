@@ -51,26 +51,9 @@ const ProjectUploadModal = ({ show, onClose}) => {
   const thumbnailInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    const fetchAssessmentData = async () => {
-      try {
-        const response = await axiosInstance.get("/api/getSavedAssessment");
-        if (response.data.success) {
-          setSelectedSubject(response.data.subject);
-          setGrade(response.data.grade);
-        }
-      } catch (error) {
-        console.error("Error fetching saved assessment:", error);
-      }
-    };
-  
-    if (show) {
-      fetchAssessmentData();
-    }
-  }, [show]);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
 
-  
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!projectName.trim() || !description.trim() || !tag) {
@@ -100,17 +83,30 @@ const ProjectUploadModal = ({ show, onClose}) => {
     const selectedTag = e.target.value;
     setTag(selectedTag);
 
-    try {
-        const response = await axiosInstance.get(`/api/getSubjectByTag?tag=${selectedTag}`);
-        if (response.data.success) {
-            setSelectedSubject(response.data.subjectCode); // Auto-fill subject
-        } else {
-            setSelectedSubject(""); // Reset subject if no mapping found
-        }
-    } catch (error) {
-        console.error("Error fetching subject:", error);
-    }
 };
+
+useEffect(() => {
+  if (tag) {
+    fetchSubjectsForTag(tag);
+  }
+}, [tag]);
+
+const fetchSubjectsForTag = async (selectedTag) => {
+  try {
+    const response = await axiosInstance.get(`/api/getSubjectByTag?tag=${selectedTag}`);
+    console.log("Subjects Fetched:", response.data);
+    if (response.data.success) {
+      setAvailableSubjects(response.data.subjects);
+      setSelectedSubject(response.data.subjects.length === 1 ? response.data.subjects[0].subjectCode : "");
+    } else {
+      setAvailableSubjects([]);
+      setSelectedSubject("");
+    }
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+  }
+};
+
 
 
   const handleToolSelect = (e) => {
@@ -389,7 +385,7 @@ const ProjectUploadModal = ({ show, onClose}) => {
         show={showAssessmentModal}
         onClose={() => setShowAssessmentModal(false)}
         onAssessmentSubmit={handleAssessmentSubmit}
-        preselectedSubject={selectedSubject} // Pass the subject
+        availableSubjects={availableSubjects} // ✅ Pass subjects
         />
       )}
     </>
