@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import _debounce from "lodash.debounce";
 import axiosInstance from "../../../services/axiosInstance";
-import profileicon from "../../../assets/profileicon.png";
-import HeaderHomepage from "../../../components/common/headerhomepage"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
+import HeaderHomepage from "../../../components/common/headerhomepage";
 import AddSubjectModal from "../../popups/AddSubjectModal";
 import '../../../components/common/headerhomepage.css';
 import "./client_Dashboard.css";
@@ -11,86 +10,62 @@ import "./client_Dashboard.css";
 const Client_Dashboard = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [subjects, setSubjects] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [tag, setTag] = useState("Web Development");
 
-  const studentsData = {
-    "Computer Programming I": [
-      { name: "Alejandro O. Horca", grade: "1.00" },
-      { name: "Yujin Dela Fuente", grade: "1.25" },
-      { name: "John Henry Woo", grade: "1.25" },
-      { name: "Mario Lealiga", grade: "1.50" },
-      { name: "Katrina Mendoza", grade: "1.75" },
-    ],
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await axiosInstance.get("/api/getSubjectByTag", { params: { tag } });
+        setSubjects(response.data.success ? response.data.subjects : []);
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+        setSubjects([]);
+      }
+    };
+    fetchSubjects();
+  }, [tag]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await axiosInstance.get("/api/students-by-tag", { params: { tag } });
+        setStudents(response.data.success ? response.data.students : []);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        setStudents([]);
+      }
+    };
+    fetchStudents();
+  }, [tag]);
+
+  const sortedStudents = [...students].sort((a, b) => parseFloat(b.bestTagScores) - parseFloat(a.bestTagScores));
+
+  const gradeColors = {
+    "1.00": "#4CAF50", "1.25": "#8BC34A", "1.50": "#CDDC39", "1.75": "#FFC107",
+    "2.00": "#FF9800", "2.25": "#FF5722", "2.50": "#F44336", "2.75": "#E91E63",
+    "3.00": "#9C27B0", "5.00": "#607D8B"
   };
-
-  const subjects = [
-    "Introduction to Computing",
-    "Computer Programming 1",
-    "Computer Programming 2",
-    "Science, Technology, and Society",
-    "Human-Computer Interaction",
-    "Data Structures and Algorithms",
-    "Ethics",
-    "Object-Oriented Programming",
-    "Computer Architecture and Organization",
-    "Platform Technologies",
-    "Information Management",
-    "Applications Development and Emerging Technologies",
-    "Programming Language (Design and Implementation)",
-    "Computer Networking 1",
-    "Multimedia Authoring & Production",
-    "IT Professional Elective",
-    "Web Development",
-    "Computer Networking 2",
-    "Advanced Database Systems",
-    "Information Assurance and Security 1",
-    "Information Assurance and Security 2",
-    "Systems Integration and Architecture 1",
-    "Systems Integration and Architecture 2",
-    "Methods of Research in Computing",
-    "Living in the IT Era",
-    "Business Intelligence",
-    "Systems Administration and Maintenance",
-    "The Entrepreneurial Mind",
-    "IT Capstone & Research 1",
-    "IT Capstone & Research 2",
-    "Social and Professional Issues",
-    "Combinatorics and Graph Theory",
-    "Operating Systems",
-    "Design and Analysis of Algorithms",
-    "Networks and Communications",
-    "Data Analytics",
-    "Software Engineering 1",
-    "Software Engineering 2",
-    "Parallel and Distributed Computing",
-    "Automata Theory and Formal Language",
-    "Artificial Intelligence",
-    "Modeling and Simulation",
-    "IS Project Management",
-    "IS Strategy, Management, and Acquisition",
-    "Enterprise Architecture",
-    "Professional Issues in Information Systems",
-  ];
 
   return (
     <div className="cd_dashboard-container">
       <HeaderHomepage />
       <aside className="cd_sidebar">
         <div className="cd_subjects-container">
-          <div>
-            {subjects.map((subject, index) => (
-              <div key={index}>
-                <input
-                  type="radio"
-                  id={`subject-${index}`}
-                  name="subject"
-                  value={subject}
-                  checked={selectedSubject === subject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                />
-                <label htmlFor={`subject-${index}`}>{subject}</label>
-              </div>
-            ))}
-          </div>
+          {subjects.map((subject, index) => (
+            <div key={index}>
+              <input
+                type="radio"
+                id={`subject-${index}`}
+                name="subject"
+                value={subject.subjectName}
+                checked={selectedSubject === subject.subjectName}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              />
+              <label htmlFor={`subject-${index}`}>{subject.subjectName}</label>
+            </div>
+          ))}
         </div>
       </aside>
 
@@ -108,8 +83,7 @@ const Client_Dashboard = () => {
               <div className="boxheadercd">BSCS</div>7
             </div>
             <div className="div3box">
-              <div className="boxheadercd">BSIS</div>
-              10
+              <div className="boxheadercd">BSIS</div>10
             </div>
           </div>
 
@@ -120,29 +94,53 @@ const Client_Dashboard = () => {
               <AddSubjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             </div>
             {selectedSubject ? (
-              <table className="cd_grades-container">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Grade</th>
-    </tr>
-  </thead>
-  <tbody>
-    {[
-      { name: "Alejandro O. Horca", grade: "1.00" },
-      { name: "Yujin Dela Fuente", grade: "1.25" },
-      { name: "John Henry Woo", grade: "1.25" },
-      { name: "Mario Lealiga", grade: "1.50" },
-      { name: "Katrina Mendoza", grade: "1.75" }
-    ].map((student, index) => (
-      <tr key={index}>
-        <td>{student.name}</td>
-        <td>{student.grade}</td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+              <>
+                <table className="cd_grades-container">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Name</th>
+                      <th>Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedStudents.map((student, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{`${student.profileDetails?.firstName} ${student.profileDetails?.lastName}`}</td>
+                        <td>{student.bestTagScores}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="cd_chart-container">
+                  <h3>Grade Analytics</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={sortedStudents} layout="vertical">
+                      <XAxis type="number" domain={[1, 5]} allowDecimals={false} />
+                      <YAxis dataKey="profileDetails.firstName" type="category" width={150} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="bestTagScores" fill="#8884d8">
+                        {sortedStudents.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={gradeColors[entry.bestTagScores] || "#8884d8"} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="cd_legend-container">
+                    <h4>Legend</h4>
+                    <ul>
+                      {Object.entries(gradeColors).map(([grade, color]) => (
+                        <li key={grade} style={{ color: color }}>
+                          <span style={{ backgroundColor: color, display: "inline-block", width: "15px", height: "15px", marginRight: "5px" }}></span>
+                          Grade {grade}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </>
             ) : (
               <p>Please select a subject to view the grades.</p>
             )}
