@@ -52,21 +52,26 @@ const Client_Dashboard = () => {
     <div className="cd_dashboard-container">
       <HeaderHomepage />
       <aside className="cd_sidebar">
-        <div className="cd_subjects-container">
-          {subjects.map((subject, index) => (
-            <div key={index}>
-              <input
-                type="radio"
-                id={`subject-${index}`}
-                name="subject"
-                value={subject.subjectName}
-                checked={selectedSubject === subject.subjectName}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              />
-              <label htmlFor={`subject-${index}`}>{subject.subjectName}</label>
-            </div>
-          ))}
-        </div>
+        <h3>Subjects</h3>
+        {subjects.length > 0 ? (
+          <div className="cd_subjects-container">
+            {subjects.map((subject, index) => (
+              <div key={index}>
+                <input
+                  type="radio"
+                  id={`subject-${index}`}
+                  name="subject"
+                  value={subject.subjectName}
+                  checked={selectedSubject === subject.subjectName}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                />
+                <label htmlFor={`subject-${index}`}>{subject.subjectName}</label>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No subjects found for this tag.</p>
+        )}
       </aside>
 
       <main className="cd_main-content">
@@ -76,15 +81,9 @@ const Client_Dashboard = () => {
           </div>
 
           <div className="section3boxes">
-            <div className="div1box">
-              <div className="boxheadercd">BSIT</div>5
-            </div>
-            <div className="div2box">
-              <div className="boxheadercd">BSCS</div>7
-            </div>
-            <div className="div3box">
-              <div className="boxheadercd">BSIS</div>10
-            </div>
+            <div className="div1box"><div className="boxheadercd">BSIT</div>5</div>
+            <div className="div2box"><div className="boxheadercd">BSCS</div>7</div>
+            <div className="div3box"><div className="boxheadercd">BSIS</div>10</div>
           </div>
 
           <div className="cd_grades-container">

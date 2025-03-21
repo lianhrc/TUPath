@@ -1737,19 +1737,23 @@ app.get("/api/topStudentsByTag", async (req, res) => {
 
 app.get("/api/getSubjectByTag", async (req, res) => {
   try {
-      const { tag } = req.query;
-      const mapping = await SubjectTagMapping.findOne({ tag });
+    const { tag } = req.query;
 
-      if (!mapping || !mapping.subjects.length) {
-          return res.json({ success: false, message: "No subjects found for this tag." });
-      }
+    // Find the mapping document by tag
+    const mapping = await SubjectTagMapping.findOne({ tag });
 
-      res.json({ success: true, subjects: mapping.subjects });
+    if (!mapping || !mapping.subjects || mapping.subjects.length === 0) {
+      return res.json({ success: false, message: "No subjects found for this tag." });
+    }
+
+    // Return subjects as an array of objects
+    res.json({ success: true, subjects: mapping.subjects });
   } catch (error) {
-      console.error("Error fetching subjects:", error);
-      res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error fetching subjects:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 
