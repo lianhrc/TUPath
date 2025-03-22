@@ -7,12 +7,19 @@ import AddSubjectModal from "../../popups/AddSubjectModal";
 import '../../../components/common/headerhomepage.css';
 import "./client_Dashboard.css";
 
+const TAGS = [
+  "Web Development",
+  "Software Development and Applications",
+  "Data Science",
+  "Database Systems"
+];
+
 const Client_Dashboard = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
-  const [tag, setTag] = useState("Web Development");
+  const [tag, setTag] = useState(TAGS[0]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -40,7 +47,12 @@ const Client_Dashboard = () => {
     fetchStudents();
   }, [tag]);
 
-  const sortedStudents = [...students].sort((a, b) => parseFloat(b.bestTagScores) - parseFloat(a.bestTagScores));
+  const sortedStudents = [...students]
+    .map(student => ({
+      ...student,
+      grade: parseFloat(student.bestTagScores?.[tag]) || 0
+    }))
+    .sort((a, b) => a.grade - b.grade);
 
   const gradeColors = {
     "1.00": "#4CAF50", "1.25": "#8BC34A", "1.50": "#CDDC39", "1.75": "#FFC107",
@@ -52,6 +64,10 @@ const Client_Dashboard = () => {
     <div className="cd_dashboard-container">
       <HeaderHomepage />
       <aside className="cd_sidebar">
+        <h3>Tags</h3>
+        {TAGS.map((t) => (
+          <button key={t} onClick={() => setTag(t)} className={tag === t ? "active" : ""}>{t}</button>
+        ))}
         <h3>Subjects</h3>
         {subjects.length > 0 ? (
           <div className="cd_subjects-container">
@@ -107,7 +123,7 @@ const Client_Dashboard = () => {
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{`${student.profileDetails?.firstName} ${student.profileDetails?.lastName}`}</td>
-                        <td>{student.bestTagScores}</td>
+                        <td>{student.grade || "N/A"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -116,28 +132,17 @@ const Client_Dashboard = () => {
                   <h3>Grade Analytics</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={sortedStudents} layout="vertical">
-                      <XAxis type="number" domain={[1, 5]} allowDecimals={false} />
+                      <XAxis type="number" domain={[0, 5]} allowDecimals={false} ticks={[0, 1, 2, 3, 4, 5]} />
                       <YAxis dataKey="profileDetails.firstName" type="category" width={150} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="bestTagScores" fill="#8884d8">
+                      <Bar dataKey="grade">
                         {sortedStudents.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={gradeColors[entry.bestTagScores] || "#8884d8"} />
+                          <Cell key={`cell-${index}`} fill={gradeColors[entry.grade.toFixed(2)] || "#8884d8"} />
                         ))}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                  <div className="cd_legend-container">
-                    <h4>Legend</h4>
-                    <ul>
-                      {Object.entries(gradeColors).map(([grade, color]) => (
-                        <li key={grade} style={{ color: color }}>
-                          <span style={{ backgroundColor: color, display: "inline-block", width: "15px", height: "15px", marginRight: "5px" }}></span>
-                          Grade {grade}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </div>
               </>
             ) : (
