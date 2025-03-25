@@ -151,7 +151,7 @@ body{
 }
 
 .cd_subjects-container div input {
-  width: ;
+  width: 20px;
 }
 
 .cd_subjects-container div {
@@ -162,6 +162,9 @@ body{
   gap: 8px;
   width: 100%;
 }
+
+
+
 
 
 .cd_subjects-list h6 {
