@@ -96,7 +96,7 @@ mongoose.connect(
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
+const storage = multer.diskStorage({  
   destination: (req, file, cb) => {
     cb(null, 'uploads/'); // Define where to store the files
   },

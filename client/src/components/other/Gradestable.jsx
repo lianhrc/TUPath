@@ -43,8 +43,7 @@ const GradesTable = () => {
             <th>Subject Code</th>
             <th>Description</th>
             <th>Final Grade</th>
-            <th>COR</th>
-           
+            <th>Rating Slip</th>
           </tr>
         </thead>
         <tbody>

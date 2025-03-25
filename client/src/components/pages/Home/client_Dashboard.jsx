@@ -68,7 +68,7 @@ const Client_Dashboard = () => {
         {TAGS.map((t) => (
           <button key={t} onClick={() => setTag(t)} className={tag === t ? "active" : ""}>{t}</button>
         ))}
-        <h3>Subjects</h3>
+        <h3 className="sidebarsubjects">Subjects</h3>
         {subjects.length > 0 ? (
           <div className="cd_subjects-container">
             {subjects.map((subject, index) => (
