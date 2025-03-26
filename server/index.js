@@ -127,7 +127,7 @@ const Profilestorage = new CloudinaryStorage({
 
 // ✅ Correct Multer Setup
 const uploadImageProfile = multer({ storage: Profilestorage });
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
 
 
@@ -687,31 +687,44 @@ const StudentCert = new mongoose.Schema({
 
 const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
 
-// Endpoint to handle certificate uploads
 app.post("/api/uploadCertificate", verifyToken, upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "attachments", maxCount: 10 }
 ]), async (req, res) => {
   try {
     const userId = req.user.id;
-    const userName = req.user.name; // Ensure user name is extracted from the token
+    const userName = req.user.name;
     const { CertName, CertDescription } = req.body;
 
     if (!CertName || !CertDescription) {
       return res.status(400).json({ success: false, message: "Certificate name and description are required." });
     }
 
-    const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : "";
-    const attachments = req.files["attachments"] ? req.files["attachments"].map(file => `/uploads/${file.filename}`) : [];
+    // ✅ Upload thumbnail to Cloudinary
+    let thumbnailUrl = "";
+    if (req.files["thumbnail"]) {
+      const result = await cloudinary.uploader.upload(req.files["thumbnail"][0].path, { folder: "TUPath_Cert" });
+      thumbnailUrl = result.secure_url;
+    }
 
+    // ✅ Upload attachments to Cloudinary
+    let attachmentUrls = [];
+    if (req.files["attachments"]) {
+      for (const file of req.files["attachments"]) {
+        const result = await cloudinary.uploader.upload(file.path, { folder: "TUPath_Cert" });
+        attachmentUrls.push(result.secure_url);
+      }
+    }
+
+    // ✅ Save certificate to MongoDB with Cloudinary URLs
     const newCertificate = new StudentCertificate({
       StudId: userId,
-      StudName: userName, // Use the extracted user name
+      StudName: userName,
       Certificate: {
         CertName,
         CertDescription,
-        CertThumbnail: thumbnail,
-        Attachments: attachments,
+        CertThumbnail: thumbnailUrl,
+        Attachments: attachmentUrls,
       },
     });
 

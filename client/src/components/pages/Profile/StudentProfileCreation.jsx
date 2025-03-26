@@ -58,7 +58,7 @@ function StudentProfileCreation() {
             console.log("Upload response:", response.data); // Debugging log
 
             if (response.data.success) {
-                const imageUrl = `http://localhost:3001${response.data.profileImg}`;
+                const imageUrl = `{response.data.profileImg}`;
                 setUploadedImage(imageUrl);
                 setMessage("Image uploaded successfully!");
                 setIsModalOpen(false); // Close modal after successful upload

@@ -300,7 +300,12 @@ function ProfilePage() {
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
                     <div key={cert._id} className="project-card" onClick={() => { setselectedCert(cert); setshowcertPreviewModal(true); }}>
-                      {cert.Certificate.CertThumbnail && <img src={cert.Certificate.CertThumbnail} alt="Certificate Thumbnail"/>}
+                          {cert.Certificate?.CertThumbnail && ( // Ensure CertThumbnail exists
+                          <img 
+                            src={cert.Certificate.CertThumbnail} 
+                            alt={`${cert.Certificate.CertName} Thumbnail`} 
+                          />
+                        )}
                       <p>{cert.Certificate.CertName}</p>
                     </div>
                   ))
