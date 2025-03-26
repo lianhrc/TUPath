@@ -91,7 +91,7 @@ function CertPreviewModal({ show, onClose, project, onDelete }) {
       <div className="projprevheader">
           {project.Certificate.CertThumbnail && (
             <img
-              src={`http://localhost:3001${project.Certificate.CertThumbnail}`}
+              src={project.Certificate.CertThumbnail}
               alt="Certificate Thumbnail"
               className="certificate-thumbnail"
             />

@@ -12,6 +12,8 @@ const express = require("express");
   const cookieParser = require('cookie-parser');
   const session = require("express-session");
   const MongoStore = require("connect-mongo");
+  const cloudinary = require("cloudinary").v2;
+  const { CloudinaryStorage } = require('multer-storage-cloudinary');
   //pushin purposes
  require('dotenv').config()
 
@@ -95,20 +97,38 @@ mongoose.connect(
   .then(() => console.log("Connected to MongoDB Atlas successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({  
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Define where to store the files
+
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+
+// Configure Multer Storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Cert', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Define how files are named
-  }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
+
+// ✅ Configure Multer Storage with Cloudinary
+const Profilestorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "TUPath_Profile",
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
+  },
 });
+
+// ✅ Correct Multer Setup
+const uploadImageProfile = multer({ storage: Profilestorage });
+const upload = multer({ storage });
+
 
 
 // JWT verification middleware
@@ -1193,22 +1213,31 @@ app.get('/api/profile', verifyToken, async (req, res) => {
    }
  });
  */
+
 // api upload image endpoint
-app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+app.post("/api/uploadProfileImage", verifyToken, uploadImageProfile.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ success: false, message: "No file uploaded or Cloudinary failed" });
     }
 
-    const profileImgPath = `/uploads/${req.file.filename}`;
+    console.log("Uploaded File:", req.file); // 🛠️ Debugging
 
+    const profileImgUrl = req.file.path; // ✅ Cloudinary should return a URL
+
+    if (!profileImgUrl) {
+      return res.status(500).json({ success: false, message: "Cloudinary upload failed, no URL returned" });
+    }
+
+    // ✅ Select the correct user model based on role
     const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
 
+    // ✅ Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
-      { $set: { "profileDetails.profileImg": profileImgPath } },
+      { $set: { "profileDetails.profileImg": profileImgUrl } },
       { new: true }
     );
 
@@ -1219,13 +1248,14 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
     res.status(200).json({
       success: true,
       message: "Profile image uploaded successfully",
-      profileImg: profileImgPath,
+      profileImg: profileImgUrl,
     });
   } catch (error) {
     console.error("Error uploading profile image:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 app.post("/api/uploadProject", verifyToken, upload.fields([
   { name: "thumbnail", maxCount: 1 },
