@@ -266,21 +266,21 @@ function ProfilePage() {
 
                 {/* Display Projects */}
                 
-            {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() ? (
-              projects.length > 0 ? (
-                projects.map((project) => (
-                  <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                    {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
-                    <p>{project.projectName}</p>
-                  </div>
-                ))
-              ) : (
-                <p>No projects available</p>
-              )
-            ) : (
-              <p>Projects are hidden for other students.</p>
-            )}
-
+                {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() ? (
+                  projects.length > 0 ? (
+                    projects.map((project) => (
+                      <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
+                        {project.thumbnail && <img src={project.thumbnail} alt="Project Thumbnail" />}
+                        <p>{project.projectName}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No projects available</p>
+                  )
+                ) : (
+                  <p>Projects are hidden for other students.</p>
+                )}
+                
 
               </div>
             </div>
@@ -306,7 +306,6 @@ function ProfilePage() {
                             alt={`${cert.Certificate.CertName} Thumbnail`} 
                           />
                         )}
-                      <p>{cert.Certificate.CertName}</p>
                     </div>
                   ))
                 ) : (

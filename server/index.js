@@ -104,7 +104,6 @@ mongoose.connect(
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
-// Configure Multer Storage
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -114,8 +113,16 @@ const storage = new CloudinaryStorage({
   },
 });
 
+const Projectstorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Proj', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+  },
+});
 
-// ✅ Configure Multer Storage with Cloudinary
+
 const Profilestorage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -128,6 +135,7 @@ const Profilestorage = new CloudinaryStorage({
 // ✅ Correct Multer Setup
 const uploadImageProfile = multer({ storage: Profilestorage });
 const upload = multer({ storage: storage });
+const UploadImageProjects = multer({ storage: Projectstorage });
 
 
 
@@ -1269,8 +1277,8 @@ app.post("/api/uploadProfileImage", verifyToken, uploadImageProfile.single("prof
   }
 });
 
-
-app.post("/api/uploadProject", verifyToken, upload.fields([
+// Modify API Endpoint to Use Cloudinary
+app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "selectedFiles", maxCount: 10 },
   { name: "ratingSlip", maxCount: 1 }
@@ -1278,21 +1286,16 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
   try {
     console.log("Received project upload request with data:", req.body);
 
-    // Retrieve saved subject & grade from session
     const { subject, grade, ratingSlip } = req.session.assessmentData || {};
-
     if (!subject || !grade) {
-      console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-    const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-    const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
+    // Get Cloudinary URL instead of local file path
+    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].path : null;
+    const selectedFiles = req.files["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+    const ratingSlipPath = req.files["ratingSlip"] ? req.files["ratingSlip"][0].path : ratingSlip;
 
-    // Create and save the new project
     const newProject = new Project({
       projectName: req.body.projectName,
       description: req.body.description,
@@ -1304,34 +1307,24 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
       grade,
       ratingSlip: ratingSlipPath,
       status: "pending",
-      thumbnail,
+      thumbnail, // Cloudinary URL
       selectedFiles
     });
 
     await newProject.save();
 
-    // Find student by ID and update their projects list
-    const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
-    if (!userId) {
-      console.error("User ID is missing.");
-      return res.status(400).json({ success: false, message: "User ID is required." });
-    }
+    const userId = req.user?.id || req.body.userId;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID is required." });
 
     const user = await Tupath_usersModel.findOneAndUpdate(
       { _id: userId },
-      { $addToSet: { "profileDetails.projects": newProject._id } }, // Ensure project is stored in profile
+      { $addToSet: { "profileDetails.projects": newProject._id } },
       { new: true }
     );
 
-    if (!user) {
-      console.error("User not found.");
-      return res.status(404).json({ success: false, message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    // Update best tag dynamically
     await user.calculateBestTag();
-
-    // Clear session after successful save
     delete req.session.assessmentData;
 
     console.log("Project successfully saved and linked to user:", newProject);
@@ -1342,7 +1335,6 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 /* //BACKUP LATEST API
 
@@ -1560,6 +1552,8 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
+
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
@@ -1568,15 +1562,23 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     
     const profileData = req.body;
 
-    // Handle file upload (if any)
-    if (req.file) {
-      profileData.profileImg = `/uploads/${req.file.filename}`;
-    }
-
     // Find existing user
     const existingUser = await userModel.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // 🔥 **Delete old profile image from Cloudinary before uploading a new one**
+    if (existingUser.profileDetails.profileImg) {
+      const oldImageUrl = existingUser.profileDetails.profileImg;
+      const publicId = oldImageUrl.split("/").pop().split(".")[0]; // Extract publicId
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Handle file upload (if any)
+    if (req.file) {
+      const uploadedImage = await cloudinary.uploader.upload(req.file.path);
+      profileData.profileImg = uploadedImage.secure_url; // Store the Cloudinary URL
     }
 
     // Preserve existing projects and update profile
