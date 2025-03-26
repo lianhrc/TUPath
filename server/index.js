@@ -1560,14 +1560,12 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
-
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
     const { role } = req.user;
     const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
-
+    
     const profileData = req.body;
 
     // Handle file upload (if any)
@@ -1575,28 +1573,39 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
       profileData.profileImg = `/uploads/${req.file.filename}`;
     }
 
-    // Ensure we preserve the existing projects data
+    // Find existing user
     const existingUser = await userModel.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Preserve projects in the profileData (if no projects are passed, keep the existing ones)
+    // Preserve existing projects and update profile
     const updatedProfile = {
       ...existingUser.profileDetails,
       ...profileData,
-      projects: existingUser.profileDetails.projects || []  // Ensure existing projects are kept
+      projects: existingUser.profileDetails.projects || []
     };
 
-    // Update the user's profile details
+    // Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
       { $set: { profileDetails: updatedProfile } },
       { new: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    // 🔥 **Update all posts where userId matches the updated user**
+    if (profileData.profileImg) {
+      await Post.updateMany(
+        { userId }, 
+        { $set: { profileImg: profileData.profileImg } }
+      );
+
+      // 🔥 **Update all comments where userId matches**
+      await Post.updateMany(
+        { "comments.userId": userId },
+        { $set: { "comments.$[elem].profileImg": profileData.profileImg } },
+        { arrayFilters: [{ "elem.userId": userId }] }
+      );
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
@@ -1605,6 +1614,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 //----------------------------------------------------DECEMBER 13
 // Step 1: Add a reset token field to the user schemas
