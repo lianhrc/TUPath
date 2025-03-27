@@ -90,15 +90,6 @@ mongoose.connect(MONGO_URI || MONGO_LOCAL_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-*/
-
-mongoose.connect(
-  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
-)
-  .then(() => console.log("Connected to MongoDB Atlas successfully"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -1600,7 +1591,6 @@ app.get("/api/getSubjectByTag", async (req, res) => {
 
 
 // Server setup
-const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
