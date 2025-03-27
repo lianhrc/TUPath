@@ -237,12 +237,24 @@ AdminSchema.methods.comparePassword = async function (candidatePassword) {
 
 
 
+const SubjectTagMappingSchema = new mongoose.Schema({
+  tag: { type: String, required: true, unique: true }, // Project Tag
+  subjects: [
+      {
+          subjectCode: { type: String, required: true },
+          subjectName: { type: String, required: true }
+      }
+  ]
+});
+
+
 
 // Models
 const Tupath_usersModel = mongoose.model("Student_users", TupathUserSchema);
 const Employer_usersModel = mongoose.model("Employer_users", EmployerUserSchema);
 const Project = mongoose.model('Project', projectSchema);
 const Admin = mongoose.model('Admin', AdminSchema);
+const SubjectTagMapping = mongoose.model("SubjectTagMapping", SubjectTagMappingSchema);
 
 
 
@@ -251,4 +263,5 @@ module.exports = {
   Employer_usersModel,
   Project,
   Admin,
+  SubjectTagMapping,
 };

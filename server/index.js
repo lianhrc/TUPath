@@ -1,18 +1,20 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const axios = require("axios");
-const http = require("http");
-const { Server } = require("socket.io");
-const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("./models/Tupath_users");
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
-const cookieParser = require('cookie-parser');
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-require('dotenv').config();
+  const mongoose = require("mongoose");
+  const cors = require("cors");
+  const jwt = require("jsonwebtoken");
+  const bcrypt = require("bcryptjs");
+  const axios = require("axios");
+  const http = require("http");
+  const { Server } = require("socket.io");
+  const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping} = require("./models/Tupath_users");
+  const nodemailer = require("nodemailer");
+  const crypto = require("crypto");
+  const cookieParser = require('cookie-parser');
+  const session = require("express-session");
+  const MongoStore = require("connect-mongo");
+  const cloudinary = require("cloudinary").v2;
+  const { CloudinaryStorage } = require('multer-storage-cloudinary');
+   require('dotenv').config();
 
 const adminsignup = require("./routes/adminsignup");
 const adminLogin = require("./routes/adminLogin");
@@ -88,21 +90,57 @@ mongoose.connect(MONGO_URI || MONGO_LOCAL_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Define where to store the files
+*/
+
+mongoose.connect(
+  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+)
+  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
+
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Cert', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Define how files are named
-  }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
+const Projectstorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Proj', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+  },
 });
 
+
+const Profilestorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "TUPath_Profile",
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
+  },
+});
+
+// ✅ Correct Multer Setup
+const uploadImageProfile = multer({ storage: Profilestorage });
+const upload = multer({ storage: storage });
+const UploadImageProjects = multer({ storage: Projectstorage });
+
+
+
+// JWT verification middleware
 // JWT verification middleware with added debugging and error handling
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -659,31 +697,44 @@ const StudentCert = new mongoose.Schema({
 
 const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
 
-// Endpoint to handle certificate uploads
 app.post("/api/uploadCertificate", verifyToken, upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "attachments", maxCount: 10 }
 ]), async (req, res) => {
   try {
     const userId = req.user.id;
-    const userName = req.user.name; // Ensure user name is extracted from the token
+    const userName = req.user.name;
     const { CertName, CertDescription } = req.body;
 
     if (!CertName || !CertDescription) {
       return res.status(400).json({ success: false, message: "Certificate name and description are required." });
     }
 
-    const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : "";
-    const attachments = req.files["attachments"] ? req.files["attachments"].map(file => `/uploads/${file.filename}`) : [];
+    // ✅ Upload thumbnail to Cloudinary
+    let thumbnailUrl = "";
+    if (req.files["thumbnail"]) {
+      const result = await cloudinary.uploader.upload(req.files["thumbnail"][0].path, { folder: "TUPath_Cert" });
+      thumbnailUrl = result.secure_url;
+    }
 
+    // ✅ Upload attachments to Cloudinary
+    let attachmentUrls = [];
+    if (req.files["attachments"]) {
+      for (const file of req.files["attachments"]) {
+        const result = await cloudinary.uploader.upload(file.path, { folder: "TUPath_Cert" });
+        attachmentUrls.push(result.secure_url);
+      }
+    }
+
+    // ✅ Save certificate to MongoDB with Cloudinary URLs
     const newCertificate = new StudentCertificate({
       StudId: userId,
-      StudName: userName, // Use the extracted user name
+      StudName: userName,
       Certificate: {
         CertName,
         CertDescription,
-        CertThumbnail: thumbnail,
-        Attachments: attachments,
+        CertThumbnail: thumbnailUrl,
+        Attachments: attachmentUrls,
       },
     });
 
@@ -941,22 +992,74 @@ app.get('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
+
+
+/*app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+   try {
+       const userId = req.user.id;
+
+       // Validate if file exists
+       if (!req.file) {
+           return res.status(400).json({ success: false, message: "No file uploaded" });
+       }
+
+       const profileImgPath = `/uploads/${req.file.filename}`;
+       console.log("Uploaded file path:", profileImgPath); // Debugging
+
+       // Update for both student and employer models
+       const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
+           userId,
+           { $set: { "profileDetails.profileImg": profileImgPath } },
+           { new: true }
+       );
+
+       const updatedEmployer = await Employer_usersModel.findByIdAndUpdate(
+           userId,
+           { $set: { "profileDetails.profileImg": profileImgPath } },
+           { new: true }
+       );
+
+       // If no user was updated, return an error
+       if (!updatedStudent && !updatedEmployer) {
+           console.log("User not found for ID:", userId); // Debugging
+           return res.status(404).json({ success: false, message: "User not found" });
+       }
+
+       res.status(200).json({
+           success: true,
+           message: "Profile image uploaded successfully",
+           profileImg: profileImgPath,
+       });
+   } catch (error) {
+       console.error("Error uploading profile image:", error);
+       res.status(500).json({ success: false, message: "Internal server error" });
+   }
+ });
+ */
 // api upload image endpoint
-app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+app.post("/api/uploadProfileImage", verifyToken, uploadImageProfile.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ success: false, message: "No file uploaded or Cloudinary failed" });
     }
 
-    const profileImgPath = `/uploads/${req.file.filename}`;
+    console.log("Uploaded File:", req.file); // 🛠️ Debugging
 
+    const profileImgUrl = req.file.path; // ✅ Cloudinary should return a URL
+
+    if (!profileImgUrl) {
+      return res.status(500).json({ success: false, message: "Cloudinary upload failed, no URL returned" });
+    }
+
+    // ✅ Select the correct user model based on role
     const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
 
+    // ✅ Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
-      { $set: { "profileDetails.profileImg": profileImgPath } },
+      { $set: { "profileDetails.profileImg": profileImgUrl } },
       { new: true }
     );
 
@@ -967,7 +1070,7 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
     res.status(200).json({
       success: true,
       message: "Profile image uploaded successfully",
-      profileImg: profileImgPath,
+      profileImg: profileImgUrl,
     });
   } catch (error) {
     console.error("Error uploading profile image:", error);
@@ -975,7 +1078,8 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
   }
 });
 
-app.post("/api/uploadProject", verifyToken, upload.fields([
+// Modify API Endpoint to Use Cloudinary
+app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "selectedFiles", maxCount: 10 },
   { name: "ratingSlip", maxCount: 1 }
@@ -983,21 +1087,16 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
   try {
     console.log("Received project upload request with data:", req.body);
 
-    // Retrieve saved subject & grade from session
     const { subject, grade, ratingSlip } = req.session.assessmentData || {};
-
     if (!subject || !grade) {
-      console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-    const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-    const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
+    // Get Cloudinary URL instead of local file path
+    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].path : null;
+    const selectedFiles = req.files["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+    const ratingSlipPath = req.files["ratingSlip"] ? req.files["ratingSlip"][0].path : ratingSlip;
 
-    // Create and save the new project
     const newProject = new Project({
       projectName: req.body.projectName,
       description: req.body.description,
@@ -1009,34 +1108,24 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
       grade,
       ratingSlip: ratingSlipPath,
       status: "pending",
-      thumbnail,
+      thumbnail, // Cloudinary URL
       selectedFiles
     });
 
     await newProject.save();
 
-    // Find student by ID and update their projects list
-    const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
-    if (!userId) {
-      console.error("User ID is missing.");
-      return res.status(400).json({ success: false, message: "User ID is required." });
-    }
+    const userId = req.user?.id || req.body.userId;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID is required." });
 
     const user = await Tupath_usersModel.findOneAndUpdate(
       { _id: userId },
-      { $addToSet: { "profileDetails.projects": newProject._id } }, // Ensure project is stored in profile
+      { $addToSet: { "profileDetails.projects": newProject._id } },
       { new: true }
     );
 
-    if (!user) {
-      console.error("User not found.");
-      return res.status(404).json({ success: false, message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    // Update best tag dynamically
     await user.calculateBestTag();
-
-    // Clear session after successful save
     delete req.session.assessmentData;
 
     console.log("Project successfully saved and linked to user:", newProject);
@@ -1047,6 +1136,65 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
+/* //BACKUP LATEST API
+
+  app.post("/api/uploadProject", verifyToken, upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "selectedFiles", maxCount: 10 },
+    { name: "ratingSlip", maxCount: 1 }
+  ]), async (req, res) => {
+    try {
+      console.log("Received project upload request with data:", req.body);
+      console.log("Session before accessing assessmentData:", req.session);
+  
+      // Retrieve saved subject & grade from session
+      const { subject, grade, ratingSlip } = req.session.assessmentData || {};
+  
+      console.log("Extracted assessment data from session:", { subject, grade, ratingSlip });
+  
+      if (!subject || !grade) {
+        console.error("Missing subject or grade in session.");
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+      }
+  
+      const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+      const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+      const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+      ? `/uploads/${req.files["ratingSlip"][0].filename}`
+      : ratingSlip;
+  
+      const newProject = new Project({
+        projectName: req.body.projectName,
+        description: req.body.description,
+        tag: req.body.tag,
+        tools: req.body.tools,
+        projectUrl: req.body.projectUrl,
+        roles: req.body.roles,
+        subject,
+        grade,
+        ratingSlip: ratingSlipPath, // <-- Save ratingSlip instead of corFile
+        status: "pending",
+        thumbnail,
+        selectedFiles
+      });
+  
+      await newProject.save();
+  
+      // Clear session after successful save
+      delete req.session.assessmentData;
+  
+      console.log("Project successfully saved:", newProject);
+  
+      res.status(201).json({ success: true, project: newProject });
+    } catch (error) {
+      console.error("Error saving project:", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  });
+  
+*/
 
 app.get("/api/projects", verifyToken, async (req, res) => {
   try {
@@ -1208,36 +1356,55 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     const userId = req.user.id;
     const { role } = req.user;
     const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
-
+    
     const profileData = req.body;
 
-    // Handle file upload (if any)
-    if (req.file) {
-      profileData.profileImg = `/uploads/${req.file.filename}`;
-    }
-
-    // Ensure we preserve the existing projects data
+    // Find existing user
     const existingUser = await userModel.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Preserve projects in the profileData (if no projects are passed, keep the existing ones)
+    // 🔥 **Delete old profile image from Cloudinary before uploading a new one**
+    if (existingUser.profileDetails.profileImg) {
+      const oldImageUrl = existingUser.profileDetails.profileImg;
+      const publicId = oldImageUrl.split("/").pop().split(".")[0]; // Extract publicId
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Handle file upload (if any)
+    if (req.file) {
+      const uploadedImage = await cloudinary.uploader.upload(req.file.path);
+      profileData.profileImg = uploadedImage.secure_url; // Store the Cloudinary URL
+    }
+
+    // Preserve existing projects and update profile
     const updatedProfile = {
       ...existingUser.profileDetails,
       ...profileData,
-      projects: existingUser.profileDetails.projects || []  // Ensure existing projects are kept
+      projects: existingUser.profileDetails.projects || []
     };
 
-    // Update the user's profile details
+    // Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
       { $set: { profileDetails: updatedProfile } },
       { new: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    // 🔥 **Update all posts where userId matches the updated user**
+    if (profileData.profileImg) {
+      await Post.updateMany(
+        { userId }, 
+        { $set: { profileImg: profileData.profileImg } }
+      );
+
+      // 🔥 **Update all comments where userId matches**
+      await Post.updateMany(
+        { "comments.userId": userId },
+        { $set: { "comments.$[elem].profileImg": profileData.profileImg } },
+        { arrayFilters: [{ "elem.userId": userId }] }
+      );
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
@@ -1246,6 +1413,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 //----------------------------------------------------DECEMBER 13
 // Step 1: Add a reset token field to the user schemas
@@ -1407,7 +1575,32 @@ app.get("/api/topStudentsByTag", async (req, res) => {
   }
 });
 
-// Server setup using environment variable PORT
+app.get("/api/getSubjectByTag", async (req, res) => {
+  try {
+    const { tag } = req.query;
+
+    // Find the mapping document by tag
+    const mapping = await SubjectTagMapping.findOne({ tag });
+
+    if (!mapping || !mapping.subjects || mapping.subjects.length === 0) {
+      return res.json({ success: false, message: "No subjects found for this tag." });
+    }
+
+    // Return subjects as an array of objects
+    res.json({ success: true, subjects: mapping.subjects });
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
+
+
+
+// Server setup
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -1,18 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "../../services/axiosInstance";
 import "./ProjectAssessmentModal.css";
 
-const subjects = [
-  { code: "CC101", name: "Computer Programming 1" },
-  { code: "CC102", name: "Computer Programming 2" },
-  { code: "CC103", name: "Data Structures" },
-  { code: "CC104", name: "Database Management" },
-];
+const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselectedTag, availableSubjects }) => {
 
-const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [grade, setGrade] = useState("");
   const [ratingSlip, setRatingSlip] = useState(null);
+
+  useEffect(() => {
+    if (preselectedTag) {
+      fetchSubjects(preselectedTag);
+    }
+  }, [preselectedTag]);
+
+  const fetchSubjects = async (tag) => {
+    try {
+        const response = await axiosInstance.get(`/api/getSubjectByTag?tag=${tag}`);
+        console.log("Subjects Fetched:", response.data); // Debugging
+        if (response.data.success) {
+            setAvailableSubjects(response.data.subjects);
+        } else {
+            setAvailableSubjects([]);
+        }
+    } catch (error) {
+        console.error("Error fetching subjects:", error);
+    }
+};
 
   if (!show) return null;
 
@@ -31,20 +45,19 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
     formData.append("subject", selectedSubject);
     formData.append("grade", grade);
     if (ratingSlip) {
-      formData.append("ratingSlip", ratingSlip); // <-- Append ratingSlip instead of corFile
+      formData.append("ratingSlip", ratingSlip);
     }
 
     try {
       const response = await axiosInstance.post("/api/saveAssessment", {
         subject: selectedSubject,
         grade: grade,
-        ratingSlip: ratingSlip ? ratingSlip.name : null, // Only send filename if provided
+        ratingSlip: ratingSlip ? ratingSlip.name : null,
       });
-      
 
       if (response.data.success) {
         onAssessmentSubmit({ subjectCode: selectedSubject, grade, ratingSlip });
-        onClose(); // Redirect back to ProjectUpModal
+        onClose();
       } else {
         alert("Failed to save assessment. Please try again.");
       }
@@ -61,14 +74,23 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
         <p>Please select a subject and input your grade:</p>
 
         <label>Subject:</label>
-        <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} required>
-          <option value="">Select Subject</option>
-          {subjects.map((subject) => (
-            <option key={subject.code} value={subject.code}>
-              {subject.code} - {subject.name}
-            </option>
-          ))}
-        </select>
+          {availableSubjects.length > 0 ? (
+            <select 
+                value={selectedSubject} 
+                onChange={(e) => setSelectedSubject(e.target.value)} 
+                required
+            >
+                <option value="">Select Subject</option>
+                {availableSubjects.map((subject) => (
+                    <option key={subject.subjectCode} value={subject.subjectCode}>
+                        {subject.subjectCode} - {subject.subjectName}
+                    </option>
+                ))}
+            </select>
+          ) : (
+            <p>No subjects available for the selected tag.</p>
+          )}
+
 
         <label htmlFor="finalGrade">Final Grade:</label>
         <select
@@ -93,11 +115,11 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit }) => {
         </select>
         
 
-        <label>Attach COR if available:</label>
+        <label>Attach Rating Slip (if available):</label>
         <input
           type="file"
           accept=".zip,.rar,.pdf,.docx,.jpg,.png"
-          onChange={(e) => setCorFile(e.target.files[0])}
+          onChange={(e) => setRatingSlip(e.target.files[0])}
         />
 
         <div className="assessment-buttons">
