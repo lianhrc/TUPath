@@ -271,7 +271,6 @@ function ProfilePage() {
                     projects.map((project) => (
                       <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                         {project.thumbnail && <img src={project.thumbnail} alt="Project Thumbnail" />}
-                        <p>{project.projectName}</p>
                       </div>
                     ))
                   ) : (

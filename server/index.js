@@ -122,6 +122,18 @@ const Projectstorage = new CloudinaryStorage({
   },
 });
 
+const CertFileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "TUPath_Cert_attachments",
+    allowed_formats: ["pdf", "docx", "pptx", "jpg", "png"],
+    resource_type: "auto", // Allows all file types (images, docs, etc.)
+  },
+});
+
+// ✅ Multer Setup for Certificates
+const uploadCertFiles = multer({ storage: CertFileStorage });
+
 
 const Profilestorage = new CloudinaryStorage({
   cloudinary,
@@ -1475,28 +1487,28 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
 
 
 
-// Endpoint for uploading certificate photos
-app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const filePaths = req.files.map(file => `/certificates/${file.filename}`);
+// // Endpoint for uploading certificate photos
+// app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const filePaths = req.files.map(file => `/certificates/${file.filename}`);
 
-    const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-      userId,
-      { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
-      { new: true }
-    );
+//     const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+//       userId,
+//       { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
+//       { new: true }
+//     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+//     if (!updatedUser) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
 
-    res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
-  } catch (error) {
-    console.error("Error uploading certificate photos:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+//     res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
+//   } catch (error) {
+//     console.error("Error uploading certificate photos:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // -----------------------------------api for dynamic search----------------------------------
 app.get('/api/search', verifyToken, async (req, res) => {
