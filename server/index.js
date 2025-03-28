@@ -1565,7 +1565,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
   }
 });
 
-
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
@@ -1620,6 +1619,18 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
         { $set: { "comments.$[elem].profileImg": profileData.profileImg } },
         { arrayFilters: [{ "elem.userId": userId }] }
       );
+
+      // 🔥 **Update profile image in messages where user is the sender**
+      await Message.updateMany(
+        { "sender.senderId": userId },
+        { $set: { "sender.profileImg": profileData.profileImg } }
+      );
+
+      // 🔥 **Update profile image in messages where user is the receiver**
+      await Message.updateMany(
+        { "receiver.receiverId": userId },
+        { $set: { "receiver.profileImg": profileData.profileImg } }
+      );
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
@@ -1628,6 +1639,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 
 //----------------------------------------------------DECEMBER 13
