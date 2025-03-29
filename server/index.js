@@ -114,6 +114,18 @@ const Projectstorage = new CloudinaryStorage({
   },
 });
 
+const CertFileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "TUPath_Cert_attachments",
+    allowed_formats: ["pdf", "docx", "pptx", "jpg", "png"],
+    resource_type: "auto", // Allows all file types (images, docs, etc.)
+  },
+});
+
+// ✅ Multer Setup for Certificates
+const uploadCertFiles = multer({ storage: CertFileStorage });
+
 
 const Profilestorage = new CloudinaryStorage({
   cloudinary,
@@ -1265,28 +1277,28 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
   }
 });
 
-// Endpoint for uploading certificate photos
-app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const filePaths = req.files.map(file => `/certificates/${file.filename}`);
+// // Endpoint for uploading certificate photos
+// app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const filePaths = req.files.map(file => `/certificates/${file.filename}`);
 
-    const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-      userId,
-      { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
-      { new: true }
-    );
+//     const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+//       userId,
+//       { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
+//       { new: true }
+//     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+//     if (!updatedUser) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
 
-    res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
-  } catch (error) {
-    console.error("Error uploading certificate photos:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+//     res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
+//   } catch (error) {
+//     console.error("Error uploading certificate photos:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // -----------------------------------api for dynamic search----------------------------------
 app.get('/api/search', verifyToken, async (req, res) => {
@@ -1396,6 +1408,18 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
         { $set: { "comments.$[elem].profileImg": profileData.profileImg } },
         { arrayFilters: [{ "elem.userId": userId }] }
       );
+
+      // 🔥 **Update profile image in messages where user is the sender**
+      await Message.updateMany(
+        { "sender.senderId": userId },
+        { $set: { "sender.profileImg": profileData.profileImg } }
+      );
+
+      // 🔥 **Update profile image in messages where user is the receiver**
+      await Message.updateMany(
+        { "receiver.receiverId": userId },
+        { $set: { "receiver.profileImg": profileData.profileImg } }
+      );
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
@@ -1404,6 +1428,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
 
 
 //----------------------------------------------------DECEMBER 13
@@ -1585,8 +1610,26 @@ app.get("/api/getSubjectByTag", async (req, res) => {
   }
 });
 
+// studentcount in clientdashboard
+app.get("/api/student-counts", async (req, res) => {
+  try {
+    const bsitCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information Technology" });
+    const bscsCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Computer Science" });
+    const bsisCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information System" });
 
-
+    res.json({
+      success: true,
+      counts: {
+        BSIT: bsitCount,
+        BSCS: bscsCount,
+        BSIS: bsisCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching student counts:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
 
 
 

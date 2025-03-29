@@ -30,7 +30,11 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
   const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
+  const [grades, setGrades] = useState([]);
 
+  const updateGradesTable = (newGrade) => {
+    setGrades((prevGrades) => [...prevGrades, newGrade]);
+  };
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -249,7 +253,7 @@ function ProfilePage() {
           <div className="project-section">
           <div className="grademaincontainer">
             <h3> Grades</h3>
-            <GradesTable />
+            <GradesTable grades = {grades} />
 
           
           </div>
@@ -271,7 +275,6 @@ function ProfilePage() {
                     projects.map((project) => (
                       <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
                         {project.thumbnail && <img src={project.thumbnail} alt="Project Thumbnail" />}
-                        <p>{project.projectName}</p>
                       </div>
                     ))
                   ) : (
@@ -334,6 +337,7 @@ function ProfilePage() {
           show={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onProjectUpload={addProjectToState}
+          updateGradesTable={updateGradesTable} 
         />
 
         <CertUpModal

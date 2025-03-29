@@ -30,7 +30,7 @@ const predefinedRoles = [
 
 
 
-const ProjectUploadModal = ({ show, onClose}) => {
+const ProjectUploadModal = ({ show, onClose, updateGradesTable}) => {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -57,7 +57,16 @@ const ProjectUploadModal = ({ show, onClose}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!projectName.trim() || !description.trim() || !tag) {
-      alert("All fields are required.");
+      toast.error("All fields are required.", {
+        style: {
+          position: "top-center",
+          fontSize: "12px", // Slightly larger text
+          textAlign: "center", // Centers text
+          padding: "12px 20px", // Adds spacing
+          borderRadius: "8px", // Slightly rounded corners
+        },
+      });
+      
       return;
     }
     setShowAssessmentModal(true);
@@ -176,7 +185,7 @@ const fetchSubjectsForTag = async (selectedTag) => {
     formData.append("grade", grade);
     
     selectedFiles.forEach((file, index) => {
-      formData.append("selectedFiles", file);
+        formData.append("selectedFiles", file);
     });
 
     if (thumbnail) {
@@ -197,25 +206,30 @@ const fetchSubjectsForTag = async (selectedTag) => {
     console.log("Selected Files:", selectedFiles.map(file => file.name));
 
     try {
-        const response = await axiosInstance.post("/api/uploadProject", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+      const response = await axiosInstance.post("/api/uploadProject", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+      });
 
-        console.log("Server Response:", response.data);
+      if (response.data.success) {
+          toast.success("Project uploaded successfully!");
+          
+          // Now update GradesTable
+          updateGradesTable({ 
+              code: selectedSubject, 
+              description: "Subject related to project", 
+              grade 
+          });
 
-        if (response.data.success) {
-            toast.success("Project uploaded successfully!");
-            onClose();
-        } else {
-            console.error("Upload failed:", response.data.message);
-        }
-    } catch (error) {
-        console.error("Error uploading project:", error);
-    }
+          onClose();
+      } else {
+          console.error("Upload failed:", response.data.message);
+      }
+  } catch (error) {
+      console.error("Error uploading project:", error);
+  }
 
-    setIsSubmitting(false);
+  setIsSubmitting(false);
 };
-
   if (!show) return null;
 
 
