@@ -30,7 +30,11 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
   const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
+  const [grades, setGrades] = useState([]);
 
+  const updateGradesTable = (newGrade) => {
+    setGrades((prevGrades) => [...prevGrades, newGrade]);
+  };
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -249,7 +253,7 @@ function ProfilePage() {
           <div className="project-section">
           <div className="grademaincontainer">
             <h3> Grades</h3>
-            <GradesTable />
+            <GradesTable grades = {grades} />
 
           
           </div>
@@ -333,6 +337,7 @@ function ProfilePage() {
           show={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onProjectUpload={addProjectToState}
+          updateGradesTable={updateGradesTable} 
         />
 
         <CertUpModal
