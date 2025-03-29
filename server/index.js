@@ -1833,8 +1833,26 @@ app.get("/api/getSubjectByTag", async (req, res) => {
   }
 });
 
+// studentcount in clientdashboard
+app.get("/api/student-counts", async (req, res) => {
+  try {
+    const bsitCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information Technology" });
+    const bscsCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Computer Science" });
+    const bsisCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information System" });
 
-
+    res.json({
+      success: true,
+      counts: {
+        BSIT: bsitCount,
+        BSCS: bscsCount,
+        BSIS: bsisCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching student counts:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
 
 
 
