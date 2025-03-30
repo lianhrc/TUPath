@@ -7,6 +7,7 @@ const express = require("express");
   const http = require("http");
   const { Server } = require("socket.io");
   const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping} = require("./models/Tupath_users");
+  const Post = require("./models/Post"); // Import Post model from models folder
   const nodemailer = require("nodemailer");
   const crypto = require("crypto");
   const cookieParser = require('cookie-parser');
@@ -25,10 +26,12 @@ const studentByTags = require("./routes/studentsByTag")
 const users = require("./routes/users");
 const adminDelete = require("./routes/adminDelete");
 const corRoutes = require("./routes/corRoutes");
+const postRoutes = require("./routes/postRoutes"); // Import post routes
 
-const checkAuth = require('./middleware/authv2')
+// const checkAuth = require('./middleware/authv2')
 const adminLogout = require('./routes/adminLogout')
 const authRoute = require("./routes/authRoute"); // Add the auth routes
+const verifyToken = require('./middleware/verifyToken'); // Use the separated middleware
 
 // Environment variables
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -64,6 +67,20 @@ app.use(session({
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
+// Make io available to routes
+const io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL,
+    methods: ["GET", "POST"],
+  },
+});
+
+// Add io to req object
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // ROUTES
 app.use('/', users);
 app.use('/', adminsignup);
@@ -73,10 +90,12 @@ app.use('/', userStats);
 app.use('/', studentTags);
 app.use('/', studentByTags);
 app.use('/', adminDelete);
-app.use('/', checkAuth);
+// app.use('/', checkAuth);
 app.use('/', adminLogout);
 app.use('/', corRoutes);
 app.use('/api', authRoute); // Use the auth routes
+app.use('/api/posts', postRoutes); // Use post routes
+
 
 // Middleware for setting COOP headers
 app.use((req, res, next) => {
@@ -141,41 +160,6 @@ const uploadImageProfile = multer({ storage: Profilestorage });
 const upload = multer({ storage: storage });
 const UploadImageProjects = multer({ storage: Projectstorage });
 
-
-
-// JWT verification middleware
-// JWT verification middleware with added debugging and error handling
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) {
-    console.error("Authorization header is missing.");
-    return res.status(401).json({ message: "Access Denied: Authorization header missing" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    console.error("Token not found in Authorization header.");
-    return res.status(401).json({ message: "Access Denied: Token missing" });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      console.error("Token verification failed:", err);
-      return res.status(403).json({ message: "Invalid Token" });
-    }
-
-    req.user = user;
-    next();
-  });
-};
-
-// Socket.IO setup
-const io = new Server(server, {
-  cors: {
-    origin: CLIENT_URL,
-    methods: ["GET", "POST"],
-  },
-});
 
 // Chat message schema
 const messageSchema = new mongoose.Schema({
@@ -288,320 +272,6 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Error marking message as read:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Add a comment to a post
-app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.id;
-  const { profileImg, name, comment } = req.body;
-
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-  }
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    const newComment = {
-      profileImg,
-      username: name,
-      userId, // Include userId in the comment
-      comment,
-      createdAt: new Date(),
-    };
-
-    post.comments.push(newComment);
-    await post.save();
-
-    io.emit("new_comment", { postId, comment: newComment });
-
-    res.status(201).json({ success: true, comment: newComment });
-  } catch (err) {
-    console.error("Error adding comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Soft delete a comment from a post
-app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const commentId = req.params.commentId;
-
-  try {
-    // Find the post by ID, but only if it is not soft-deleted
-    const post = await Post.findOne({ _id: postId, deletedAt: null });
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found or deleted" });
-    }
-
-    // Find the comment to soft delete
-    const comment = post.comments.find(
-      (comment) => comment._id.toString() === commentId && comment.userId === userId
-    );
-
-    if (!comment) {
-      return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
-    }
-
-    // Set deletedAt timestamp instead of removing the comment
-    comment.deletedAt = new Date();
-
-    // Save the updated post
-    await post.save();
-
-    // Emit the comment deletion event
-    io.emit("delete_comment", { postId, commentId });
-
-    res.status(200).json({ success: true, message: "Comment soft deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Edit a comment on a post
-app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const commentId = req.params.commentId;
-  const { comment } = req.body;
-
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-  }
-
-  try {
-    // Find the post by ID
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    // Find the comment to edit
-    const existingComment = post.comments.find(
-      (commentItem) => commentItem._id.toString() === commentId && commentItem.userId === userId
-    );
-
-    if (!existingComment) {
-      return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
-    }
-
-    // Update the comment text
-    existingComment.comment = comment;
-    existingComment.updatedAt = new Date();
-
-    // Save the updated post
-    await post.save();
-
-    // Emit the comment edit event
-    io.emit("edit_comment", { postId, comment: existingComment });
-
-    res.status(200).json({ success: true, comment: existingComment });
-  } catch (err) {
-    console.error("Error editing comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Increment upvotes for a post
-app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
-  const postId = req.params.id;
-  const { id: userId, username, lastName } = req.user; // Extract user info from token
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    const userIndex = post.votedUsers.findIndex((user) => user.userId === userId);
-
-    if (userIndex > -1) {
-      // User already upvoted, remove upvote
-      post.votedUsers.splice(userIndex, 1);
-      post.upvotes -= 1;
-    } else {
-      // User has not upvoted, add upvote
-      post.votedUsers.push({ userId, username, lastName });
-      post.upvotes += 1;
-    }
-
-    await post.save();
-
-    res.status(200).json({ success: true, post });
-  } catch (err) {
-    console.error("Error toggling upvote:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Define Post schema
-const postSchema = new mongoose.Schema({
-  userId: String,
-  profileImg: String,
-  name: String,
-  timestamp: { type: Date, default: Date.now },
-  content: String,
-  postImg: String,
-  upvotes: { type: Number, default: 0 },
-  deletedAt: { type: Date, default: null },
-  votedUsers: [
-    {
-      userId: String,
-      username: String,
-      lastName: String,
-    },
-  ], // Array of users who upvoted
-  comments: [
-    {
-      userId: String,
-      profileImg: String,
-      username: String,
-      comment: String,
-      createdAt: Date,
-      deletedAt: { type: Date, default: null }, // Soft delete field
-    },
-  ],
-});
-
-const Post = mongoose.model("Post", postSchema);
-
-// Get all non-deleted posts with non-deleted comments
-app.get("/api/posts", async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 5; // Default limit is 5 posts
-    const skip = parseInt(req.query.skip) || 0;  // Default skip is 0
-    
-    const posts = await Post.find({ deletedAt: null }) // Exclude soft-deleted posts
-      .sort({ timestamp: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(); // Convert to a plain JavaScript object for manipulation
-
-    // Filter out soft-deleted comments
-    const filteredPosts = posts.map(post => ({
-      ...post,
-      comments: post.comments.filter(comment => !comment.deletedAt), // Only include non-deleted comments
-    }));
-
-    // Check if there are more posts available
-    const total = await Post.countDocuments({ deletedAt: null });
-    const hasMore = total > skip + posts.length;
-
-    res.json({
-      posts: filteredPosts,
-      hasMore,
-      total
-    });
-  } catch (err) {
-    console.error("Error fetching posts:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Create a new post
-app.post("/api/posts", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const userRole = req.user.role; // Extract role from the user token
-
-  if (userRole !== "employer") {
-    return res.status(403).json({ success: false, message: "Only employers can post." });
-  }
-
-  const { profileImg, name, content, postImg } = req.body;
-
-  try {
-    const newPost = new Post({
-      profileImg,
-      name,
-      content,
-      postImg,
-      userId, // Save userId for the post
-    });
-
-    await newPost.save();
-    res.status(201).json({ success: true, post: newPost });
-    io.emit("new_post", newPost);
-  } catch (err) {
-    console.error("Error creating post:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// update a post
-app.put("/api/posts/:postId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const { content } = req.body;
-
-  if (!content || content.trim() === "") {
-    return res.status(400).json({ success: false, message: "Post content cannot be empty" });
-  }
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    if (post.userId.toString() !== userId) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
-
-    post.content = content;
-    post.postImg = req.body.postImg;
-    post.updatedAt = new Date();
-
-    await post.save();
-
-    res.status(200).json({ success: true, post });
-  } catch (err) {
-    console.error("Error editing post:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// delete a post with soft delete 
-app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-
-  try {
-    // Find the post by ID
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    // Check if the user is the one who created the post
-    if (post.userId.toString() !== userId) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
-
-    // Perform a soft delete by setting the deletedAt field
-    post.deletedAt = new Date();
-    await post.save();
-
-    // Emit post deletion event (optional)
-    io.emit("delete_post", { postId });
-
-    // Respond with a success message
-    res.status(200).json({ success: true, message: "Post soft deleted successfully" });
-  } catch (err) {
-    console.error("Error soft deleting post:", err);
-    res.status(500).json({ success: false, message: "Internal server error", error: err.message });
   }
 });
 
