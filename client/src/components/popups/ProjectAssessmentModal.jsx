@@ -7,6 +7,9 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselected
   const [selectedSubject, setSelectedSubject] = useState("");
   const [grade, setGrade] = useState("");
   const [ratingSlip, setRatingSlip] = useState(null);
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedTerm, setSelectedTerm] = useState("");
+
 
   useEffect(() => {
     if (preselectedTag) {
@@ -31,15 +34,11 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselected
   if (!show) return null;
 
   const handleSubmit = async () => {
-    if (!selectedSubject) {
-      alert("Please select a subject.");
+    if (!selectedSubject || !grade.trim() || !selectedYear || !selectedTerm) {
+      alert("Please select a subject, grade, year level, and term.");
       return;
     }
 
-    if (!grade.trim()) {
-      alert("Please enter a grade.");
-      return;
-    }
 
     const formData = new FormData();
     formData.append("subject", selectedSubject);
@@ -52,11 +51,13 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselected
       const response = await axiosInstance.post("/api/saveAssessment", {
         subject: selectedSubject,
         grade: grade,
+        year: selectedYear,
+        term: selectedTerm,
         ratingSlip: ratingSlip ? ratingSlip.name : null,
       });
 
       if (response.data.success) {
-        onAssessmentSubmit({ subjectCode: selectedSubject, grade, ratingSlip });
+        onAssessmentSubmit({ subjectCode: selectedSubject, grade, year: selectedYear, term: selectedTerm, ratingSlip});
         onClose();
       } else {
         alert("Failed to save assessment. Please try again.");
@@ -90,6 +91,25 @@ const ProjectAssessmentModal = ({ show, onClose, onAssessmentSubmit, preselected
           ) : (
             <p>No subjects available for the selected tag.</p>
           )}
+
+
+            <label>Year Level:</label>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+              <option value="">Select Year Level</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+
+            <label>Term:</label>
+            <select value={selectedTerm} onChange={(e) => setSelectedTerm(e.target.value)}>
+              <option value="">Select Term</option>
+              <option value="1st Semester Midterm">1st Semester Midterm</option>
+              <option value="1st Semester Finals">1st Semester Finals</option>
+              <option value="2nd Semester Midterm">2nd Semester Midterm</option>
+              <option value="2nd Semester Finals">2nd Semester Finals</option>
+            </select>
 
 
         <label htmlFor="finalGrade">Final Grade:</label>
