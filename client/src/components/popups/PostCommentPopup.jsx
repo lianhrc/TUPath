@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import "./PostCommentPopup.css";
 import dot from "../../assets/dots.png";
-
-const socket = io("http://localhost:3001");
 
 const formatTimeAgo = (timestamp) => {
   const now = new Date();
@@ -54,7 +51,10 @@ const PostCommentPopup = ({ post, toggleComments }) => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         if (response.data.success) {
-          setProfileData(response.data.profile.profileDetails || {});
+          const profileDetails = response.data.profile.profileDetails || {};
+          // Store the user ID from the profile to use for permission checks
+          profileDetails._id = response.data.profile._id;
+          setProfileData(profileDetails);
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
@@ -64,25 +64,14 @@ const PostCommentPopup = ({ post, toggleComments }) => {
     fetchProfileData();
   }, []);
 
-  useEffect(() => {
-    socket.on("new_comment", ({ postId, comment }) => {
-      if (postId === post._id && !handledComments.current.has(comment._id)) {
-        setComments((prevComments) => [...prevComments, comment]);
-        handledComments.current.add(comment._id);
-      }
-    });
-
-    return () => {
-      socket.off("new_comment");
-    };
-  }, [post._id]);
-
   const handleCommentSubmit = async () => {
     if (commentText.trim() === "") return;
 
+    const fullName = `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() || "Student";
+    
     const newComment = {
       profileImg: profileData.profileImg,
-      name: `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() || "Student",
+      name: fullName,
       comment: commentText,
     };
 
@@ -94,14 +83,17 @@ const PostCommentPopup = ({ post, toggleComments }) => {
       );
 
       const addedComment = response.data.comment;
-
-      if (!handledComments.current.has(addedComment._id)) {
-        setComments((prevComments) => [...prevComments, addedComment]);
-        handledComments.current.add(addedComment._id);
-      }
-
+      
+      // Create a properly formatted comment object with all required properties for UI operations
+      const formattedComment = {
+        ...addedComment,
+        username: fullName,
+        userId: profileData._id, // Include the user's ID for permission checks
+      };
+      
+      // Add our comment to the local state
+      setComments((prevComments) => [...prevComments, formattedComment]);
       setCommentText("");
-      handledComments.current.clear(); // Clear the handled comments ref
     } catch (error) {
       console.error("Error submitting comment:", error);
     }
@@ -147,13 +139,22 @@ const PostCommentPopup = ({ post, toggleComments }) => {
 
   const handleDeleteClick = async (commentId) => {
     try {
-      await axios.delete(
+      const response = await axios.delete(
         `http://localhost:3001/api/posts/${post._id}/comment/${commentId}`,
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      setComments((prevComments) => prevComments.filter((comment) => comment._id !== commentId));
+      
+      if (response.data.success) {
+        // Immediately update UI to remove the deleted comment
+        setComments((prevComments) => prevComments.filter((comment) => comment._id !== commentId));
+        // Close any action menus that might be open
+        setShowActions(null);
+      } else {
+        console.error("Failed to delete comment:", response.data.message);
+      }
     } catch (error) {
       console.error("Error deleting comment:", error);
+      alert("Failed to delete comment. Please try again.");
     }
   };
 
@@ -235,7 +236,8 @@ const PostCommentPopup = ({ post, toggleComments }) => {
                 )}
 
                 {showActions === comment._id && !isEditing && 
-                comment.username === `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() ? (
+                (comment.username === `${profileData.firstName} ${profileData.middleName ? profileData.middleName.charAt(0) + "." : ""} ${profileData.lastName}`.trim() || 
+                 (comment.userId && comment.userId === profileData._id)) ? (
                   <div className="comment-actions">
                     <div className="div">
                       <button onClick={() => handleEditClick(comment)}>Edit</button>

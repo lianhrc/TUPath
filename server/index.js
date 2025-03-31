@@ -39,7 +39,7 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_URL = process.env.CLIENT_URL;
 const PORT = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI;
-const MONGO_LOCAL_URI = process.env.MONGO_LOCAL_URI;
+// const MONGO_LOCAL_URI = process.env.MONGO_LOCAL_URI;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
@@ -63,7 +63,7 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: MONGO_URI || MONGO_LOCAL_URI }),
+  store: MongoStore.create({ mongoUrl: MONGO_URI}),
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
@@ -105,7 +105,7 @@ app.use((req, res, next) => {
 });
 
 // Connect to MongoDB using environment variables
-mongoose.connect(MONGO_URI || MONGO_LOCAL_URI)
+mongoose.connect(MONGO_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 

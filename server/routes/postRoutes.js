@@ -154,7 +154,7 @@ router.post("/:id/comment", verifyToken, async (req, res) => {
     const newComment = {
       profileImg,
       username: name,
-      userId, // Include userId in the comment
+      userId, // Include userId in the comment as a string
       comment,
       createdAt: new Date(),
     };
@@ -162,10 +162,14 @@ router.post("/:id/comment", verifyToken, async (req, res) => {
     post.comments.push(newComment);
     await post.save();
 
-    // Socket emit will be handled in index.js
-    req.io.emit("new_comment", { postId, comment: newComment });
+    // Get the newly created comment with its MongoDB-assigned _id
+    const savedComment = post.comments[post.comments.length - 1];
 
-    res.status(201).json({ success: true, comment: newComment });
+    // Socket emit will be handled in index.js
+    req.io.emit("new_comment", { postId, comment: savedComment });
+
+    // Return the complete comment object
+    res.status(201).json({ success: true, comment: savedComment });
   } catch (err) {
     console.error("Error adding comment:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -186,17 +190,29 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: "Post not found or deleted" });
     }
 
-    // Find the comment to soft delete
-    const comment = post.comments.find(
-      (comment) => comment._id.toString() === commentId && comment.userId === userId
+    // Find the comment
+    const commentIndex = post.comments.findIndex(
+      (comment) => comment._id.toString() === commentId
     );
 
-    if (!comment) {
-      return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
+    if (commentIndex === -1) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
     }
 
-    // Set deletedAt timestamp instead of removing the comment
+    const comment = post.comments[commentIndex];
+    
+    // Check if the user is the one who created the comment
+    // Using toString() to ensure we compare strings correctly
+    if (comment.userId && comment.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorized to delete this comment" });
+    }
+
+    // Set deletedAt timestamp or remove the comment
+    // Option 1: Soft delete
     comment.deletedAt = new Date();
+    
+    // Option 2: Hard delete (alternative approach)
+    // post.comments.splice(commentIndex, 1);
 
     // Save the updated post
     await post.save();
@@ -204,10 +220,10 @@ router.delete("/:postId/comment/:commentId", verifyToken, async (req, res) => {
     // Socket emit will be handled in index.js
     req.io.emit("delete_comment", { postId, commentId });
 
-    res.status(200).json({ success: true, message: "Comment soft deleted successfully" });
+    res.status(200).json({ success: true, message: "Comment deleted successfully" });
   } catch (err) {
     console.error("Error deleting comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error", error: err.message });
   }
 });
 
