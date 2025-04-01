@@ -47,6 +47,8 @@ const ProjectUploadModal = ({ show, onClose, updateGradesTable}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [grade, setGrade] = useState("");
+  const [year, setSelectedYear] = useState("");
+  const [term, setSelectedTerm] = useState("");
 
   const thumbnailInputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -144,16 +146,20 @@ const fetchSubjectsForTag = async (selectedTag) => {
 
   
 
-  const handleAssessmentSubmit = async ({ subjectCode, grade }) => {
+  const handleAssessmentSubmit = async ({ subjectCode, grade, year, term }) => {
     try {
       const response = await axiosInstance.post("/api/saveAssessment", {
         subject: subjectCode,
         grade: grade,
+        year: year,
+        term: term,
       });
   
       if (response.data.success) {
         setSelectedSubject(subjectCode);
         setGrade(grade);
+        setSelectedYear(year);
+        setSelectedTerm(term);
         setShowAssessmentModal(false);
         toast.success("Subject and grade saved successfully!");
       } else {
@@ -183,6 +189,7 @@ const fetchSubjectsForTag = async (selectedTag) => {
     formData.append("projectUrl", projectUrl);
     formData.append("subject", selectedSubject);
     formData.append("grade", grade);
+
     
     selectedFiles.forEach((file, index) => {
         formData.append("selectedFiles", file);
