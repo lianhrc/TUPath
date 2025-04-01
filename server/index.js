@@ -107,7 +107,7 @@ mongoose.connect(
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'TUPath_Cert', // Change this to your preferred folder name
+    folder: 'TUPath_Cert_Thumbnails', // Change this to your preferred folder name
     allowed_formats: ['jpg', 'png', 'jpeg'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
@@ -131,8 +131,16 @@ const CertFileStorage = new CloudinaryStorage({
   },
 });
 
-// ✅ Multer Setup for Certificates
-const uploadCertFiles = multer({ storage: CertFileStorage });
+const CertThumbStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Cert_Thumbnails',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+  },
+});
+
+
 
 
 const Profilestorage = new CloudinaryStorage({
@@ -149,6 +157,9 @@ const uploadImageProfile = multer({ storage: Profilestorage });
 const upload = multer({ storage: storage });
 const UploadImageProjects = multer({ storage: Projectstorage });
 
+// ✅ Multer Setup for Certificates
+const uploadThumbnail = multer({ storage: CertThumbStorage });
+const uploadCertFiles = multer({ storage: CertFileStorage });
 
 
 // JWT verification middleware
@@ -682,23 +693,23 @@ io.on("connection", (socket) => {
   });
 }); // Add this closing bracket
 
-// Student Certificate Schema
-const StudentCert = new mongoose.Schema({
-  StudId: { type: String, required: true }, // Unique identifier for the student
-  StudName: { type: String, required: true }, // Full name of the student
-  timestamp: { type: Date, default: Date.now }, // Record creation timestamp
+const validateAttachment = (url) => {
+  const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
+  return allowedExtensions.test(url);
+};
+
+const StudentCert = new mongoose.Schema({ 
+  StudId: { type: String, required: true },
+  StudName: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
   Certificate: {
-    CertName: { type: String, required: true }, // Name/title of the certificate
-    CertDescription: { type: String, required: true }, // Detailed description of the certificate
-    CertThumbnail: { type: String, default: "" }, // URL or path to the certificate thumbnail
+    CertName: { type: String, required: true },
+    CertDescription: { type: String, required: true },
+    CertThumbnail: { type: String, default: "" },
     Attachments: [{
       type: String,
       validate: {
-        validator: function (v) {
-          // Ensure each attachment has an allowed file extension
-          const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
-          return allowedExtensions.test(v);
-        },
+        validator: validateAttachment,
         message: "Attachments must be valid file URLs with extensions jpg, jpeg, png, pdf, docx, or txt.",
       },
     }],
@@ -707,34 +718,16 @@ const StudentCert = new mongoose.Schema({
 
 const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
 
-app.post("/api/uploadCertificate", verifyToken, upload.fields([
-  { name: "thumbnail", maxCount: 1 },
-  { name: "attachments", maxCount: 10 }
-]), async (req, res) => {
+app.post("/api/uploadCertificate", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const userName = req.user.name;
-    const { CertName, CertDescription } = req.body;
+    const { CertName, CertDescription, thumbnailUrl, attachmentUrls } = req.body;
 
-    if (!CertName || !CertDescription) {
-      return res.status(400).json({ success: false, message: "Certificate name and description are required." });
+    if (!CertName || !CertDescription || !thumbnailUrl || !attachmentUrls) {
+      return res.status(400).json({ success: false, message: "All fields are required: CertName, CertDescription, thumbnailUrl, and attachmentUrls" });
     }
-
-    // ✅ Upload thumbnail to Cloudinary
-    let thumbnailUrl = "";
-    if (req.files["thumbnail"]) {
-      const result = await cloudinary.uploader.upload(req.files["thumbnail"][0].path, { folder: "TUPath_Cert" });
-      thumbnailUrl = result.secure_url;
-    }
-
-    // ✅ Upload attachments to Cloudinary
-    let attachmentUrls = [];
-    if (req.files["attachments"]) {
-      for (const file of req.files["attachments"]) {
-        const result = await cloudinary.uploader.upload(file.path, { folder: "TUPath_Cert" });
-        attachmentUrls.push(result.secure_url);
-      }
-    }
+    
 
     // ✅ Save certificate to MongoDB with Cloudinary URLs
     const newCertificate = new StudentCertificate({
@@ -759,6 +752,40 @@ app.post("/api/uploadCertificate", verifyToken, upload.fields([
     res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 });
+
+
+app.post("/api/uploadThumbnail", verifyToken, uploadThumbnail.single('thumbnail'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Thumbnail file is required." });
+    }
+
+    const thumbnailUrl = req.file.secure_url;
+    
+    // Return the thumbnail URL to be saved with the certificate
+    res.status(201).json({ success: true, message: "Thumbnail uploaded successfully", thumbnailUrl });
+  } catch (error) {
+    console.error("Error uploading thumbnail:", error);
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+});
+
+app.post("/api/uploadAttachments", verifyToken, uploadCertFiles.array('attachments', 10), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: "At least one attachment is required." });
+    }
+
+    const attachmentUrls = req.files.map(file => file.secure_url);
+    
+    // Return the attachment URLs to be saved with the certificate
+    res.status(201).json({ success: true, message: "Attachments uploaded successfully", attachmentUrls });
+  } catch (error) {
+    console.error("Error uploading attachments:", error);
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+});
+
 
 // Endpoint to fetch certificates for a user
 app.get('/api/certificates', verifyToken, async (req, res) => {
