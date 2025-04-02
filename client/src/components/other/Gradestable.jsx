@@ -11,7 +11,7 @@ const GradesTable = ({ grades }) => {
             <th>Subject Code</th>
             <th>Description</th>
             <th>Final Grade</th>
-            <th>Rating Slip</th>
+            <th>Rating Split</th>
           </tr>
         </thead>
         <tbody>

@@ -762,7 +762,9 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
   try {
     console.log("Received project upload request with data:", req.body);
 
+    // Retrieve saved subject & grade from session
     const { subject, grade, ratingSlip } = req.session.assessmentData || {};
+
     if (!subject || !grade) {
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
@@ -783,8 +785,10 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
       grade,
       ratingSlip: ratingSlipPath,
       status: "pending",
-      thumbnail, // Cloudinary URL
-      selectedFiles
+      thumbnail,
+      selectedFiles,
+      year,
+      term,
     });
 
     await newProject.save();
@@ -1006,25 +1010,8 @@ app.get('/api/search', verifyToken, async (req, res) => {
   }
 });
 
-app.get('/api/profile/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await Tupath_usersModel.findById(id).populate({
-      path: 'profileDetails.projects',
-      strictPopulate: false
-    }) || await Employer_usersModel.findById(id).populate({
-      path: 'profileDetails.projects',
-      strictPopulate: false
-    });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    res.status(200).json({ success: true, profile: user });
-  } catch (err) {
-    console.error('Error fetching profile:', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+
+
 
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
@@ -1181,26 +1168,6 @@ app.post("/api/reset-password/:token", async (req, res) => {
 
 //===============================================FOR ASSESSMENT QUESTIONS
 
-// Fetch assessment questions by category
-app.get("/api/assessment-questions", verifyToken, async (req, res) => {
-  const { category, categoryName } = req.query;
-
-  if (!category || !categoryName) {
-    return res.status(400).json({ success: false, message: "Category and categoryName are required" });
-  }
-
-  try {
-    const questions = await AssessmentQuestion.find({ category, categoryName });
-    if (questions.length === 0) {
-      return res.status(404).json({ success: false, message: "No questions found" });
-    }
-
-    res.status(200).json({ success: true, questions });
-  } catch (error) {
-    console.error("Error fetching assessment questions:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
 
 // Add authentication check endpoint
 app.get('/check-auth', async (req, res) => {
@@ -1231,14 +1198,14 @@ app.post('/api/admin/logout', (req, res) => {
 
 app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
   try {
-    const { subject, grade } = req.body;
-    if (!subject || !grade) {
-      return res.status(400).json({ success: false, message: "Subject and grade are required." });
+    const { subject, grade, year, term } = req.body;
+    if (!subject || !grade || !year || !term) {
+      return res.status(400).json({ success: false, message: "Subject, grade, year level, and term are required." });
     }
 
     const ratingSlipPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    req.session.assessmentData = { subject, grade, ratingSlip: ratingSlipPath };
+    req.session.assessmentData = { subject, grade, ratingSlip: ratingSlipPath, year, term };
 
     // Debugging: Log the stored session data
     console.log("Saved assessment data in session:", req.session.assessmentData);
