@@ -27,6 +27,7 @@ const users = require("./routes/users");
 const adminDelete = require("./routes/adminDelete");
 const corRoutes = require("./routes/corRoutes");
 const postRoutes = require("./routes/postRoutes"); // Import post routes
+const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
 
 // const checkAuth = require('./middleware/authv2')
 const adminLogout = require('./routes/adminLogout')
@@ -95,6 +96,7 @@ app.use('/', adminLogout);
 app.use('/', corRoutes);
 app.use('/api', authRoute); // Use the auth routes
 app.use('/api/posts', postRoutes); // Use post routes
+app.use('/api/admin', adminRoutes); // Use admin routes
 
 
 // Middleware for setting COOP headers

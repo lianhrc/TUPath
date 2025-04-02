@@ -14,8 +14,8 @@ exports.login = async (req, res) => {
   try {
     // Find the user by email and ensure they are not soft deleted
     const user = role === "student"
-      ? await Tupath_usersModel.findOne({ email, deletedAt: null })
-      : await Employer_usersModel.findOne({ email, deletedAt: null });
+      ? await Tupath_usersModel.findOne({ email, status: true, deletedAt: null })
+      : await Employer_usersModel.findOne({ email, status: true, deletedAt: null });
 
     // If no user is found or the password is incorrect
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -105,7 +105,7 @@ exports.googleLogin = async (req, res) => {
     const UserModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
 
     // Check if the user exists and is not soft-deleted
-    const user = await UserModel.findOne({ email, deletedAt: null });
+    const user = await UserModel.findOne({ email, status: true, deletedAt: null });
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not registered or has been deleted." });

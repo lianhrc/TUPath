@@ -191,6 +191,29 @@ const UsersSection = () => {
     }
   };
 
+  const handleToggleStatus = async (userId, currentStatus) => {
+    try {
+      // Determine the user type based on the selected dropdown value
+      const userType = selectedType === 'Students' ? 'student' : 'employer';
+      
+      const response = await axiosInstance.put(`/api/admin/toggle-status/${userType}/${userId}`);
+      
+      if (response.data.success) {
+        // Update the local state to reflect the change
+        setUsersData(prevUsers => 
+          prevUsers.map(user => 
+            user._id === userId ? { ...user, status: !currentStatus } : user
+          )
+        );
+      } else {
+        alert('Failed to update user status.');
+      }
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      alert('An error occurred while updating the user status.');
+    }
+  };
+
   const chartData = {
     labels: ['Students', 'Employers'],
     datasets: [
@@ -215,6 +238,7 @@ const UsersSection = () => {
             <th>Email</th>
             <th>Contact</th>
             <th></th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -226,6 +250,14 @@ const UsersSection = () => {
               <td>
                 <button className="delete-btn" onClick={() => handleDelete(user._id)}>
                   Delete
+                </button>
+              </td>
+              <td>
+                <button 
+                  className={`status-btn ${user.status ? 'active' : 'inactive'}`}
+                  onClick={() => handleToggleStatus(user._id, user.status)}
+                >
+                  {user.status ? 'Deactivate' : 'Activate'}
                 </button>
               </td>
             </tr>
