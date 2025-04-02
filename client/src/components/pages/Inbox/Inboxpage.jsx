@@ -1,408 +1,273 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import HeaderHomepage from '../../common/headerhomepage';
-import addnewwrite from '../../../assets/writemessage.png';
-import dotsicon from '../../../assets/dots.png';
-import profileicon from '../../../assets/profile2.png';
+import React, { useState, useEffect, useRef } from 'react';
 import './Inboxpage.css';
-
-const socket = io("http://localhost:3001");
-
-const formatTimeAgo = (timestamp) => {
-  const now = new Date();
-  const postDate = new Date(timestamp);
-  const diffInMs = now - postDate;
-  const diffInMinutes = Math.floor(diffInMs / 60000);
-
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-
-  return postDate.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
+import HeaderHomepage from '../../common/headerhomepage';
+// Removed axiosInstance import
 
 function Inboxpage() {
-  const { Inboxpage } = useParams();
-  const location = useLocation();
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  const [newMessageRecipient, setNewMessageRecipient] = useState('');
-  const [newMessageContent, setNewMessageContent] = useState('');
-  const [showNewMessageSection, setShowNewMessageSection] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isFetching, setIsFetching] = useState(false);
-
-  useEffect(() => {
-    const countUnread = messages.filter(msg => !msg.status.read).length;
-    setUnreadCount(countUnread);
-  }, [messages]);
-
-  const fetchMessages = async () => {
-    setIsFetching(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/messages', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+  const [activeTab, setActiveTab] = useState('Alex Johansen');
+  const [conversations, setConversations] = useState([
+    {
+      id: '1',
+      name: 'Alex Johansen',
+      lastSeen: '10:30 AM',
+      unread: false,
+      messages: [
+        {
+          id: '101',
+          sender: 'Alex Johansen',
+          content: 'The speed tracking on the project was discussed.',
+          time: '10:30 AM'
         }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
-
-      const messages = await response.json();
-      const sortedMessages = messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setMessages(sortedMessages);
-
-      const queryParams = new URLSearchParams(location.search);
-      const messageId = queryParams.get('messageId');
-      if (messageId) {
-        const message = messages.find(msg => msg._id === messageId);
-        if (message) {
-          setSelectedMessage(message);
-          if (!message.status.read) {
-            handleMarkAsRead(message);
-          }
+      ]
+    },
+    {
+      id: '2',
+      name: 'Search Williams',
+      lastSeen: 'Yesterday',
+      unread: true,
+      messages: [
+        {
+          id: '201',
+          sender: 'Search Williams',
+          content: 'Intelligent Spin tomorrow?',
+          time: 'Yesterday'
         }
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setIsFetching(false);
+      ]
+    },
+    {
+      id: '3',
+      name: 'Login',
+      lastSeen: 'Monday',
+      unread: false,
+      messages: [
+        {
+          id: '301',
+          sender: 'Login',
+          content: 'Molding at 3pm tomorrow?',
+          time: 'Monday'
+        }
+      ]
     }
-  };
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const [showNewConversation, setShowNewConversation] = useState(false);
+  const [newConversationName, setNewConversationName] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
+  // Mock user data for search results
+  const mockUsers = [
+    { _id: '1', profileDetails: { firstName: 'John', lastName: 'Doe' }, bestTag: 'Developer' },
+    { _id: '2', profileDetails: { firstName: 'Jane', lastName: 'Smith' }, bestTag: 'Designer' },
+    { _id: '3', profileDetails: { firstName: 'Mike', lastName: 'Johnson' }, bestTag: 'Project Manager' },
+    { _id: '4', profileDetails: { firstName: 'Sarah', lastName: 'Williams' }, bestTag: 'Data Analyst' },
+  ];
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    fetchMessages();
-
-    socket.on('receive_message', handleNewMessage);
-    socket.on('message_read', handleMessageRead);
-    socket.on('message_deleted', handleMessageDeleted);
-
-    const refreshInterval = setInterval(fetchMessages, 10000);
-
-    return () => {
-      socket.off('receive_message');
-      socket.off('message_read');
-      socket.off('message_deleted');
-      clearInterval(refreshInterval);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
     };
-  }, [location.search]);
 
-  useEffect(() => {
-    fetch('http://localhost:3001/api/userss', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          setUsers(data.users);
-        }
-      })
-      .catch(error => console.error("Error fetching users:", error));
-  }, []);
-
-  const handleNewMessage = (message) => {
-    setMessages((prevMessages) => {
-      const updatedMessages = [message, ...prevMessages];
-      return updatedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    });
-  };
-
-  const handleMessageRead = ({ messageId }) => {
-    setMessages((prevMessages) =>
-      prevMessages.map((msg) => 
-        msg._id === messageId 
-          ? { ...msg, status: { ...msg.status, read: true } }
-          : msg
-      )
-    );
-  };
-
-  const handleMessageDeleted = ({ messageId }) => {
-    setMessages((prevMessages) => 
-      prevMessages.filter((msg) => msg._id !== messageId)
-    );
-    if (selectedMessage?._id === messageId) {
-      setSelectedMessage(null);
-    }
-  };
-
-  useEffect(() => {
-    socket.on('receive_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('new_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('message_read', ({ messageId }) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
-      );
-    });
-
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      socket.off('receive_message');
-      socket.off('new_message');
-      socket.off('message_read');
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const handleSelectMessage = async (message) => {
-    setSelectedMessage(message);
-    setShowNewMessageSection(false);
-  
-    if (!message.status.read) {
-      try {
-        await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        message.status.read = true;
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => (msg._id === message._id ? { ...msg, status: { ...msg.status, read: true } } : msg))
-        );
-      } catch (error) {
-        console.error("Error marking message as read:", error);
-      }
-    }
-  };
-
-  const handleSendNewMessage = () => {
-    if (newMessageRecipient && newMessageContent) {
-      const recipientUser = users.find(user => 
-        `${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase() === newMessageRecipient.toLowerCase()
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase();
+    setNewConversationName(query);
+    
+    if (query.length > 0) {
+      setShowDropdown(true);
+      
+      // Filter mock users locally instead of API call
+      const filteredResults = mockUsers.filter(user => 
+        `${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase().includes(query)
       );
-
-      if (!recipientUser) {
-        console.error("Recipient not found");
-        return;
-      }
-
-      const userId = localStorage.getItem('userId');
-      const username = localStorage.getItem('username');
-      const token = localStorage.getItem('token');
-
-      console.log("Sender ID:", userId);
-      console.log("Sender Username:", username);
-
-      const newMessage = {
-        sender: {
-          senderId: userId,
-          name: username,
-          profileImg: localStorage.getItem('profileImg')
-        },
-        receiverId: recipientUser._id,
-        receiverName: newMessageRecipient,
-        receiverProfileImg: recipientUser.profileDetails.profileImg,
-        messageContent: {
-          text: newMessageContent,
-          attachments: []
-        },
-        status: {
-          read: false,
-          delivered: true
-        },
-        timestamp: new Date().toISOString(),
-        token: token
-      };
-
-      socket.emit('send_message', newMessage);
-
-      setNewMessageRecipient('');
-      setNewMessageContent('');
-      setShowNewMessageSection(false);
-    }
-  };
-
-  const toggleNewMessageSection = () => {
-    setShowNewMessageSection(true);
-    setSelectedMessage(null);
-  };
-
-  const handleRecipientChange = (e) => {
-    const value = e.target.value.toLowerCase();
-    setNewMessageRecipient(value);
-    if (value) {
-      const filtered = users.filter(user =>
-        user.profileDetails &&
-        user.profileDetails.firstName &&
-        user.profileDetails.lastName &&
-        (`${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase().includes(value) ||
-         user.profileDetails.firstName.toLowerCase().includes(value) ||
-         user.profileDetails.lastName.toLowerCase().includes(value))
-      );
-      setFilteredUsers(filtered);
+      setSearchResults(filteredResults);
     } else {
-      setFilteredUsers([]);
+      setSearchResults([]);
+      setShowDropdown(false);
     }
   };
 
-  const handleUserSelect = (user) => {
-    setNewMessageRecipient(`${user.profileDetails.firstName} ${user.profileDetails.lastName}`);
-    setFilteredUsers([]);
+  // Handle user selection from dropdown
+  const handleSelectUser = (user) => {
+    const fullName = `${user.profileDetails.firstName} ${user.profileDetails.lastName}`;
+    setNewConversationName(fullName);
+    setShowDropdown(false);
   };
 
-  const handleMarkAsRead = async (message) => {
-    if (!message.status.read) {
-      try {
-        const response = await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          } 
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to mark message as read');
+  const handleSendMessage = () => {
+    if (newMessage.trim()) {
+      const updatedConversations = conversations.map(convo => {
+        if (convo.name === activeTab) {
+          return {
+            ...convo,
+            lastSeen: 'Just now',
+            messages: [
+              ...convo.messages,
+              {
+                id: Date.now().toString(),
+                sender: 'You',
+                content: newMessage,
+                time: 'Just now'
+              }
+            ]
+          };
         }
-
-        socket.emit('mark_as_read', { messageId: message._id });
-        
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => 
-            msg._id === message._id 
-              ? { ...msg, status: { ...msg.status, read: true } }
-              : msg
-          )
-        );
-      } catch (error) {
-        console.error("Error marking message as read:", error);
-      }
+        return convo;
+      });
+      
+      setConversations(updatedConversations);
+      setNewMessage('');
     }
   };
 
-  const renderMessageList = () => (
-    <div className="inboxlists">
-      {isFetching ? (
-        <div className="loading-indicator">Loading messages...</div>
-      ) : messages.length === 0 ? (
-        <div className="no-messages">No messages found</div>
-      ) : (
-        messages.map((message, index) => {
-          const isSentMessage = message.direction === 'sent';
-          const displayName = isSentMessage ? message.receiver.name : message.sender.name;
-          const profileImg = isSentMessage ? message.receiver.profileImg : message.sender.profileImg;
-          const text = message.messageContent?.text || '';
-          const isUnread = !message.status.read && !isSentMessage;
-
-          return (
-            <div
-              key={message._id || index}
-              className={`inboxlist-container ${message.direction} ${isUnread ? 'unread' : 'read'}`}
-              onClick={() => handleSelectMessage(message)}
-            >
-              <div className="inboxprofilecontainerleft">
-                <img src={profileImg || profileicon} alt={`${displayName}'s profile`} />
-                {isUnread && <span className="unread-indicator" />}
-              </div>
-              <div className="inboxdetailscontainerright">
-                <div className="topdetailscontainer">
-                  <h5>{message.direction === 'sent' ? 'To:' : 'From:'} {displayName}</h5>
-                  <p>{formatTimeAgo(message.timestamp)}</p>
-                </div>
-                <div className="bottomdetailscontainer">
-                  <p className="text-content">{text}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
+  const handleCreateConversation = () => {
+    if (newConversationName.trim()) {
+      const newConvo = {
+        id: Date.now().toString(),
+        name: newConversationName,
+        lastSeen: 'Just now',
+        unread: false,
+        messages: [
+          {
+            id: Date.now().toString() + '-msg',
+            sender: 'System',
+            content: 'New conversation started',
+            time: 'Just now'
+          }
+        ]
+      };
+      
+      setConversations([...conversations, newConvo]);
+      setNewConversationName('');
+      setShowNewConversation(false);
+      setActiveTab(newConversationName);
+    }
+  };
+  
+  const activeConversation = conversations.find(convo => convo.name === activeTab);
 
   return (
-    <div className='Inboxpage'>
+    <div className="messaging-app">
       <HeaderHomepage />
-      <div className="inbox-container">
-        <div className="inboxhead">
-          <div className="headtitle">
-            <p>Email {unreadCount > 0 && <span className="unread-count">({unreadCount})</span>}</p>
-          </div>
-          <div className="headicons">
-            <button>
-              <img src={dotsicon} alt="More options" />
+      <div className="app-content">
+        <div className="conversation-sidebar">
+          <div className="create-conversation">
+            <button 
+              className="create-button" 
+              onClick={() => setShowNewConversation(!showNewConversation)}
+            >
+              + Create Conversation
             </button>
-            <button onClick={toggleNewMessageSection}>
-              <img src={addnewwrite} alt="Add new message" />
-            </button>
-          </div>
-        </div>
-        <div className="inboxmain">
-          <div className="inboxmain-left">
-            {renderMessageList()}
-          </div>
-          <div className="inboxmain-right">
-            {showNewMessageSection ? (
-              <div className="new-message-section">
-                <h6>New Email</h6>
-                <label>To:</label>
-                <input
-                  className='recieptinput'
-                  type="text"
-                  value={newMessageRecipient}
-                  onChange={handleRecipientChange}
-                  placeholder="Recipient's name"
-                />
-                {filteredUsers.length > 0 && (
-                  <ul className="dropdown">
-                    {filteredUsers.map((user, index) => (
-                      <li key={index} onClick={() => handleUserSelect(user)}>
-                        <img src={user.profileDetails.profileImg || profileicon} alt={`${user.profileDetails.firstName} ${user.profileDetails.lastName}`} />
-                        {user.profileDetails.firstName} {user.profileDetails.lastName}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <label>Message:</label>
-                <textarea
-                  className='Messageinputbox'
-                  value={newMessageContent}
-                  onChange={(e) => setNewMessageContent(e.target.value)}
-                  placeholder="Type your message here"
-                />
-                <div className="newmessageinboxbtn">
-                  <button onClick={handleSendNewMessage}>Send</button>
+            
+            {showNewConversation && (
+              <div className="new-conversation-form">
+                <div className="search-container" ref={dropdownRef}>
+                  <input
+                    type="text"
+                    value={newConversationName}
+                    onChange={handleSearchChange}
+                    placeholder="Enter person's name"
+                  />
+                  
+                  {showDropdown && (
+                    <div className="search-dropdown">
+                      {searchResults.length > 0 ? (
+                        <ul>
+                          {searchResults.map((user) => (
+                            <li 
+                              key={user._id} 
+                              onClick={() => handleSelectUser(user)}
+                            >
+                              {user.profileDetails.firstName} {user.profileDetails.lastName}
+                              {user.bestTag && <span className="user-tag"> - {user.bestTag}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="no-results">No users found</div>
+                      )}
+                    </div>
+                  )}
                 </div>
+                <button onClick={handleCreateConversation}>Create</button>
               </div>
-            ) : selectedMessage ? (
-              <div className="message-details">
-                <div className="message-profile">
-                  <img src={selectedMessage.receiver.profileImg || profileicon} alt={`${selectedMessage.receiver.name}'s profile`} className="profile-image" />
-                </div>
-                <div className="namedatecontainer">
-                  <h4>{selectedMessage.receiver.name}</h4>
-                  <p className="message-date">{formatTimeAgo(selectedMessage.timestamp)}</p>
-                </div>
-                <p className="message-content">{selectedMessage.messageContent?.text || ''}</p>
-              </div>
-            ) : (
-              <p>Select a Email to view its content</p>
             )}
           </div>
+          
+          <div className="conversation-list">
+            {conversations.map((convo) => (
+              <div 
+                key={convo.id}
+                className={`conversation-item ${activeTab === convo.name ? 'active' : ''}`}
+                onClick={() => setActiveTab(convo.name)}
+              >
+                <div className="sender-info">
+                  <h3>{convo.name}</h3>
+                  <p className="message-preview">
+                    {convo.messages[convo.messages.length - 1]?.content || 'No messages'}
+                  </p>
+                </div>
+                <div className="message-meta">
+                  <span className="time">{convo.lastSeen}</span>
+                  {convo.unread && <span className="unread-dot"></span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="message-view">
+          {activeConversation ? (
+            <>
+              <div className="message-header">
+                <h2>{activeConversation.name}</h2>
+                <p className="last-seen">Last seen {activeConversation.lastSeen}</p>
+              </div>
+
+              <div className="messages-container">
+                {activeConversation.messages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`message ${msg.sender === 'You' ? 'message-sent' : 'message-received'}`}
+                  >
+                    <p className="message-content">{msg.content}</p>
+                    <span className="message-time">{msg.time}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="message-input">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                />
+                <button 
+                  className="send-button"
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="no-conversation">
+              <p>Select a conversation or create a new one</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
