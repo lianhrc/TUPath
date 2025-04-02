@@ -407,13 +407,11 @@ app.post("/api/uploadCertificate", verifyToken, async (req, res) => {
       req.body;
 
     if (!CertName || !CertDescription || !thumbnailUrl || !attachmentUrls) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            "All fields are required: CertName, CertDescription, thumbnailUrl, and attachmentUrls",
-        });
+      return res.status(400).json({
+        success: false,
+        message:
+          "All fields are required: CertName, CertDescription, thumbnailUrl, and attachmentUrls",
+      });
     }
 
     // ✅ Save certificate to MongoDB with Cloudinary URLs
@@ -433,22 +431,18 @@ app.post("/api/uploadCertificate", verifyToken, async (req, res) => {
     // Emit the new certificate event
     io.emit("new_certificate", newCertificate);
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Certificate uploaded successfully",
-        certificate: newCertificate,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Certificate uploaded successfully",
+      certificate: newCertificate,
+    });
   } catch (error) {
     console.error("Error uploading certificate:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
 
@@ -467,22 +461,18 @@ app.post(
       const thumbnailUrl = req.file.secure_url;
 
       // Return the thumbnail URL to be saved with the certificate
-      res
-        .status(201)
-        .json({
-          success: true,
-          message: "Thumbnail uploaded successfully",
-          thumbnailUrl,
-        });
+      res.status(201).json({
+        success: true,
+        message: "Thumbnail uploaded successfully",
+        thumbnailUrl,
+      });
     } catch (error) {
       console.error("Error uploading thumbnail:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Internal server error",
-          error: error.message,
-        });
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      });
     }
   }
 );
@@ -494,33 +484,27 @@ app.post(
   async (req, res) => {
     try {
       if (!req.files || req.files.length === 0) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "At least one attachment is required.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "At least one attachment is required.",
+        });
       }
 
       const attachmentUrls = req.files.map((file) => file.secure_url);
 
       // Return the attachment URLs to be saved with the certificate
-      res
-        .status(201)
-        .json({
-          success: true,
-          message: "Attachments uploaded successfully",
-          attachmentUrls,
-        });
+      res.status(201).json({
+        success: true,
+        message: "Attachments uploaded successfully",
+        attachmentUrls,
+      });
     } catch (error) {
       console.error("Error uploading attachments:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Internal server error",
-          error: error.message,
-        });
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      });
     }
   }
 );
@@ -664,13 +648,11 @@ app.post("/api/updateStudentProfile", verifyToken, async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Profile updated successfully",
-        updatedUser,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      updatedUser,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -737,13 +719,11 @@ app.post("/api/updateEmployerProfile", verifyToken, async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Profile updated successfully",
-        updatedUser,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      updatedUser,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -857,12 +837,10 @@ app.post(
       const userId = req.user.id;
 
       if (!req.file) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "No file uploaded or Cloudinary failed",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded or Cloudinary failed",
+        });
       }
 
       console.log("Uploaded File:", req.file); // 🛠️ Debugging
@@ -870,12 +848,10 @@ app.post(
       const profileImgUrl = req.file.path; // ✅ Cloudinary should return a URL
 
       if (!profileImgUrl) {
-        return res
-          .status(500)
-          .json({
-            success: false,
-            message: "Cloudinary upload failed, no URL returned",
-          });
+        return res.status(500).json({
+          success: false,
+          message: "Cloudinary upload failed, no URL returned",
+        });
       }
 
       // ✅ Select the correct user model based on role
@@ -1112,12 +1088,10 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
       (project) => project._id.toString() === projectId
     );
     if (projectIndex === -1) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Project not found in user's profile",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Project not found in user's profile",
+      });
     }
 
     // Remove the project reference from the user's profile
@@ -1127,12 +1101,10 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
     // Delete the project document from the 'projects' collection
     const deletedProject = await Project.findByIdAndDelete(projectId);
     if (!deletedProject) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Project not found in projects collection",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Project not found in projects collection",
+      });
     }
 
     res.status(200).json({
@@ -1282,13 +1254,11 @@ app.put(
         );
       }
 
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Profile updated successfully",
-          updatedUser,
-        });
+      res.status(200).json({
+        success: true,
+        message: "Profile updated successfully",
+        updatedUser,
+      });
     } catch (error) {
       console.error("Error updating profile:", error);
       res
@@ -1425,12 +1395,10 @@ app.post(
     try {
       const { subject, grade, year, term } = req.body;
       if (!subject || !grade || !year || !term) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Subject, grade, year level, and term are required.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Subject, grade, year level, and term are required.",
+        });
       }
 
       const ratingSlipPath = req.file ? `/uploads/${req.file.filename}` : null;
