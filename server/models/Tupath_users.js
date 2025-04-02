@@ -123,6 +123,8 @@ const projectSchema = new mongoose.Schema({
   projectUrl: String,
   subject: { type: String, required: true }, // New field for subject
   grade: { type: String, required: true },   // New field for grade
+  year: { type: String, required: true },
+  term: { type: String, required: true }, // 🆕 New field for semester and term
   createdAt: { type: Date, default: Date.now },
   ratingSlip: String, // <-- Changed from corFile to ratingSlip
 });

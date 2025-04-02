@@ -18,7 +18,7 @@ import Loader from '../../common/Loader';
 import { ToastContainer, toast } from 'react-toastify';  // Import toastify components
 import 'react-toastify/dist/ReactToastify.css';  // Import the CSS file for toast notificationszz
 import GradesTable from "../../other/Gradestable"; // Adjust the path if needed
-
+import { useParams } from 'react-router-dom';
 
 const socket = io('http://localhost:3001');
 
@@ -33,8 +33,21 @@ function ProfilePage() {
   const [grades, setGrades] = useState([]);
 
   const updateGradesTable = (newGrade) => {
-    setGrades((prevGrades) => [...prevGrades, newGrade]);
-  };
+    setGrades((prevGrades) => {
+        // Check if subject already exists in the table
+        const existingIndex = prevGrades.findIndex((grade) => grade.code === newGrade.code);
+
+        if (existingIndex !== -1) {
+            // Replace the existing subject with the new one
+            const updatedGrades = [...prevGrades];
+            updatedGrades[existingIndex] = newGrade;
+            return updatedGrades;
+        } else {
+            // Add new subject if it does not exist
+            return [...prevGrades, newGrade];
+        }
+    });
+};
 
   const addProjectToState = (newProject) => {
     setProjects((prevProjects) => [...prevProjects, newProject]);
@@ -60,7 +73,7 @@ function ProfilePage() {
         const profileResponse = await axiosInstance.get('/api/profile');
         if (profileResponse.data.success) {
           const { profileDetails, role, createdAt, email } = profileResponse.data.profile;
-  
+          setProjects(profileDetails.projects || []); // Ensure projects contain subjects and grades
           // Ensure projects and certificates are correctly extracted
           const { projects, certificates, ...profileWithoutProjectsAndCertificates } = profileDetails;
   
@@ -90,6 +103,19 @@ function ProfilePage() {
     fetchProfileData();
   }, []); // Removed [userRole] dependency to avoid unnecessary re-fetches
   
+  useEffect(()=>{
+    const fetchGrades = async() => {
+      try{
+        const response = await axiosInstance.get('api/grades');
+        if(response.data.success){
+          setGrades(response.data.grades);
+        
+        }
+        }catch (error) {
+          console.error('Error fetching grades:', error);
+        }
+      };
+    fetchGrades();}, []);
 
   useEffect(() => {
     socket.on('new_certificate', (certificate) => {

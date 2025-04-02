@@ -1719,7 +1719,30 @@ app.get("/api/getSubjectByTag", async (req, res) => {
 });
 
 
-
+app.get('/api/grades', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Find all projects for the user
+    const projects = await Project.find({ 
+      // Assuming projects are linked to users in your schema
+      // You may need to adjust this query based on your actual schema
+    }).select('subject grade');
+    
+    // Transform projects into grades format
+    const grades = projects.map(project => ({
+      code: project.subject,
+      description: 'Project submission', // Or get from subject mapping
+      grade: project.grade,
+      corFile: null // Or include if you have this data
+    }));
+    
+    res.status(200).json({ success: true, grades });
+  } catch (error) {
+    console.error('Error fetching grades:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 
 
