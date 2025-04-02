@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './CertUpModal.css';
+
 import { toast } from "react-toastify"; // Import toastify
 import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
-import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
+import axios from '../../services/axiosInstance';  // Make sure to import axios instance
 
 const CertUpModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -27,51 +28,76 @@ const CertUpModal = ({ show, onClose }) => {
       setThumbnail(file);
     }
   };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("CertName", certName);
-    formData.append("CertDescription", certDescription);
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-    selectedFiles.forEach((file) => {
-      formData.append("attachments", file);
-    });
+  e.preventDefault();
   
-    try {
-      const response = await axiosInstance.post("/api/uploadCertificate", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      if (response.data.success) {
-        toast.success("Certificate uploaded successfully", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          theme: "light",
-        });
-        onClose();  // Close the modal and trigger parent state update
-      } else {
-        toast.error("Failed to upload certificate", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          theme: "light",
-        });
-      }
-    } catch (error) {
-      console.error("Error uploading certificate:", error);
-      toast.error(`${error.response?.data?.message || error.message}`, {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        theme: "light",
-      });
+  try {
+    if (!certName || !certDescription) {
+      toast.error("Certificate name and description are required");
+      return;
     }
-  };
+
+    // Upload Thumbnail
+    const thumbnailFormData = new FormData();
+    thumbnailFormData.append("thumbnail", thumbnail);
+    
+    const thumbnailResponse = await axios.post("/api/uploadThumbnail", thumbnailFormData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Thumbnail Upload Response:", thumbnailResponse.data); // 👈 Debugging
+
+    if (!thumbnailResponse.data.success) {
+      toast.error("Failed to upload thumbnail");
+      return;
+    }
+
+    const thumbnailUrl = thumbnailResponse.data.thumbnailUrl;
+
+    // Upload Attachments
+    const attachmentFormData = new FormData();
+    selectedFiles.forEach((file) => {
+      attachmentFormData.append("attachments", file);
+    });
+
+    const attachmentResponse = await axios.post("/api/uploadAttachments", attachmentFormData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Attachment Upload Response:", attachmentResponse.data); // 👈 Debugging
+
+    if (!attachmentResponse.data.success) {
+      toast.error("Failed to upload attachments");
+      return;
+    }
+
+    const attachmentUrls = attachmentResponse.data.attachmentUrls;
+
+    // Upload Certificate
+    const certificateData = {
+      CertName: certName,
+      CertDescription: certDescription,
+      thumbnailUrl,
+      attachmentUrls,
+    };
+
+    const certificateResponse = await axios.post("/api/uploadCertificate", certificateData);
+    
+    console.log("Certificate Upload Response:", certificateResponse.data); // 👈 Debugging
+
+    if (certificateResponse.data.success) {
+      toast.success("Certificate uploaded successfully");
+      onClose();
+    } else {
+      toast.error("Failed to upload certificate");
+    }
+    
+  } catch (error) {
+    console.error("Error during certificate upload:", error);
+    toast.error(error.response?.data?.message || "An error occurred");
+  }
+};
+
   
 
   const modalVariants = {
