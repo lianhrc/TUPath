@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './AdminDashboard.css';
 import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing 
 import WordCloud from "react-d3-cloud";
@@ -46,16 +46,16 @@ const AdminDashboard = () => {
         }
       }
     };
-  
+
     checkAuth();
   }, [navigate]);
-  
+
 
   const handleLogout = async () => {
     try {
       // Clear any stored admin auth data first
       localStorage.removeItem('adminToken'); // If you're using token-based auth
-      
+
       const response = await axiosInstance.post('/api/admin/logout');
       if (response.data.success) {
         // Force navigation to login and prevent back navigation
@@ -102,19 +102,19 @@ const AdminDashboard = () => {
             </li>
 
             <li
-            onClick={() => setActiveSection('ActiveTagSection')}
-            className={activeSection === 'ActiveTagSection' ? 'active' : ''}
-          >
-            <FaTags className="icon" />
-            <span className="text"> Popular</span>
-          </li>
+              onClick={() => setActiveSection('ActiveTagSection')}
+              className={activeSection === 'ActiveTagSection' ? 'active' : ''}
+            >
+              <FaTags className="icon" />
+              <span className="text"> Popular</span>
+            </li>
 
             <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
 
-           
+
           </ul>
         </nav>
       </div>
@@ -147,6 +147,7 @@ const UsersSection = () => {
         const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
         if (response.data.success) {
           setUsersData(response.data.users);
+          console.log('Fetched users:', response.data.users);
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -195,13 +196,13 @@ const UsersSection = () => {
     try {
       // Determine the user type based on the selected dropdown value
       const userType = selectedType === 'Students' ? 'student' : 'employer';
-      
+
       const response = await axiosInstance.put(`/api/admin/toggle-status/${userType}/${userId}`);
-      
+
       if (response.data.success) {
         // Update the local state to reflect the change
-        setUsersData(prevUsers => 
-          prevUsers.map(user => 
+        setUsersData(prevUsers =>
+          prevUsers.map(user =>
             user._id === userId ? { ...user, status: !currentStatus } : user
           )
         );
@@ -253,7 +254,7 @@ const UsersSection = () => {
                 </button>
               </td>
               <td>
-                <button 
+                <button
                   className={`status-btn ${user.status ? 'active' : 'inactive'}`}
                   onClick={() => handleToggleStatus(user._id, user.status)}
                 >
@@ -368,7 +369,7 @@ const TagChart = () => {
             }}
           />
         )}
-           {selectedTag && (
+        {selectedTag && (
           <StudentListModal
             tag={selectedTag}
             students={students}
@@ -376,7 +377,7 @@ const TagChart = () => {
             loading={studentsLoading}
           />
         )}
-     
+
       </div>
     </div>
   );

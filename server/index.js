@@ -1,21 +1,21 @@
 const express = require("express");
-  const mongoose = require("mongoose");
-  const cors = require("cors");
-  const jwt = require("jsonwebtoken");
-  const bcrypt = require("bcryptjs");
-  const axios = require("axios");
-  const http = require("http");
-  const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping} = require("./models/Tupath_users");
-  const Post = require("./models/Post"); // Import Post model from models folder
-  const nodemailer = require("nodemailer");
-  const crypto = require("crypto");
-  const cookieParser = require('cookie-parser');
-  const session = require("express-session");
-  const MongoStore = require("connect-mongo");
-  const cloudinary = require("cloudinary").v2;
-  const { CloudinaryStorage } = require('multer-storage-cloudinary');
-   require('dotenv').config();
+const mongoose = require("mongoose");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const axios = require("axios");
+const http = require("http");
+const { Server } = require("socket.io");
+const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping } = require("./models/Tupath_users");
+const Post = require("./models/Post"); // Import Post model from models folder
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const cookieParser = require('cookie-parser');
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+require('dotenv').config();
 
 const adminsignup = require("./routes/adminsignup");
 const adminLogin = require("./routes/adminLogin");
@@ -64,7 +64,7 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: MONGO_URI}),
+  store: MongoStore.create({ mongoUrl: MONGO_URI }),
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
@@ -111,11 +111,11 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -1018,7 +1018,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     const userId = req.user.id;
     const { role } = req.user;
     const userModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
-    
+
     const profileData = req.body;
 
     // Find existing user
@@ -1057,7 +1057,7 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
     // 🔥 **Update all posts where userId matches the updated user**
     if (profileData.profileImg) {
       await Post.updateMany(
-        { userId }, 
+        { userId },
         { $set: { profileImg: profileData.profileImg } }
       );
 
