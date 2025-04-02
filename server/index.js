@@ -56,6 +56,14 @@ app.use('/uploads', express.static('uploads'));
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use('/cor', express.static('cor'));
 
+// Add this middleware first in your Express app
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.path}`);
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
@@ -120,7 +128,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'TUPath_Cert_Thumbnails', // Change this to your preferred folder name
+    folder: 'TUPath_global', // Change this to your preferred folder name
     allowed_formats: ['jpg', 'png', 'jpeg'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
@@ -135,24 +143,37 @@ const Projectstorage = new CloudinaryStorage({
   },
 });
 
-const CertFileStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "TUPath_Cert_attachments",
-    allowed_formats: ["pdf", "docx", "pptx", "jpg", "png"],
-    resource_type: "auto", // Allows all file types (images, docs, etc.)
-  },
-});
-
 const CertThumbStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'TUPath_Cert_Thumbnails',
-    allowed_formats: ['jpg', 'png', 'jpeg'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }],
-  },
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    return {
+      folder: 'TUPath_Cert_Thumbnails',
+      public_id: `${Date.now()}-${file.originalname}`,
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [
+        { width: 300, height: 300, crop: 'limit' },
+        { quality: 'auto' }
+      ]
+    };
+  }
 });
 
+const CertFileStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    // Sanitize filename
+    const sanitizedName = file.originalname.replace(/[^\w.-]/g, '');
+    const ext = sanitizedName.split('.').pop().toLowerCase();
+    
+    console.log(`Processing file: ${sanitizedName} (${ext})`);
+
+    return {
+      folder: 'TUPath_Cert_Attachments',
+      public_id: `${Date.now()}-${sanitizedName}`,
+      resource_type: ext === "docx" || ext === "txt" || ext === "pdf" ? "raw" : "auto", // Use 'raw' for non-images
+    };
+  }
+});
 
 
 
@@ -171,8 +192,29 @@ const upload = multer({ storage: storage });
 const UploadImageProjects = multer({ storage: Projectstorage });
 
 // ✅ Multer Setup for Certificates
-const uploadThumbnail = multer({ storage: CertThumbStorage });
-const uploadCertFiles = multer({ storage: CertFileStorage });
+const uploadThumbnail = multer({ 
+  storage: CertThumbStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
+const uploadCertFiles = multer({ 
+  storage: CertFileStorage,
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+      'text/plain'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.mimetype}`), false);
+    }
+  },
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
+});
 
 // Chat message schema
 const messageSchema = new mongoose.Schema({
@@ -383,74 +425,164 @@ const StudentCert = new mongoose.Schema({
 
 const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
 
+/// Update your uploadCertificate endpoint
 app.post("/api/uploadCertificate", verifyToken, async (req, res) => {
   try {
+    console.log("Processing certificate upload...");
+    
+    const { CertName, CertDescription, CertThumbnail, Attachments } = req.body;
     const userId = req.user.id;
     const userName = req.user.name;
-    const { CertName, CertDescription, thumbnailUrl, attachmentUrls } = req.body;
 
-    if (!CertName || !CertDescription || !thumbnailUrl || !attachmentUrls) {
-      return res.status(400).json({ success: false, message: "All fields are required: CertName, CertDescription, thumbnailUrl, and attachmentUrls" });
+    console.log("Received data:", {
+      CertName,
+      CertDescription,
+      CertThumbnail,
+      Attachments,
+      userId,
+      userName
+    });
+
+    // Validate inputs
+    if (!CertName || !CertDescription) {
+      throw new Error("Certificate name and description are required");
     }
-    
 
-    // ✅ Save certificate to MongoDB with Cloudinary URLs
+    if (!CertThumbnail) {
+      throw new Error("Thumbnail URL is required");
+    }
+
+    if (!Attachments || !Array.isArray(Attachments) || Attachments.length === 0) {
+      throw new Error("At least one attachment is required");
+    }
+
+    // Filter valid attachments
+    const validAttachments = Attachments.filter(url => 
+      url && /\.(jpg|jpeg|png|pdf|docx|txt)$/i.test(url)
+    );
+
+    if (validAttachments.length === 0) {
+      throw new Error("No valid attachments provided");
+    }
+
+    console.log("Creating new certificate document...");
     const newCertificate = new StudentCertificate({
       StudId: userId,
       StudName: userName,
       Certificate: {
         CertName,
         CertDescription,
-        CertThumbnail: thumbnailUrl,
-        Attachments: attachmentUrls,
-      },
+        CertThumbnail,
+        Attachments: validAttachments
+      }
     });
 
+    console.log("Saving to database...");
     await newCertificate.save();
-
-    // Emit the new certificate event
+    
+    console.log("Emission new_certificate event");
     io.emit("new_certificate", newCertificate);
 
-    res.status(201).json({ success: true, message: "Certificate uploaded successfully", certificate: newCertificate });
+    console.log("Certificate saved successfully");
+    res.status(201).json({ 
+      success: true, 
+      message: "Certificate saved successfully",
+      certificate: newCertificate
+    });
+
   } catch (error) {
-    console.error("Error uploading certificate:", error);
-    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+    console.error("Certificate save error:", {
+      message: error.message,
+      stack: error.stack,
+      requestBody: req.body,
+      user: req.user
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to save certificate",
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
-
-
 app.post("/api/uploadThumbnail", verifyToken, uploadThumbnail.single('thumbnail'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Thumbnail file is required." });
+      console.error("No file received in uploadThumbnail");
+      return res.status(400).json({ 
+        success: false, 
+        message: "No thumbnail file received" 
+      });
     }
 
-    const thumbnailUrl = req.file.secure_url;
-    
-    // Return the thumbnail URL to be saved with the certificate
-    res.status(201).json({ success: true, message: "Thumbnail uploaded successfully", thumbnailUrl });
+    console.log("Cloudinary upload result:", req.file);
+
+    if (!req.file.path) {
+      throw new Error("Cloudinary upload failed - no URL returned");
+    }
+
+    res.status(201).json({ 
+      success: true,
+      message: "Thumbnail uploaded successfully",
+      thumbnailUrl: req.file.path
+    });
+
   } catch (error) {
-    console.error("Error uploading thumbnail:", error);
-    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+    console.error("Thumbnail upload error:", {
+      message: error.message,
+      stack: error.stack,
+      file: req.file
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: "Thumbnail upload failed",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
-app.post("/api/uploadAttachments", verifyToken, uploadCertFiles.array('attachments', 10), async (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, message: "At least one attachment is required." });
-    }
 
-    const attachmentUrls = req.files.map(file => file.secure_url);
-    
-    // Return the attachment URLs to be saved with the certificate
-    res.status(201).json({ success: true, message: "Attachments uploaded successfully", attachmentUrls });
-  } catch (error) {
-    console.error("Error uploading attachments:", error);
-    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+// File validation middleware
+const validateFileType = (req, res, next) => {
+  if (!req.file) return next();
+  
+  const ext = req.file.originalname.split('.').pop().toLowerCase();
+  const allowed = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
+  
+  if (!allowed.includes(ext)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid file type .${ext}. Allowed: ${allowed.join(', ')}`
+    });
   }
-});
+  next();
+};
 
+app.post("/api/uploadAttachments", 
+  verifyToken,
+  uploadCertFiles.single('attachment'),
+  validateFileType,
+  async (req, res) => {
+    try {
+      if (!req.file) throw new Error("No file uploaded");
+      
+      console.log("Upload successful:", req.file.path);
+      res.json({
+        success: true,
+        url: req.file.path,
+        filename: req.file.originalname
+      });
+      
+    } catch (error) {
+      console.error("Upload failed:", error.message);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+);
 
 // Endpoint to fetch certificates for a user
 app.get('/api/certificates', verifyToken, async (req, res) => {

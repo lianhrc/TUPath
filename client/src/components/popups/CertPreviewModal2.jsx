@@ -112,9 +112,10 @@ function CertPreviewModal2({ show, onClose, project,  }) {
           <div className="projpreviewfiles">
           {project.Certificate.Attachments.length > 0 ? (
             project.Certificate.Attachments.map((attachment, index) => (
-              <a key={index} href={`http://localhost:3001${attachment}`} target="_blank" rel="noopener noreferrer">
+              <a key={index} href={attachment.replace("http://", "https://")} target="_blank">
                 {getFileName(attachment)}
               </a>
+
             ))
           ) : (
             <p>No attachments available</p>
