@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import "./Inboxpage.css";
 import HeaderHomepage from "../../common/headerhomepage";
 import axiosInstance from "../../../services/axiosInstance";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3001");
 
 function Inboxpage() {
   const [activeConversationId, setActiveConversationId] = useState(null);
@@ -14,6 +17,8 @@ function Inboxpage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
   const dropdownRef = useRef(null);
   const messagesEndRef = useRef(null);
   const [currentUserId, setCurrentUserId] = useState(
@@ -47,7 +52,37 @@ function Inboxpage() {
     };
 
     fetchConversations();
-  }, []);
+
+    // Set up socket listeners
+    socket.on("new_message", ({ conversationId, message }) => {
+      // Update messages if this is for the active conversation
+      if (conversationId === activeConversationId) {
+        setMessages(prevMessages => [...prevMessages, message]);
+      }
+      
+      // Update the conversation's last message
+      setConversations(prevConversations => 
+        prevConversations.map(convo => 
+          convo._id === conversationId 
+            ? { ...convo, lastMessage: message } 
+            : convo
+        )
+      );
+    });
+
+    socket.on("user_typing", ({ conversationId, isTyping: userIsTyping, userId }) => {
+      // Only show typing indicator if it's not the current user and it's the active conversation
+      if (userId !== currentUserId && conversationId === activeConversationId) {
+        setIsTyping(userIsTyping);
+      }
+    });
+
+    // Clean up listeners on unmount
+    return () => {
+      socket.off("new_message");
+      socket.off("user_typing");
+    };
+  }, [activeConversationId]);
 
   // Fetch messages when active conversation changes
   useEffect(() => {
@@ -60,6 +95,9 @@ function Inboxpage() {
         );
         if (response.data.success) {
           setMessages(response.data.messages);
+          
+          // Join the socket room for this conversation
+          socket.emit("join_conversation", activeConversationId);
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -149,6 +187,12 @@ function Inboxpage() {
       });
 
       if (response.data.success) {
+        // Emit the message through socket
+        socket.emit("send_message", {
+          conversationId: activeConversationId,
+          message: response.data.message
+        });
+
         // Add new message to the UI
         setMessages([...messages, response.data.message]);
 
@@ -170,6 +214,30 @@ function Inboxpage() {
     } catch (error) {
       console.error("Error sending message:", error);
     }
+  };
+
+  // Handle typing indicator
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    
+    // Clear any existing timeout
+    if (typingTimeout) clearTimeout(typingTimeout);
+    
+    // Emit typing event
+    socket.emit("typing", {
+      conversationId: activeConversationId,
+      isTyping: true
+    });
+    
+    // Set timeout to stop typing indicator after 2 seconds of inactivity
+    const timeout = setTimeout(() => {
+      socket.emit("typing", {
+        conversationId: activeConversationId,
+        isTyping: false
+      });
+    }, 2000);
+    
+    setTypingTimeout(timeout);
   };
 
   const handleCreateConversation = async () => {
@@ -238,6 +306,9 @@ function Inboxpage() {
         setActiveConversationId(newConvo._id);
         setShowNewConversation(false);
         setNewConversationName("");
+
+        // Join the socket room for this conversation
+        socket.emit("join_conversation", newConvo._id);
 
         // Fetch messages for this conversation
         const messagesResponse = await axiosInstance.get(
@@ -519,14 +590,20 @@ function Inboxpage() {
                       <span>Today</span>
                     </div>
                     {messages.map((msg) => {
-                      // Fix: Check if sender is an object with _id or a direct ID
+                      // Fix: Check if msg or msg.sender exists before accessing properties
+                      if (!msg || !msg.sender) {
+                        console.error("Invalid message format:", msg);
+                        return null; // Skip rendering this message
+                      }
+                      
+                      // Continue with normal processing for valid messages
                       const senderId = msg.sender._id || msg.sender;
                       const isCurrentUser =
                         senderId === currentUserId ||
                         senderId.toString() === currentUserId.toString();
                       const senderName = isCurrentUser
                         ? "You"
-                        : msg.sender.username || "sUnknown";
+                        : msg.sender.username || "Unknown";
                       return (
                         <div
                           key={msg._id}
@@ -559,6 +636,11 @@ function Inboxpage() {
                         </div>
                       );
                     })}
+                    {isTyping && (
+                      <div className="typing-indicator">
+                        <span>{getOtherParticipant(activeConversation)?.username} is typing...</span>
+                      </div>
+                    )}
                   </>
                 )}
                 <div ref={messagesEndRef} />
@@ -567,7 +649,7 @@ function Inboxpage() {
                 <input
                   type="text"
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={handleTyping}
                   placeholder={`Send a message`}
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 />

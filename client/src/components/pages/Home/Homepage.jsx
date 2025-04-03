@@ -93,26 +93,12 @@ const Homepage = () => {
 
   const handleUpvote = async (postId) => {
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/posts/${postId}/upvote`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to toggle upvote");
-      }
-
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post(`/api/posts/${postId}/upvote`);
+      
+      if (response.data.success) {
         setPostsData((prevPosts) =>
           prevPosts.map((post) =>
-            post._id === postId ? { ...post, upvotes: data.post.upvotes } : post
+            post._id === postId ? { ...post, upvotes: response.data.post.upvotes } : post
           )
         );
       }
@@ -124,10 +110,8 @@ const Homepage = () => {
   const fetchPostsData = async (skipCount = 0) => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:3001/api/posts?limit=5&skip=${skipCount}`
-      );
-      const data = await response.json();
+      const response = await axiosInstance.get(`/api/posts?limit=5&skip=${skipCount}`);
+      const data = response.data;
 
       const updatedPosts = data.posts.map((post) => ({
         ...post,

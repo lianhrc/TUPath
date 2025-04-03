@@ -302,76 +302,52 @@ app.get("/api/userss", verifyToken, async (req, res) => {
 // });
 
 // Socket.IO events for real-time chat and certificates
-// io.on("connection", (socket) => {
-//   socket.on("send_message", async (data) => {
-//     try {
-//       const token = data.token; // Extract token from the data
-//       if (!token) {
-//         console.error("Token not provided");
-//         return;
-//       }
+io.on("connection", (socket) => {
+  // Join a specific conversation room
+  socket.on("join_conversation", (conversationId) => {
+    socket.join(conversationId);
+    console.log(`User joined conversation: ${conversationId}`);
+  });
 
-//       jwt.verify(token, JWT_SECRET, async (err, user) => {
-//         if (err) {
-//           console.error("Token verification failed:", err);
-//           return;
-//         }
+  // Handle sending messages
+  socket.on("send_message", async (data) => {
+    try {
+      const { conversationId, message } = data;
+      
+      // Broadcast the message to everyone in the conversation except the sender
+      socket.to(conversationId).emit("new_message", {
+        conversationId,
+        message
+      });
+    } catch (err) {
+      console.error("Error handling send_message event:", err);
+    }
+  });
 
-//         const userId = user.id; // Extract userId from the token
-//         console.log("Sender ID:", userId); // Log the senderId for debugging
+  // Handle typing indicators
+  socket.on("typing", async (data) => {
+    try {
+      const { conversationId, isTyping } = data;
+      const userId = socket.userId || "unknown"; // You may need to set this when user connects
+      
+      // Broadcast typing status to everyone in the conversation except the typer
+      socket.to(conversationId).emit("user_typing", { 
+        conversationId, 
+        isTyping,
+        userId
+      });
+    } catch (err) {
+      console.error("Error handling typing event:", err);
+    }
+  });
 
-//         const senderUser =
-//           (await Tupath_usersModel.findById(userId)) ||
-//           (await Employer_usersModel.findById(userId));
-
-//         if (!senderUser) {
-//           console.error("User not found for ID:", userId); // Log the userId if user is not found
-//           return;
-//         }
-
-//         // Create a single message with direction
-//         const message = new Message({
-//           sender: {
-//             senderId: userId,
-//             name: `${senderUser.profileDetails.firstName} ${senderUser.profileDetails.lastName}`,
-//             profileImg: senderUser.profileDetails.profileImg,
-//           },
-//           receiver: {
-//             receiverId: data.receiverId,
-//             name: data.receiverName,
-//             profileImg: data.receiverProfileImg,
-//           },
-//           messageContent: {
-//             text: data.messageContent.text,
-//             attachments: data.messageContent.attachments || [],
-//           },
-//           status: {
-//             read: false,
-//             delivered: true,
-//           },
-//           timestamp: new Date(),
-//           direction: "sent",
-//         });
-//         await message.save();
-
-//         // Only emit to the specific receiver
-//         socket.to(data.receiverId).emit("receive_message", {
-//           ...message.toObject(),
-//           direction: "received",
-//         });
-
-//         // Send confirmation back to sender
-//         socket.emit("message_sent", message);
-//       });
-//     } catch (err) {
-//       console.error("Error saving message:", err);
-//     }
-//   });
-
-//   socket.on("disconnect", () => {
-//     // console.log(`User disconnected: ${socket.id}`);
-//   });
-// }); // Add this closing bracket
+  // Handle when a user disconnects
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+  
+  // ...existing socket.io code if any...
+});
 
 const validateAttachment = (url) => {
   const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
