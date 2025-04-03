@@ -432,6 +432,7 @@ function Inboxpage() {
                 // Get conversation display name (the other person's name)
                 const conversationName =
                   otherParticipant?.username || "Unknown";
+
                 return (
                   <div
                     key={convo._id}
