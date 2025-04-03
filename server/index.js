@@ -34,6 +34,7 @@ const adminDelete = require("./routes/adminDelete");
 const corRoutes = require("./routes/corRoutes");
 const postRoutes = require("./routes/postRoutes"); // Import post routes
 const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
+const messagingRoute = require("./routes/messagingRoute"); // Import messaging routes
 
 // const checkAuth = require('./middleware/authv2')
 const adminLogout = require("./routes/adminLogout");
@@ -105,6 +106,7 @@ app.use("/", corRoutes);
 app.use("/api", authRoute); // Use the auth routes
 app.use("/api/posts", postRoutes); // Use post routes
 app.use("/api/admin", adminRoutes); // Use admin routes
+app.use("/api/messaging", messagingRoute); // Use messaging routes
 
 // Middleware for setting COOP headers
 app.use((req, res, next) => {
@@ -180,37 +182,37 @@ const uploadThumbnail = multer({ storage: CertThumbStorage });
 const uploadCertFiles = multer({ storage: CertFileStorage });
 
 // Chat message schema
-const messageSchema = new mongoose.Schema({
-  sender: {
-    senderId: { type: String, required: true },
-    name: { type: String, required: true },
-    profileImg: { type: String, default: "" },
-  },
-  receiver: {
-    receiverId: { type: String, required: true },
-    name: { type: String, required: true },
-    profileImg: { type: String, default: "" },
-  },
-  messageContent: {
-    text: { type: String, required: true },
-    attachments: [{ type: String }], // URLs or file paths
-  },
-  status: {
-    read: { type: Boolean, default: false },
-    delivered: { type: Boolean, default: false },
-  },
-  timestamp: { type: Date, default: Date.now },
-  direction: { type: String, enum: ["sent", "received"], required: true }, // Add direction field
-});
+// const messageSchema = new mongoose.Schema({
+//   sender: {
+//     senderId: { type: String, required: true },
+//     name: { type: String, required: true },
+//     profileImg: { type: String, default: "" },
+//   },
+//   receiver: {
+//     receiverId: { type: String, required: true },
+//     name: { type: String, required: true },
+//     profileImg: { type: String, default: "" },
+//   },
+//   messageContent: {
+//     text: { type: String, required: true },
+//     attachments: [{ type: String }], // URLs or file paths
+//   },
+//   status: {
+//     read: { type: Boolean, default: false },
+//     delivered: { type: Boolean, default: false },
+//   },
+//   timestamp: { type: Date, default: Date.now },
+//   direction: { type: String, enum: ["sent", "received"], required: true }, // Add direction field
+// });
 
 // Add indexes for optimization
-messageSchema.index({ "sender.senderId": 1 });
-messageSchema.index({ "receiver.receiverId": 1 });
-messageSchema.index({ timestamp: -1 });
-messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
-messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
+// messageSchema.index({ "sender.senderId": 1 });
+// messageSchema.index({ "receiver.receiverId": 1 });
+// messageSchema.index({ timestamp: -1 });
+// messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
+// messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
 
-const Message = mongoose.model("Message", messageSchema);
+// const Message = mongoose.model("Message", messageSchema);
 
 // Add this endpoint to fetch users
 
@@ -231,145 +233,145 @@ app.get("/api/userss", verifyToken, async (req, res) => {
 });
 
 // REST endpoint to fetch chat messages
-app.get("/api/messages", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({
-      $or: [{ "sender.senderId": userId }, { "receiver.receiverId": userId }],
-    }).sort({ timestamp: -1 });
+// app.get("/api/messages", verifyToken, async (req, res) => {
+//   try {
+//     const userId = req.user.id; // Extract userId from the token
+//     const messages = await Message.find({
+//       $or: [{ "sender.senderId": userId }, { "receiver.receiverId": userId }],
+//     }).sort({ timestamp: -1 });
 
-    // Transform messages to add correct direction for each user
-    const transformedMessages = messages.map((msg) => {
-      const isSender = msg.sender.senderId === userId;
-      return {
-        ...msg.toObject(),
-        direction: isSender ? "sent" : "received",
-      };
-    });
+//     // Transform messages to add correct direction for each user
+//     const transformedMessages = messages.map((msg) => {
+//       const isSender = msg.sender.senderId === userId;
+//       return {
+//         ...msg.toObject(),
+//         direction: isSender ? "sent" : "received",
+//       };
+//     });
 
-    res.json(transformedMessages);
-  } catch (err) {
-    console.error("Error fetching messages:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+//     res.json(transformedMessages);
+//   } catch (err) {
+//     console.error("Error fetching messages:", err);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // REST endpoint to fetch unread messages
-app.get("/api/unread-messages", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Extract userId from the token
-    const messages = await Message.find({
-      "receiver.receiverId": userId,
-      "status.read": false,
-    }).sort({ timestamp: 1 });
-    res.json(messages);
-  } catch (err) {
-    console.error("Error fetching unread messages:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+// app.get("/api/unread-messages", verifyToken, async (req, res) => {
+//   try {
+//     const userId = req.user.id; // Extract userId from the token
+//     const messages = await Message.find({
+//       "receiver.receiverId": userId,
+//       "status.read": false,
+//     }).sort({ timestamp: 1 });
+//     res.json(messages);
+//   } catch (err) {
+//     console.error("Error fetching unread messages:", err);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // REST endpoint to mark a message as read
-app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
-  try {
-    const messageId = req.params.id;
-    const userId = req.user.id; // Extract userId from the token
+// app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
+//   try {
+//     const messageId = req.params.id;
+//     const userId = req.user.id; // Extract userId from the token
 
-    const message = await Message.findById(messageId);
-    if (!message) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Message not found" });
-    }
+//     const message = await Message.findById(messageId);
+//     if (!message) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Message not found" });
+//     }
 
-    if (message.receiver.receiverId !== userId) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
+//     if (message.receiver.receiverId !== userId) {
+//       return res.status(403).json({ success: false, message: "Unauthorized" });
+//     }
 
-    message.status.read = true;
-    await message.save();
+//     message.status.read = true;
+//     await message.save();
 
-    // Emit the message read event
-    io.emit("message_read", { messageId });
+//     // Emit the message read event
+//     io.emit("message_read", { messageId });
 
-    res.status(200).json({ success: true, message: "Message marked as read" });
-  } catch (err) {
-    console.error("Error marking message as read:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+//     res.status(200).json({ success: true, message: "Message marked as read" });
+//   } catch (err) {
+//     console.error("Error marking message as read:", err);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // Socket.IO events for real-time chat and certificates
-io.on("connection", (socket) => {
-  socket.on("send_message", async (data) => {
-    try {
-      const token = data.token; // Extract token from the data
-      if (!token) {
-        console.error("Token not provided");
-        return;
-      }
+// io.on("connection", (socket) => {
+//   socket.on("send_message", async (data) => {
+//     try {
+//       const token = data.token; // Extract token from the data
+//       if (!token) {
+//         console.error("Token not provided");
+//         return;
+//       }
 
-      jwt.verify(token, JWT_SECRET, async (err, user) => {
-        if (err) {
-          console.error("Token verification failed:", err);
-          return;
-        }
+//       jwt.verify(token, JWT_SECRET, async (err, user) => {
+//         if (err) {
+//           console.error("Token verification failed:", err);
+//           return;
+//         }
 
-        const userId = user.id; // Extract userId from the token
-        console.log("Sender ID:", userId); // Log the senderId for debugging
+//         const userId = user.id; // Extract userId from the token
+//         console.log("Sender ID:", userId); // Log the senderId for debugging
 
-        const senderUser =
-          (await Tupath_usersModel.findById(userId)) ||
-          (await Employer_usersModel.findById(userId));
+//         const senderUser =
+//           (await Tupath_usersModel.findById(userId)) ||
+//           (await Employer_usersModel.findById(userId));
 
-        if (!senderUser) {
-          console.error("User not found for ID:", userId); // Log the userId if user is not found
-          return;
-        }
+//         if (!senderUser) {
+//           console.error("User not found for ID:", userId); // Log the userId if user is not found
+//           return;
+//         }
 
-        // Create a single message with direction
-        const message = new Message({
-          sender: {
-            senderId: userId,
-            name: `${senderUser.profileDetails.firstName} ${senderUser.profileDetails.lastName}`,
-            profileImg: senderUser.profileDetails.profileImg,
-          },
-          receiver: {
-            receiverId: data.receiverId,
-            name: data.receiverName,
-            profileImg: data.receiverProfileImg,
-          },
-          messageContent: {
-            text: data.messageContent.text,
-            attachments: data.messageContent.attachments || [],
-          },
-          status: {
-            read: false,
-            delivered: true,
-          },
-          timestamp: new Date(),
-          direction: "sent",
-        });
-        await message.save();
+//         // Create a single message with direction
+//         const message = new Message({
+//           sender: {
+//             senderId: userId,
+//             name: `${senderUser.profileDetails.firstName} ${senderUser.profileDetails.lastName}`,
+//             profileImg: senderUser.profileDetails.profileImg,
+//           },
+//           receiver: {
+//             receiverId: data.receiverId,
+//             name: data.receiverName,
+//             profileImg: data.receiverProfileImg,
+//           },
+//           messageContent: {
+//             text: data.messageContent.text,
+//             attachments: data.messageContent.attachments || [],
+//           },
+//           status: {
+//             read: false,
+//             delivered: true,
+//           },
+//           timestamp: new Date(),
+//           direction: "sent",
+//         });
+//         await message.save();
 
-        // Only emit to the specific receiver
-        socket.to(data.receiverId).emit("receive_message", {
-          ...message.toObject(),
-          direction: "received",
-        });
+//         // Only emit to the specific receiver
+//         socket.to(data.receiverId).emit("receive_message", {
+//           ...message.toObject(),
+//           direction: "received",
+//         });
 
-        // Send confirmation back to sender
-        socket.emit("message_sent", message);
-      });
-    } catch (err) {
-      console.error("Error saving message:", err);
-    }
-  });
+//         // Send confirmation back to sender
+//         socket.emit("message_sent", message);
+//       });
+//     } catch (err) {
+//       console.error("Error saving message:", err);
+//     }
+//   });
 
-  socket.on("disconnect", () => {
-    // console.log(`User disconnected: ${socket.id}`);
-  });
-}); // Add this closing bracket
+//   socket.on("disconnect", () => {
+//     // console.log(`User disconnected: ${socket.id}`);
+//   });
+// }); // Add this closing bracket
 
 const validateAttachment = (url) => {
   const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
