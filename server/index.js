@@ -105,6 +105,7 @@ app.use('/', corRoutes);
 app.use('/api', authRoute); // Use the auth routes
 app.use('/api/posts', postRoutes); // Use post routes
 app.use('/api/admin', adminRoutes); // Use admin routes
+app.use('/adminsubjects', require('./routes/adminSubjects')); // use admin subjects routes
 
 
 // Middleware for setting COOP headers

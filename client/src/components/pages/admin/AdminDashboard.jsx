@@ -109,6 +109,14 @@ const AdminDashboard = () => {
               <span className="text"> Popular</span>
             </li>
 
+            <li
+              onClick={() => setActiveSection('AdminSubjects')}
+              className={activeSection === 'AdminSubjects' ? 'active' : ''}
+            >
+              <FaTags className="icon" />
+              <span className="text">Curriculum</span>
+            </li>
+
             <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
@@ -123,6 +131,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Tags' && <TagChart />}
+        {activeSection === 'AdminSubjects' && <AdminSubjectsSection />}
         {activeSection === 'ActiveTagSection' && <ActiveTags />}
       </div>
     </div>
@@ -383,6 +392,135 @@ const TagChart = () => {
   );
 };
 
+// subjectsection component
+const AdminSubjectsSection = () => {
+  const [adminsubjects, setAdminSubjects] = useState([]);
+  const [title, setTitle] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    const fetchAdminSubjects = async () => {
+      setLoading(true);
+      try {
+        const response = await getAdminSubjects();
+        if (response.data.success) {
+          setAdminSubjects(response.data.adminsubjects);
+        }
+      } catch (error) {
+        console.error('Error fetching adminsubjects:', error);
+        toast.error('Failed to fetch subjects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminSubjects();
+  }, []);
+
+  const handleAddOrUpdate = async () => {
+    if (!title || !code) return toast.error('Please fill in both fields');
+
+    try {
+      const response = editingId
+        ? await updateAdminSubject(editingId, { title, code })
+        : await createAdminSubject({ title, code });
+
+      if (response.data.success) {
+        toast.success(editingId ? 'Subject updated!' : 'Subject added!');
+        setTitle('');
+        setCode('');
+        setEditingId(null);
+        const updated = await getAdminSubjects();
+        setAdminSubjects(updated.data.adminsubjects);
+      }
+    } catch (error) {
+      console.error('Error saving subject:', error);
+      toast.error('Failed to save subject');
+    }
+  };
+
+  const handleEdit = (subject) => {
+    setTitle(subject.title);
+    setCode(subject.code);
+    setEditingId(subject._id);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this subject?')) return;
+
+    try {
+      const response = await deleteAdminSubject(id);
+      if (response.data.success) {
+        toast.success('Subject deleted');
+        const updated = await getAdminSubjects();
+        setAdminSubjects(updated.data.adminsubjects);
+      }
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+      toast.error('Failed to delete subject');
+    }
+  };
+
+  return (
+    <div className="adminsubjects-section">
+      <div className="adminsubjects-form">
+        <h2>{editingId ? 'Edit Subject' : 'Add New Subject'}</h2>
+        <input
+          type="text"
+          placeholder="Subject Title (e.g. Web Development)"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Subject Code (e.g. CC103)"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+        <button className="crud-3d-btn" onClick={handleAddOrUpdate}>
+          {editingId ? 'Update Subject' : 'Add Subject'}
+        </button>
+      </div>
+
+      <div className="adminsubjects-list">
+        <h3>All Subjects</h3>
+        {loading ? (
+          <p>Loading subjects...</p>
+        ) : adminsubjects.length === 0 ? (
+          <p>No subjects found.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Code</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminsubjects.map((subject) => (
+                <tr key={subject._id}>
+                  <td>{subject.title}</td>
+                  <td>{subject.code}</td>
+                  <td>
+                    <button className="crud-3d-btn edit" onClick={() => handleEdit(subject)}>
+                      Edit
+                    </button>
+                    <button className="crud-3d-btn delete" onClick={() => handleDelete(subject._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+};
 
 
 // Popular Tags Section Component
