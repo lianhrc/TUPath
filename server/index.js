@@ -1251,6 +1251,7 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
 
     // Create and save the new project
     const newProject = new Project({
+      user: req.user.id, // Add this line
       projectName: req.body.projectName,
       description: req.body.description,
       tag: req.body.tag,
@@ -1744,7 +1745,45 @@ app.get('/api/grades', verifyToken, async (req, res) => {
   }
 });
 
+// Update this route in your index.js file
+app.get("/api/checkExistingGrade", verifyToken, async (req, res) => {
+  try {
+    const { subject, year, term } = req.query;
+    
+    if (!subject || !year || !term) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Subject, year, and term are required." 
+      });
+    }
 
+    // Check if grade exists in any of the user's projects
+    const existingProject = await Project.findOne({
+      user: req.user.id,
+      subject,
+      year,
+      term
+    }).select("grade");
+
+    if (existingProject && existingProject.grade) {
+      return res.status(200).json({ 
+        success: true, 
+        grade: existingProject.grade 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      grade: null 
+    });
+  } catch (error) {
+    console.error("Error checking existing grade:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error" 
+    });
+  }
+});
 
 // Server setup
 const PORT = process.env.PORT || 3001;
