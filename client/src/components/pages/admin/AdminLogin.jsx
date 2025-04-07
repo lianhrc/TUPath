@@ -3,7 +3,7 @@ import './AdminLogin.css';
 import { motion } from 'framer-motion';
 import adminheadericon from '../../../assets/logoicon2.png';
 import adminloginicon from '../../../assets/user-gear.png';
-import axiosInstancev2 from '../../../services/axiosInstancev2';
+import axiosInstance from '../../../services/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
@@ -17,7 +17,7 @@ const AdminLogin = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axiosInstancev2.get('/check-auth');
+        const response = await axiosInstance.get('/check-auth');
         if (response.data.success) {
           // If already authenticated, redirect to admin dashboard
           navigate('/admindashboard');
@@ -47,7 +47,7 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await axiosInstancev2.post('/api/admin/login', formData);
+      const response = await axiosInstance.post('/api/admin/login', formData);
       if (response.data.success) {
         navigate('/admindashboard');
       }

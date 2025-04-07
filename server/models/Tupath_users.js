@@ -58,7 +58,11 @@ const TupathUserSchema = new mongoose.Schema({
   memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when a user is created
-  }
+  },
+  status: {
+    type: Boolean,
+    default: true, // Active by default
+  },
 }, 
 { timestamps: true }); // This will add createdAt and updatedAt automatically
 
@@ -185,7 +189,11 @@ const EmployerUserSchema = new mongoose.Schema({
   memberSince: {
     type: Date,
     default: Date.now, // Defaults to current date when an employer user is created
-  }
+  },
+  status: {
+    type: Boolean,
+    default: true, // Active by default
+  },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 

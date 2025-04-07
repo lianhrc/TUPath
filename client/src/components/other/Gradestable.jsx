@@ -48,4 +48,5 @@ const GradesTable = ({ grades }) => {
     </div>
   );
 };
+
 export default GradesTable;

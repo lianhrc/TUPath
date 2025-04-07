@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './AdminDashboard.css';
 import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing 
 import WordCloud from "react-d3-cloud";
@@ -7,7 +7,7 @@ import tupicon from '../../../assets/logo.png';
 import irjpicon from '../../../assets/irjplogo.png';
 import StudentListModal from '../../popups/StudentListModal';
 import AuthContext from '../../AuthProvider';
-import axiosInstancev2 from '../../../services/axiosInstancev2';
+import axiosInstance from '../../../services/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -31,7 +31,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axiosInstancev2.get('/check-auth');
+        const response = await axiosInstance.get('/check-auth');
         if (response.data.success) {
           setAuthChecked(true);
         } else {
@@ -46,17 +46,17 @@ const AdminDashboard = () => {
         }
       }
     };
-  
+
     checkAuth();
   }, [navigate]);
-  
+
 
   const handleLogout = async () => {
     try {
       // Clear any stored admin auth data first
       localStorage.removeItem('adminToken'); // If you're using token-based auth
-      
-      const response = await axiosInstancev2.post('/api/admin/logout');
+
+      const response = await axiosInstance.post('/api/admin/logout');
       if (response.data.success) {
         // Force navigation to login and prevent back navigation
         window.location.replace('/adminlogin');
@@ -101,20 +101,22 @@ const AdminDashboard = () => {
               <span className="text">Best</span>
             </li>
 
+           
+
             <li
-            onClick={() => setActiveSection('ActiveTagSection')}
-            className={activeSection === 'ActiveTagSection' ? 'active' : ''}
-          >
-            <FaTags className="icon" />
-            <span className="text"> Popular</span>
-          </li>
+              onClick={() => setActiveSection('AdminSubjects')}
+              className={activeSection === 'AdminSubjects' ? 'active' : ''}
+            >
+              <FaTags className="icon" />
+              <span className="text">Curriculum</span>
+            </li>
 
             <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
 
-           
+
           </ul>
         </nav>
       </div>
@@ -123,6 +125,7 @@ const AdminDashboard = () => {
       <div className="admindashboard-content">
         {activeSection === 'Users' && <UsersSection />}
         {activeSection === 'Tags' && <TagChart />}
+        {activeSection === 'AdminSubjects' && <AdminSubjectsSection />}
         {activeSection === 'ActiveTagSection' && <ActiveTags />}
       </div>
     </div>
@@ -144,9 +147,10 @@ const UsersSection = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstancev2.get(`/api/users?type=${selectedType}`);
+        const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
         if (response.data.success) {
           setUsersData(response.data.users);
+          console.log('Fetched users:', response.data.users);
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -157,7 +161,7 @@ const UsersSection = () => {
 
     const fetchUserStats = async () => {
       try {
-        const response = await axiosInstancev2.get('/api/user-stats');
+        const response = await axiosInstance.get('/api/user-stats');
         if (response.data.success) {
           setUserStats({
             studentCount: response.data.studentCount,
@@ -178,7 +182,7 @@ const UsersSection = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await axiosInstancev2.delete(`/api/manage-users/${userId}?type=${selectedType}`);
+      const response = await axiosInstance.delete(`/api/manage-users/${userId}?type=${selectedType}`);
       if (response.data.success) {
         alert('User deleted successfully!');
         setUsersData((prevUsers) => prevUsers.filter((user) => user._id !== userId));
@@ -188,6 +192,29 @@ const UsersSection = () => {
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('An error occurred while deleting the user.');
+    }
+  };
+
+  const handleToggleStatus = async (userId, currentStatus) => {
+    try {
+      // Determine the user type based on the selected dropdown value
+      const userType = selectedType === 'Students' ? 'student' : 'employer';
+
+      const response = await axiosInstance.put(`/api/admin/toggle-status/${userType}/${userId}`);
+
+      if (response.data.success) {
+        // Update the local state to reflect the change
+        setUsersData(prevUsers =>
+          prevUsers.map(user =>
+            user._id === userId ? { ...user, status: !currentStatus } : user
+          )
+        );
+      } else {
+        alert('Failed to update user status.');
+      }
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      alert('An error occurred while updating the user status.');
     }
   };
 
@@ -215,6 +242,7 @@ const UsersSection = () => {
             <th>Email</th>
             <th>Contact</th>
             <th></th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -226,6 +254,14 @@ const UsersSection = () => {
               <td>
                 <button className="delete-btn" onClick={() => handleDelete(user._id)}>
                   Delete
+                </button>
+              </td>
+              <td>
+                <button
+                  className={`status-btn ${user.status ? 'active' : 'inactive'}`}
+                  onClick={() => handleToggleStatus(user._id, user.status)}
+                >
+                  {user.status ? 'Deactivate' : 'Activate'}
                 </button>
               </td>
             </tr>
@@ -270,7 +306,7 @@ const TagChart = () => {
   useEffect(() => {
     const fetchTagData = async () => {
       try {
-        const response = await axiosInstancev2.get('/api/student-tags');
+        const response = await axiosInstance.get('/api/student-tags');
         if (response.data.success) {
           setTagData(response.data.tags);
         }
@@ -291,7 +327,7 @@ const TagChart = () => {
 
       setStudentsLoading(true);
       try {
-        const response = await axiosInstancev2.get('/api/students-by-tag', { params: { tag } });
+        const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
         if (response.data.success) {
           setStudents(response.data.students);
         }
@@ -336,7 +372,7 @@ const TagChart = () => {
             }}
           />
         )}
-           {selectedTag && (
+        {selectedTag && (
           <StudentListModal
             tag={selectedTag}
             students={students}
@@ -344,97 +380,142 @@ const TagChart = () => {
             loading={studentsLoading}
           />
         )}
-     
+
       </div>
     </div>
   );
 };
 
+// subjectsection component
+const AdminSubjectsSection = () => {
+  const [adminsubjects, setAdminSubjects] = useState([]);
+  const [title, setTitle] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
+  useEffect(() => {
+    const fetchAdminSubjects = async () => {
+      setLoading(true);
+      try {
+        const response = await getAdminSubjects();
+        if (response.data.success) {
+          setAdminSubjects(response.data.adminsubjects);
+        }
+      } catch (error) {
+        console.error('Error fetching adminsubjects:', error);
+        toast.error('Failed to fetch subjects');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-// Popular Tags Section Component
-const ActiveTags = () => {
-  const [hoveredWord, setHoveredWord] = useState(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-
-  const words = [
-    { text: "React", value: 30 },
-    { text: "Node.js", value: 5 },
-    { text: "AI", value: 5 },
-    { text: "Machine Learning", value: 5 },
-    { text: "Cybersecurity", value: 5 },
-    { text: "Python", value: 5 },
-    { text: "JavaScript", value: 5 },
-    { text: "Data Science", value: 5 },
-    { text: "Web Development", value: 30 },
-  ];
-
-  // Font size mapping
-  const fontSizeMapper = (word) => Math.log2(word.value) * 10;
-
-  // Fixed colors for consistency
-  const colors = ["#FF5733", "#33FF57", "#3357FF", "#F39C12", "#8E44AD", "#E91E63", "#03A9F4"];
-  const colorMap = useMemo(() => {
-    return words.reduce((acc, word, index) => {
-      acc[word.text] = colors[index % colors.length]; // Assign fixed colors
-      return acc;
-    }, {});
+    fetchAdminSubjects();
   }, []);
 
-  // Memoized word positions (para hindi gumalaw sa hover)
-  const fixedWords = useMemo(() => words, []);
+  const handleAddOrUpdate = async () => {
+    if (!title || !code) return toast.error('Please fill in both fields');
+
+    try {
+      const response = editingId
+        ? await updateAdminSubject(editingId, { title, code })
+        : await createAdminSubject({ title, code });
+
+      if (response.data.success) {
+        toast.success(editingId ? 'Subject updated!' : 'Subject added!');
+        setTitle('');
+        setCode('');
+        setEditingId(null);
+        const updated = await getAdminSubjects();
+        setAdminSubjects(updated.data.adminsubjects);
+      }
+    } catch (error) {
+      console.error('Error saving subject:', error);
+      toast.error('Failed to save subject');
+    }
+  };
+
+  const handleEdit = (subject) => {
+    setTitle(subject.title);
+    setCode(subject.code);
+    setEditingId(subject._id);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this subject?')) return;
+
+    try {
+      const response = await deleteAdminSubject(id);
+      if (response.data.success) {
+        toast.success('Subject deleted');
+        const updated = await getAdminSubjects();
+        setAdminSubjects(updated.data.adminsubjects);
+      }
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+      toast.error('Failed to delete subject');
+    }
+  };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px", position: "relative" }}>
-      <h2 style={{ color: "white", fontSize: 20 }}>Popular Project Tags & Categories</h2>
-      <span style={{ color: "#B0B0B0" }}>Trending subjects & tech stacks used</span>
-
-      {/* Word Cloud */}
-      <div style={{ width: "100%", height: "300px", overflow: "hidden", marginTop: 50 }}>
-        <WordCloud
-          data={fixedWords}
-          fontSize={fontSizeMapper}
-          padding={5}
-          fill={(word) => colorMap[word.text]} // Fixed color per word
-          width={800}
-          height={300}
-          rotate={0}
-          spiral="archimedean" // Stable layout
-          onWordMouseOver={(event, d) => {
-            setHoveredWord(null);
-
-          }}
-          onWordMouseMove={(event) => {
-            setHoveredWord(null);
-
-          }}
-          onWordMouseOut={() => {
-            setHoveredWord(null);
-          }}
+    <div className="adminsubjects-section">
+      <div className="adminsubjects-form">
+        <h2>{editingId ? 'Edit Subject' : 'Add New Subject'}</h2>
+        <input
+          type="text"
+          placeholder="Subject Title (e.g. Web Development)"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
+        <input
+          type="text"
+          placeholder="Subject Code (e.g. CC103)"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+        <button className="crud-3d-btn" onClick={handleAddOrUpdate}>
+          {editingId ? 'Update Subject' : 'Add Subject'}
+        </button>
       </div>
 
-      {/* Tooltip */}
-      {hoveredWord && (
-        <div
-          style={{
-            position: "absolute",
-            backgroundColor: "black",
-            color: "white",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            fontSize: "14px",
-            top: tooltipPosition.y + 10,
-            left: tooltipPosition.x + 10,
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {hoveredWord.text}: {hoveredWord.value}
-        </div>
-      )}
+      <div className="adminsubjects-list">
+        <h3>All Subjects</h3>
+        {loading ? (
+          <p>Loading subjects...</p>
+        ) : adminsubjects.length === 0 ? (
+          <p>No subjects found.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Code</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminsubjects.map((subject) => (
+                <tr key={subject._id}>
+                  <td>{subject.title}</td>
+                  <td>{subject.code}</td>
+                  <td>
+                    <button className="crud-3d-btn edit" onClick={() => handleEdit(subject)}>
+                      Edit
+                    </button>
+                    <button className="crud-3d-btn delete" onClick={() => handleDelete(subject._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
+
+
 
 export default AdminDashboard;

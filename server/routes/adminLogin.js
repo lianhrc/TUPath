@@ -3,11 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Tupath_usersModel, Employer_usersModel, Project, AssessmentQuestion, Admin } = require("../models/Tupath_users");
 const router = express.Router();
-const JWT_SECRET = "your-secret-key";
+require('dotenv').config(); // Make sure we load environment variables
+
+const JWT_SECRET = process.env.JWT_SECRET; // Use JWT_SECRET from environment variables
 
 const app = express();
-
-
 
 // Admin Login Route
 router.post('/api/admin/login', async (req, res) => {

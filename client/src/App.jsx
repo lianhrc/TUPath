@@ -27,7 +27,7 @@ import AdminSignup from './components/pages/admin/AdminSignup.jsx';
 import QuestionManager from './components/pages/admin/QuestionManager.jsx';
 import { AuthProvider } from './components/AuthProvider.jsx';
 import { useState, useEffect } from 'react';
-import axiosInstancev2 from './services/axiosInstancev2'; // Update this line to use correct path
+import axiosInstance from './services/axiosInstance'; // Update this line to use correct path
 
 function App() {
   // Add a protected route component
@@ -37,7 +37,7 @@ function App() {
     useEffect(() => {
       const checkAuth = async () => {
         try {
-          const response = await axiosInstancev2.get('/check-auth');
+          const response = await axiosInstance.get('/check-auth');
           setIsAuthenticated(response.data.success);
         } catch (error) {
           setIsAuthenticated(false);

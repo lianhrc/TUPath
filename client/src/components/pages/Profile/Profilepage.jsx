@@ -296,21 +296,20 @@ function ProfilePage() {
 
                 {/* Display Projects */}
                 
-            {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() ? (
-              projects.length > 0 ? (
-                projects.map((project) => (
-                  <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
-                    {project.thumbnail && <img src={`http://localhost:3001${project.thumbnail}`} alt="Project Thumbnail" />}
-                    <p>{project.projectName}</p>
-                  </div>
-                ))
-              ) : (
-                <p>No projects available</p>
-              )
-            ) : (
-              <p>Projects are hidden for other students.</p>
-            )}
-
+                {userRole === 'student' && profileData.email?.toLowerCase() === loggedInUserEmail?.toLowerCase() ? (
+                  projects.length > 0 ? (
+                    projects.map((project) => (
+                      <div key={project._id} className="project-card" onClick={() => { setSelectedProject(project); setShowPreviewModal(true); }}>
+                        {project.thumbnail && <img src={project.thumbnail} alt="Project Thumbnail" />}
+                      </div>
+                    ))
+                  ) : (
+                    <p>No projects available</p>
+                  )
+                ) : (
+                  <p>Projects are hidden for other students.</p>
+                )}
+                
 
               </div>
             </div>
@@ -330,8 +329,12 @@ function ProfilePage() {
                 {certificates.length > 0 ? (
                   certificates.map((cert) => (
                     <div key={cert._id} className="project-card" onClick={() => { setselectedCert(cert); setshowcertPreviewModal(true); }}>
-                      {cert.Certificate.CertThumbnail && <img src={`http://localhost:3001${cert.Certificate.CertThumbnail}`} alt="Certificate Thumbnail"/>}
-                      <p>{cert.Certificate.CertName}</p>
+                          {cert.Certificate?.CertThumbnail && ( // Ensure CertThumbnail exists
+                          <img 
+                            src={cert.Certificate.CertThumbnail} 
+                            alt={`${cert.Certificate.CertName} Thumbnail`} 
+                          />
+                        )}
                     </div>
                   ))
                 ) : (

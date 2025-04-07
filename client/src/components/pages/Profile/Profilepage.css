@@ -169,12 +169,10 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
 }
-
 .project-card {
   background-color: #f0f2f5;
   display: flex;
   position: relative;
-
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -182,13 +180,26 @@
   overflow: hidden;
   border-radius: 5px;
   cursor: pointer;
-  height: 200px;
+  height: 200px; /* Fixed height */
+  width: 100%; /* Adjusts to parent container */
   transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
 
-.project-card p{
-  margin-top: 5px;
+.project-card img {
+  width: 100%;
+  height: auto; /* Ensures proportional scaling */
+  max-height: 100%; /* Prevents overflow */
+  object-fit: contain; /* Keeps the image aspect ratio */
 }
+
+.project-card p {
+  margin: 0;
+  text-align: center;
+  font-size: 14px;
+  white-space: nowrap; /* Prevents wrapping */
+  overflow: hidden;
+}
+
 
 .project-card:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -197,11 +208,7 @@
   opacity: 0.5;
 }
 
-.project-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+
 
 .proj-status {
   position: absolute;

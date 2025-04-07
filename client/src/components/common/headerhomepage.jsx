@@ -44,12 +44,24 @@ function HeaderHomepage() {
     }
   }, 500);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.clear();
-      window.location.replace('/login');
-    }, 300);
+    try {
+      // Call the server logout endpoint
+      const response = await axiosInstance.post('/api/logout');
+      
+      if (response.data.success) {
+        // Clear client-side storage
+        localStorage.clear();
+        window.location.replace('/login');
+      } else {
+        console.error('Logout failed:', response.data.message);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

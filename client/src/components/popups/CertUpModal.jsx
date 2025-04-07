@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './CertUpModal.css';
+
 import { toast } from "react-toastify"; // Import toastify
 import "react-toastify/dist/ReactToastify.css"; // Don't forget to import the CSS for toastify
 
-import axiosInstance from '../../services/axiosInstance';  // Make sure to import axios instance
+import axios from '../../services/axiosInstance';  // Make sure to import axios instance
 
 const CertUpModal = ({ show, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -18,7 +19,19 @@ const CertUpModal = ({ show, onClose }) => {
   if (!show) return null;
 
   const handleFileChange = (e) => {
-    setSelectedFiles([...e.target.files]);
+    const files = Array.from(e.target.files);
+    const allowed = ['.jpg', '.jpeg', '.png', '.pdf', '.docx', '.txt'];
+    
+    const validFiles = files.filter(file => {
+      const ext = file.name.toLowerCase().split('.').pop();
+      return allowed.includes(`.${ext}`);
+    });
+  
+    if (validFiles.length !== files.length) {
+      toast.error(`Some files were rejected. Allowed types: ${allowed.join(', ')}`);
+    }
+  
+    setSelectedFiles(validFiles);
   };
 
   const handleThumbnailChange = (e) => {
@@ -27,51 +40,114 @@ const CertUpModal = ({ show, onClose }) => {
       setThumbnail(file);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("CertName", certName);
-    formData.append("CertDescription", certDescription);
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-    selectedFiles.forEach((file) => {
-      formData.append("attachments", file);
-    });
-  
+    
     try {
-      const response = await axiosInstance.post("/api/uploadCertificate", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      if (response.data.success) {
-        toast.success("Certificate uploaded successfully", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          theme: "light",
-        });
-        onClose();  // Close the modal and trigger parent state update
-      } else {
-        toast.error("Failed to upload certificate", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          theme: "light",
-        });
+      console.log("Starting certificate upload process...");
+      
+      // 1. Validate inputs
+      if (!certName || !certDescription || !thumbnail || selectedFiles.length === 0) {
+        throw new Error("All fields are required");
       }
-    } catch (error) {
-      console.error("Error uploading certificate:", error);
-      toast.error(`${error.response?.data?.message || error.message}`, {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        theme: "light",
+  
+      console.log("Input validation passed");
+  
+      // 2. Upload Thumbnail
+      console.log("Preparing thumbnail upload...");
+      const thumbnailFormData = new FormData();
+      thumbnailFormData.append("thumbnail", thumbnail);
+      
+      console.log("Sending thumbnail to backend...");
+      const thumbnailResponse = await axios.post("/api/uploadThumbnail", thumbnailFormData, {
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        }
       });
+  
+      console.log("Thumbnail upload response:", thumbnailResponse.data);
+      
+      if (!thumbnailResponse.data?.thumbnailUrl) {
+        throw new Error("Thumbnail upload failed - no URL returned");
+      }
+  
+      // 3. Upload Attachments
+      console.log(`Uploading ${selectedFiles.length} attachments...`);
+      const attachmentUrls = [];
+      
+      for (const [index, file] of selectedFiles.entries()) {
+        console.log(`Uploading attachment ${index + 1}: ${file.name}`);
+        
+        const attachmentFormData = new FormData();
+        attachmentFormData.append("attachment", file);
+        
+        const response = await axios.post("/api/uploadAttachments", attachmentFormData, {
+          headers: { 
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+  
+        console.log(`Attachment ${index + 1} response:`, response.data);
+        
+        if (!response.data?.url) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+        attachmentUrls.push(response.data.url);
+      }
+  
+      // 4. Prepare final payload
+      const payload = {
+        CertName: certName,
+        CertDescription: certDescription,
+        CertThumbnail: thumbnailResponse.data.thumbnailUrl,
+        Attachments: attachmentUrls
+      };
+  
+      console.log("Final payload:", payload);
+  
+      // 5. Submit certificate
+      console.log("Submitting certificate data...");
+      const certificateResponse = await axios.post("/api/uploadCertificate", payload, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      console.log("Certificate response:", certificateResponse.data);
+      
+      if (certificateResponse.data.success) {
+        toast.success("Certificate uploaded successfully!");
+        onClose();
+      }
+      
+    } catch (error) {
+      console.error("Full error details:", {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data,
+        request: error.config,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+      
+      let errorMessage = "Upload failed";
+      if (error.response) {
+        // Try to extract server error message
+        if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        }
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      toast.error(errorMessage);
     }
   };
+
   
 
   const modalVariants = {

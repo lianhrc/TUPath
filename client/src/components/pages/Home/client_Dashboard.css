@@ -1,7 +1,8 @@
 .cd_dashboard-container {
   display: flex;
   padding: 20px;
-  padding-top: 120px;
+  padding-left: 40px;
+  padding-top: 100px;
   height: 100vh;
   font-family: 'Arial', sans-serif;
   background-position: center;
@@ -10,19 +11,46 @@
   background-color: #F4F2EE;
   background-blend-mode: overlay;
   position: relative;
+  overflow: auto;
 }
+
 .cd_sidebar {
   width: 300px;
   background-color:white;
   padding: 20px;
   border-right: 2px solid #ddd;
-  height: 95%;
+  height: auto;
   overflow-y: auto;
   margin-top: 20px;
   border-radius: 15px;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+
 }
+
+.cd_sidebar button {
+  background-color: #A82632;
+  padding: 10px 20px;
+  border: none;
+  margin: 7px 3px;
+  border-radius: 50px;
+  color: white;
+  text-align: center; /* Ensures text is centered */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer; /* Adds a pointer cursor for better UX */
+}
+.cd_sidebar button:hover {
+  background-color: #8B1F2A; /* Darker red on hover */
+  transform: scale(1.05); /* Slightly enlarges button */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adds subtle shadow */
+}
+
+.cd_chart-container{
+  margin-top: 50px;
+}
+
 
 .cd_sidebar::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
@@ -113,25 +141,30 @@
 .cd_subjects-container {
   display: flex;
   flex-direction: column;
+  width: 100%;
   gap: 10px;
+}
+
+.sidebarsubjects{
+  margin-top: 20px;
+}
+
+.cd_subjects-container div input {
+  width: 20px;
 }
 
 .cd_subjects-container div {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.cd_subjects-container div div {
-  display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: left;
   gap: 8px;
+  width: 100%;
 }
 
-.cd_subjects-container div div input {
- width: 10px;
-}
+
+
+
 
 .cd_subjects-list h6 {
   font-size: 10px;

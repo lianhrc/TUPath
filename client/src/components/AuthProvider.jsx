@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axiosInstancev2 from '../services/axiosInstancev2';
+import axiosInstance from '../services/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Validate session on app load
-    axiosInstancev2
+    axiosInstance
       .get('/check-auth')
       .then((response) => {
         if (response.data.success) {

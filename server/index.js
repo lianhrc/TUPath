@@ -1,20 +1,21 @@
 const express = require("express");
-  const mongoose = require("mongoose");
-  const cors = require("cors");
-  const jwt = require("jsonwebtoken");
-  const bcrypt = require("bcryptjs");
-  const axios = require("axios");
-  const http = require("http");
-  const { Server } = require("socket.io");
-  const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping} = require("./models/Tupath_users");
-  const nodemailer = require("nodemailer");
-  const crypto = require("crypto");
-  const cookieParser = require('cookie-parser');
-  const session = require("express-session");
-  const MongoStore = require("connect-mongo");
-  //pushin purposes
- require('dotenv').config()
-
+const mongoose = require("mongoose");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const axios = require("axios");
+const http = require("http");
+const { Server } = require("socket.io");
+const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMapping } = require("./models/Tupath_users");
+const Post = require("./models/Post"); // Import Post model from models folder
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const cookieParser = require('cookie-parser');
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+require('dotenv').config();
 
 const adminsignup = require("./routes/adminsignup");
 const adminLogin = require("./routes/adminLogin");
@@ -25,13 +26,24 @@ const studentByTags = require("./routes/studentsByTag")
 const users = require("./routes/users");
 const adminDelete = require("./routes/adminDelete");
 const corRoutes = require("./routes/corRoutes");
+const postRoutes = require("./routes/postRoutes"); // Import post routes
+const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
 
-const checkAuth = require('./middleware/authv2')
+// const checkAuth = require('./middleware/authv2')
 const adminLogout = require('./routes/adminLogout')
+const authRoute = require("./routes/authRoute"); // Add the auth routes
+const verifyToken = require('./middleware/verifyToken'); // Use the separated middleware
 
-
-const JWT_SECRET = "your-secret-key";
-const GOOGLE_CLIENT_ID = "625352349873-hrob3g09um6f92jscfb672fb87cn4kvv.apps.googleusercontent.com";
+// Environment variables
+const JWT_SECRET = process.env.JWT_SECRET;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_URL = process.env.CLIENT_URL;
+const PORT = process.env.PORT || 3001;
+const MONGO_URI = process.env.MONGO_URI;
+// const MONGO_LOCAL_URI = process.env.MONGO_LOCAL_URI;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const app = express();
 const server = http.createServer(app);
@@ -39,24 +51,46 @@ const multer = require("multer");
 const path = require("path");
 
 // Middleware setup
-app.use(cors({ origin: 'http://localhost:5173', credentials: true, })); // Updated CORS for specific origin // SET CREDENTIALS AS TRUE
+app.use(cors({ origin: CLIENT_URL, credentials: true })); // Use environment variable for CORS
 app.use('/uploads', express.static('uploads'));
 app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use('/cor', express.static('cor'));
 
-app.use(express.json({ limit: '50mb' })); // Increase the limit to 50 MB
+// Add this middleware first in your Express app
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.path}`);
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  next();
+});
+
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 app.use(session({
-  secret: "your_secret_key",
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/tupath_users" }), // Persistent session storage
+  store: MongoStore.create({ mongoUrl: MONGO_URI }),
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
-//ROUTES
 
+// Make io available to routes
+const io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL,
+    methods: ["GET", "POST"],
+  },
+});
+
+// Add io to req object
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// ROUTES
 app.use('/', users);
 app.use('/', adminsignup);
 app.use('/', adminLogin);
@@ -65,9 +99,13 @@ app.use('/', userStats);
 app.use('/', studentTags);
 app.use('/', studentByTags);
 app.use('/', adminDelete);
-app.use('/', checkAuth);
+// app.use('/', checkAuth);
 app.use('/', adminLogout);
 app.use('/', corRoutes);
+app.use('/api', authRoute); // Use the auth routes
+app.use('/api/posts', postRoutes); // Use post routes
+app.use('/api/admin', adminRoutes); // Use admin routes
+app.use('/adminsubjects', require('./routes/adminSubjects')); // use admin subjects routes
 
 
 // Middleware for setting COOP headers
@@ -77,73 +115,106 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
-
-
-   // MongoDB connection
-    mongoose
-     .connect("mongodb://127.0.0.1:27017/tupath_users")
-      .then(() => console.log("MongoDB connected successfully"))
-     .catch((err) => console.error("MongoDB connection error:", err));
-
-
-/*
-mongoose.connect(
-  "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
-)
-  .then(() => console.log("Connected to MongoDB Atlas successfully"))
+// Connect to MongoDB using environment variables
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("Connected to MongoDB successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-*/
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Define where to store the files
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_global', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Define how files are named
+});
+
+const Projectstorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_Proj', // Change this to your preferred folder name
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+  },
+});
+
+const CertThumbStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    return {
+      folder: 'TUPath_Cert_Thumbnails',
+      public_id: `${Date.now()}-${file.originalname}`,
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [
+        { width: 300, height: 300, crop: 'limit' },
+        { quality: 'auto' }
+      ]
+    };
   }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB limit
+const CertFileStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    // Sanitize filename
+    const sanitizedName = file.originalname.replace(/[^\w.-]/g, '');
+    const ext = sanitizedName.split('.').pop().toLowerCase();
+    
+    console.log(`Processing file: ${sanitizedName} (${ext})`);
+
+    return {
+      folder: 'TUPath_Cert_Attachments',
+      public_id: `${Date.now()}-${sanitizedName}`,
+      resource_type: ext === "docx" || ext === "txt" || ext === "pdf" ? "raw" : "auto", // Use 'raw' for non-images
+    };
+  }
 });
 
 
-// JWT verification middleware
-// JWT verification middleware with added debugging and error handling
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) {
-    console.error("Authorization header is missing.");
-    return res.status(401).json({ message: "Access Denied: Authorization header missing" });
-  }
 
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    console.error("Token not found in Authorization header.");
-    return res.status(401).json({ message: "Access Denied: Token missing" });
-  }
+const Profilestorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "TUPath_Profile",
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
+  },
+});
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      console.error("Token verification failed:", err);
-      return res.status(403).json({ message: "Invalid Token" });
+// ✅ Correct Multer Setup
+const uploadImageProfile = multer({ storage: Profilestorage });
+const upload = multer({ storage: storage });
+const UploadImageProjects = multer({ storage: Projectstorage });
+
+// ✅ Multer Setup for Certificates
+const uploadThumbnail = multer({ 
+  storage: CertThumbStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
+const uploadCertFiles = multer({ 
+  storage: CertFileStorage,
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+      'text/plain'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type: ${file.mimetype}`), false);
     }
-
-    req.user = user;
-    next();
-  });
-};
-
-
-// Socket.IO setup
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
   },
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
 });
 
 // Chat message schema
@@ -192,7 +263,6 @@ app.get('/api/userss', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
 
 // REST endpoint to fetch chat messages
 app.get("/api/messages", verifyToken, async (req, res) => {
@@ -260,317 +330,6 @@ app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
-// Add a comment to a post
-app.post("/api/posts/:id/comment", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.id;
-  const { profileImg, name, comment } = req.body;
-
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-  }
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    const newComment = {
-      profileImg,
-      username: name,
-      userId, // Include userId in the comment
-      comment,
-      createdAt: new Date(),
-    };
-
-    post.comments.push(newComment);
-    await post.save();
-
-    io.emit("new_comment", { postId, comment: newComment });
-
-    res.status(201).json({ success: true, comment: newComment });
-  } catch (err) {
-    console.error("Error adding comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Soft delete a comment from a post
-app.delete("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const commentId = req.params.commentId;
-
-  try {
-    // Find the post by ID, but only if it is not soft-deleted
-    const post = await Post.findOne({ _id: postId, deletedAt: null });
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found or deleted" });
-    }
-
-    // Find the comment to soft delete
-    const comment = post.comments.find(
-      (comment) => comment._id.toString() === commentId && comment.userId === userId
-    );
-
-    if (!comment) {
-      return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
-    }
-
-    // Set deletedAt timestamp instead of removing the comment
-    comment.deletedAt = new Date();
-
-    // Save the updated post
-    await post.save();
-
-    // Emit the comment deletion event
-    io.emit("delete_comment", { postId, commentId });
-
-    res.status(200).json({ success: true, message: "Comment soft deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-// Edit a comment on a post
-app.put("/api/posts/:postId/comment/:commentId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const commentId = req.params.commentId;
-  const { comment } = req.body;
-
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ success: false, message: "Comment cannot be empty" });
-  }
-
-  try {
-    // Find the post by ID
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    // Find the comment to edit
-    const existingComment = post.comments.find(
-      (commentItem) => commentItem._id.toString() === commentId && commentItem.userId === userId
-    );
-
-    if (!existingComment) {
-      return res.status(404).json({ success: false, message: "Comment not found or unauthorized" });
-    }
-
-    // Update the comment text
-    existingComment.comment = comment;
-    existingComment.updatedAt = new Date();
-
-    // Save the updated post
-    await post.save();
-
-    // Emit the comment edit event
-    io.emit("edit_comment", { postId, comment: existingComment });
-
-    res.status(200).json({ success: true, comment: existingComment });
-  } catch (err) {
-    console.error("Error editing comment:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-// Increment upvotes for a post
-app.post("/api/posts/:id/upvote", verifyToken, async (req, res) => {
-  const postId = req.params.id;
-  const { id: userId, username, lastName } = req.user; // Extract user info from token
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    const userIndex = post.votedUsers.findIndex((user) => user.userId === userId);
-
-    if (userIndex > -1) {
-      // User already upvoted, remove upvote
-      post.votedUsers.splice(userIndex, 1);
-      post.upvotes -= 1;
-    } else {
-      // User has not upvoted, add upvote
-      post.votedUsers.push({ userId, username, lastName });
-      post.upvotes += 1;
-    }
-
-    await post.save();
-
-    res.status(200).json({ success: true, post });
-  } catch (err) {
-    console.error("Error toggling upvote:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Define Post schema
-const postSchema = new mongoose.Schema({
-  userId: String,
-  profileImg: String,
-  name: String,
-  timestamp: { type: Date, default: Date.now },
-  content: String,
-  postImg: String,
-  upvotes: { type: Number, default: 0 },
-  deletedAt: { type: Date, default: null },
-  votedUsers: [
-    {
-      userId: String,
-      username: String,
-      lastName: String,
-    },
-  ], // Array of users who upvoted
-  comments: [
-    {
-      userId: String,
-      profileImg: String,
-      username: String,
-      comment: String,
-      createdAt: Date,
-      deletedAt: { type: Date, default: null }, // Soft delete field
-    },
-  ],
-});
-
-const Post = mongoose.model("Post", postSchema);
-
-// Get all non-deleted posts with non-deleted comments
-app.get("/api/posts", async (req, res) => {
-  try {
-    const posts = await Post.find({ deletedAt: null }) // Exclude soft-deleted posts
-      .sort({ timestamp: -1 })
-      .lean(); // Convert to a plain JavaScript object for manipulation
-
-    // Filter out soft-deleted comments
-    const filteredPosts = posts.map(post => ({
-      ...post,
-      comments: post.comments.filter(comment => !comment.deletedAt), // Only include non-deleted comments
-    }));
-
-    res.json(filteredPosts);
-  } catch (err) {
-    console.error("Error fetching posts:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-
-// Create a new post
-app.post("/api/posts", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const userRole = req.user.role; // Extract role from the user token
-
-  if (userRole !== "employer") {
-    return res.status(403).json({ success: false, message: "Only employers can post." });
-  }
-
-  const { profileImg, name, content, postImg } = req.body;
-
-  try {
-    const newPost = new Post({
-      profileImg,
-      name,
-      content,
-      postImg,
-      userId, // Save userId for the post
-    });
-
-    await newPost.save();
-    res.status(201).json({ success: true, post: newPost });
-    io.emit("new_post", newPost);
-  } catch (err) {
-    console.error("Error creating post:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-
-// update a post
-app.put("/api/posts/:postId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-  const { content } = req.body;
-
-  if (!content || content.trim() === "") {
-    return res.status(400).json({ success: false, message: "Post content cannot be empty" });
-  }
-
-  try {
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    if (post.userId.toString() !== userId) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
-
-    post.content = content;
-    post.postImg = req.body.postImg;
-    post.updatedAt = new Date();
-
-    await post.save();
-
-    res.status(200).json({ success: true, post });
-  } catch (err) {
-    console.error("Error editing post:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-// delete a post with soft delete 
-app.delete("/api/posts/:postId", verifyToken, async (req, res) => {
-  const userId = req.user.id; // Extract userId from the verified token
-  const postId = req.params.postId;
-
-  try {
-    // Find the post by ID
-    const post = await Post.findById(postId);
-
-    if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
-    }
-
-    // Check if the user is the one who created the post
-    if (post.userId.toString() !== userId) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
-
-    // Perform a soft delete by setting the deletedAt field
-    post.deletedAt = new Date();
-    await post.save();
-
-    // Emit post deletion event (optional)
-    io.emit("delete_post", { postId });
-
-    // Respond with a success message
-    res.status(200).json({ success: true, message: "Post soft deleted successfully" });
-  } catch (err) {
-    console.error("Error soft deleting post:", err);
-    res.status(500).json({ success: false, message: "Internal server error", error: err.message });
-  }
-});
-
-
-
 
 // Socket.IO events for real-time chat and certificates
 io.on("connection", (socket) => {
@@ -642,23 +401,23 @@ io.on("connection", (socket) => {
   });
 }); // Add this closing bracket
 
-// Student Certificate Schema
-const StudentCert = new mongoose.Schema({
-  StudId: { type: String, required: true }, // Unique identifier for the student
-  StudName: { type: String, required: true }, // Full name of the student
-  timestamp: { type: Date, default: Date.now }, // Record creation timestamp
+const validateAttachment = (url) => {
+  const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
+  return allowedExtensions.test(url);
+};
+
+const StudentCert = new mongoose.Schema({ 
+  StudId: { type: String, required: true },
+  StudName: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
   Certificate: {
-    CertName: { type: String, required: true }, // Name/title of the certificate
-    CertDescription: { type: String, required: true }, // Detailed description of the certificate
-    CertThumbnail: { type: String, default: "" }, // URL or path to the certificate thumbnail
+    CertName: { type: String, required: true },
+    CertDescription: { type: String, required: true },
+    CertThumbnail: { type: String, default: "" },
     Attachments: [{
       type: String,
       validate: {
-        validator: function (v) {
-          // Ensure each attachment has an allowed file extension
-          const allowedExtensions = /\.(jpg|jpeg|png|pdf|docx|txt)$/i;
-          return allowedExtensions.test(v);
-        },
+        validator: validateAttachment,
         message: "Attachments must be valid file URLs with extensions jpg, jpeg, png, pdf, docx, or txt.",
       },
     }],
@@ -667,45 +426,164 @@ const StudentCert = new mongoose.Schema({
 
 const StudentCertificate = mongoose.model("StudentCertificate", StudentCert);
 
-// Endpoint to handle certificate uploads
-app.post("/api/uploadCertificate", verifyToken, upload.fields([
-  { name: "thumbnail", maxCount: 1 },
-  { name: "attachments", maxCount: 10 }
-]), async (req, res) => {
+/// Update your uploadCertificate endpoint
+app.post("/api/uploadCertificate", verifyToken, async (req, res) => {
   try {
+    console.log("Processing certificate upload...");
+    
+    const { CertName, CertDescription, CertThumbnail, Attachments } = req.body;
     const userId = req.user.id;
-    const userName = req.user.name; // Ensure user name is extracted from the token
-    const { CertName, CertDescription } = req.body;
+    const userName = req.user.name;
 
+    console.log("Received data:", {
+      CertName,
+      CertDescription,
+      CertThumbnail,
+      Attachments,
+      userId,
+      userName
+    });
+
+    // Validate inputs
     if (!CertName || !CertDescription) {
-      return res.status(400).json({ success: false, message: "Certificate name and description are required." });
+      throw new Error("Certificate name and description are required");
     }
 
-    const thumbnail = req.files["thumbnail"] ? `/uploads/${req.files["thumbnail"][0].filename}` : "";
-    const attachments = req.files["attachments"] ? req.files["attachments"].map(file => `/uploads/${file.filename}`) : [];
+    if (!CertThumbnail) {
+      throw new Error("Thumbnail URL is required");
+    }
 
+    if (!Attachments || !Array.isArray(Attachments) || Attachments.length === 0) {
+      throw new Error("At least one attachment is required");
+    }
+
+    // Filter valid attachments
+    const validAttachments = Attachments.filter(url => 
+      url && /\.(jpg|jpeg|png|pdf|docx|txt)$/i.test(url)
+    );
+
+    if (validAttachments.length === 0) {
+      throw new Error("No valid attachments provided");
+    }
+
+    console.log("Creating new certificate document...");
     const newCertificate = new StudentCertificate({
       StudId: userId,
-      StudName: userName, // Use the extracted user name
+      StudName: userName,
       Certificate: {
         CertName,
         CertDescription,
-        CertThumbnail: thumbnail,
-        Attachments: attachments,
-      },
+        CertThumbnail,
+        Attachments: validAttachments
+      }
     });
 
+    console.log("Saving to database...");
     await newCertificate.save();
-
-    // Emit the new certificate event
+    
+    console.log("Emission new_certificate event");
     io.emit("new_certificate", newCertificate);
 
-    res.status(201).json({ success: true, message: "Certificate uploaded successfully", certificate: newCertificate });
+    console.log("Certificate saved successfully");
+    res.status(201).json({ 
+      success: true, 
+      message: "Certificate saved successfully",
+      certificate: newCertificate
+    });
+
   } catch (error) {
-    console.error("Error uploading certificate:", error);
-    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+    console.error("Certificate save error:", {
+      message: error.message,
+      stack: error.stack,
+      requestBody: req.body,
+      user: req.user
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to save certificate",
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
+app.post("/api/uploadThumbnail", verifyToken, uploadThumbnail.single('thumbnail'), async (req, res) => {
+  try {
+    if (!req.file) {
+      console.error("No file received in uploadThumbnail");
+      return res.status(400).json({ 
+        success: false, 
+        message: "No thumbnail file received" 
+      });
+    }
+
+    console.log("Cloudinary upload result:", req.file);
+
+    if (!req.file.path) {
+      throw new Error("Cloudinary upload failed - no URL returned");
+    }
+
+    res.status(201).json({ 
+      success: true,
+      message: "Thumbnail uploaded successfully",
+      thumbnailUrl: req.file.path
+    });
+
+  } catch (error) {
+    console.error("Thumbnail upload error:", {
+      message: error.message,
+      stack: error.stack,
+      file: req.file
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: "Thumbnail upload failed",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+
+// File validation middleware
+const validateFileType = (req, res, next) => {
+  if (!req.file) return next();
+  
+  const ext = req.file.originalname.split('.').pop().toLowerCase();
+  const allowed = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
+  
+  if (!allowed.includes(ext)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid file type .${ext}. Allowed: ${allowed.join(', ')}`
+    });
+  }
+  next();
+};
+
+app.post("/api/uploadAttachments", 
+  verifyToken,
+  uploadCertFiles.single('attachment'),
+  validateFileType,
+  async (req, res) => {
+    try {
+      if (!req.file) throw new Error("No file uploaded");
+      
+      console.log("Upload successful:", req.file.path);
+      res.json({
+        success: true,
+        url: req.file.path,
+        filename: req.file.originalname
+      });
+      
+    } catch (error) {
+      console.error("Upload failed:", error.message);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+);
 
 // Endpoint to fetch certificates for a user
 app.get('/api/certificates', verifyToken, async (req, res) => {
@@ -740,8 +618,6 @@ app.delete('/api/certificates/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
-
 
 // Endpoint to fetch profile data for a specific user including projects and certificates
 app.get('/api/profile/:id', verifyToken, async (req, res) => {
@@ -782,204 +658,6 @@ app.get('/api/profile/:id', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
-
-// Login endpoint
-app.post("/login", async (req, res) => {
-  const { email, password, role } = req.body;
-
-  try {
-    // Find the user by email and ensure they are not soft deleted
-    const user = role === "student"
-      ? await Tupath_usersModel.findOne({ email, deletedAt: null })
-      : await Employer_usersModel.findOne({ email, deletedAt: null });
-
-    // If no user is found or the password is incorrect
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(400).json({ success: false, message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign({ id: user._id, role }, JWT_SECRET, { expiresIn: "1h" });
-
-    let redirectPath = user.isNewUser ? "/studentprofilecreation" : "/homepage";
-    if (role === "employer") redirectPath = user.isNewUser ? "/employerprofilecreation" : "/homepage";
-
-    user.isNewUser = false;
-    await user.save();
-
-    res.status(200).json({ success: true, token, message: "Login successful", redirectPath });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-// Google Signup endpoint
-app.post("/google-signup", async (req, res) => {
-  const { token, role } = req.body;
-
-  // Validate role
-  if (!['student', 'employer'].includes(role)) {
-    return res.status(400).json({ success: false, message: 'Invalid role specified' });
-  }
-
-  try {
-    // Verify the Google token using Google API
-    const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-
-    if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
-      return res.status(400).json({ success: false, message: 'Invalid Google token' });
-    }
-
-    const { email, sub: googleId, name } = googleResponse.data;
-
-    // Select the correct model based on the role
-    const UserModel = role === 'student' ? Tupath_usersModel : Employer_usersModel;
-
-    // Check if the user already exists
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Account already exists. Please log in.' });
-    }
-
-    // Create a new user
-    const newUser = await UserModel.create({
-      name,
-      email,
-      password: googleId, // Placeholder for password
-      isNewUser: true,
-      googleSignup: true,
-      role, // Add role explicitly
-    });
-
-    // Generate JWT token
-    const jwtToken = jwt.sign(
-      { email, googleId, name, id: newUser._id, role },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    const redirectPath = role === 'student' ? '/studentprofilecreation' : '/employerprofilecreation';
-
-    res.json({ success: true, token: jwtToken, redirectPath });
-  } catch (error) {
-    console.error('Google sign-up error:', error);
-    res.status(500).json({ success: false, message: 'Google sign-up failed' });
-  }
-});
-
-
-
-
-
-// Google login endpoint
-app.post("/google-login", async (req, res) => {
-  const { token, role } = req.body;
-
-  try {
-    const googleResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-
-    if (googleResponse.data.aud !== GOOGLE_CLIENT_ID) {
-      return res.status(400).json({ success: false, message: "Invalid Google token" });
-    }
-
-    const { email, sub: googleId, name } = googleResponse.data;
-    const UserModel = role === "student" ? Tupath_usersModel : Employer_usersModel;
-
-    // Check if the user exists and is not soft-deleted
-    const user = await UserModel.findOne({ email, deletedAt: null });
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not registered or has been deleted." });
-    }
-
-    // Generate JWT token
-    const jwtToken = jwt.sign(
-      { email, googleId, name, id: user._id, role },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const redirectPath = "/homepage"; // Same for both roles
-
-    res.json({ success: true, token: jwtToken, redirectPath });
-  } catch (error) {
-    console.error("Google login error:", error);
-    res.status(500).json({ success: false, message: "Google login failed" });
-  }
-});
-
-// Student signup endpoint
-app.post("/studentsignup", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-
-  try {
-    const existingUser = await Tupath_usersModel.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists." });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await Tupath_usersModel.create({
-      name: `${firstName} ${lastName}`,
-      email,
-      password: hashedPassword,
-      isNewUser: true,
-      role: 'student', // Explicitly set the role
-    });
-
-    const token = jwt.sign({ id: newUser._id, role: 'student' }, JWT_SECRET, { expiresIn: '1h' });
-
-    return res.status(201).json({
-      success: true,
-      token,
-      message: "Signup successful",
-      redirectPath: "/studentprofilecreation",
-    });
-  } catch (err) {
-    console.error("Error during signup:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
-// Employer signup endpoint
-app.post("/employersignup", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-
-  try {
-    const existingUser = await Employer_usersModel.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists." });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await Employer_usersModel.create({
-      name: `${firstName} ${lastName}`,
-      email,
-      password: hashedPassword,
-      isNewUser: true,
-      role: 'employer', // Explicitly set the role
-    });
-
-    const token = jwt.sign({ id: newUser._id, role: 'employer' }, JWT_SECRET, { expiresIn: '1h' });
-
-    return res.status(201).json({
-      success: true,
-      token,
-      message: "Signup successful",
-      redirectPath: "/employerprofilecreation",
-    });
-  } catch (err) {
-    console.error("Error during signup:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-
 
 //---------------------------------------------NEWLY ADDED--------------------------------------------------------
 
@@ -1194,21 +872,29 @@ app.get('/api/profile', verifyToken, async (req, res) => {
  });
  */
 // api upload image endpoint
-app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
+app.post("/api/uploadProfileImage", verifyToken, uploadImageProfile.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ success: false, message: "No file uploaded or Cloudinary failed" });
     }
 
-    const profileImgPath = `/uploads/${req.file.filename}`;
+    console.log("Uploaded File:", req.file); // 🛠️ Debugging
 
+    const profileImgUrl = req.file.path; // ✅ Cloudinary should return a URL
+
+    if (!profileImgUrl) {
+      return res.status(500).json({ success: false, message: "Cloudinary upload failed, no URL returned" });
+    }
+
+    // ✅ Select the correct user model based on role
     const userModel = req.user.role === "student" ? Tupath_usersModel : Employer_usersModel;
 
+    // ✅ Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
-      { $set: { "profileDetails.profileImg": profileImgPath } },
+      { $set: { "profileDetails.profileImg": profileImgUrl } },
       { new: true }
     );
 
@@ -1219,7 +905,7 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
     res.status(200).json({
       success: true,
       message: "Profile image uploaded successfully",
-      profileImg: profileImgPath,
+      profileImg: profileImgUrl,
     });
   } catch (error) {
     console.error("Error uploading profile image:", error);
@@ -1227,7 +913,8 @@ app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), as
   }
 });
 
-app.post("/api/uploadProject", verifyToken, upload.fields([
+// Modify API Endpoint to Use Cloudinary
+app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "selectedFiles", maxCount: 10 },
   { name: "ratingSlip", maxCount: 1 }
@@ -1236,20 +923,17 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
     console.log("Received project upload request with data:", req.body);
 
     // Retrieve saved subject & grade from session
-    const { subject, grade, ratingSlip, year, term} = req.session.assessmentData || {};
+    const { subject, grade, ratingSlip } = req.session.assessmentData || {};
 
     if (!subject || !grade) {
-      console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-    const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-    const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
+    // Get Cloudinary URL instead of local file path
+    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].path : null;
+    const selectedFiles = req.files["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+    const ratingSlipPath = req.files["ratingSlip"] ? req.files["ratingSlip"][0].path : ratingSlip;
 
-    // Create and save the new project
     const newProject = new Project({
       user: req.user.id, // Add this line
       projectName: req.body.projectName,
@@ -1270,28 +954,18 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
 
     await newProject.save();
 
-    // Find student by ID and update their projects list
-    const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
-    if (!userId) {
-      console.error("User ID is missing.");
-      return res.status(400).json({ success: false, message: "User ID is required." });
-    }
+    const userId = req.user?.id || req.body.userId;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID is required." });
 
     const user = await Tupath_usersModel.findOneAndUpdate(
       { _id: userId },
-      { $addToSet: { "profileDetails.projects": newProject._id } }, // Ensure project is stored in profile
+      { $addToSet: { "profileDetails.projects": newProject._id } },
       { new: true }
     );
 
-    if (!user) {
-      console.error("User not found.");
-      return res.status(404).json({ success: false, message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
-    // Update best tag dynamically
     await user.calculateBestTag();
-
-    // Clear session after successful save
     delete req.session.assessmentData;
 
     console.log("Project successfully saved and linked to user:", newProject);
@@ -1440,31 +1114,28 @@ app.delete("/api/projects/:projectId", verifyToken, async (req, res) => {
   }
 });
 
+// // Endpoint for uploading certificate photos
+// app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const filePaths = req.files.map(file => `/certificates/${file.filename}`);
 
+//     const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
+//       userId,
+//       { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
+//       { new: true }
+//     );
 
+//     if (!updatedUser) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
 
-// Endpoint for uploading certificate photos
-app.post("/api/uploadCertificate", verifyToken, upload.array("certificatePhotos", 3), async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const filePaths = req.files.map(file => `/certificates/${file.filename}`);
-
-    const updatedUser = await Tupath_usersModel.findByIdAndUpdate(
-      userId,
-      { $push: { "profileDetails.certificatePhotos": { $each: filePaths } } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
-  } catch (error) {
-    console.error("Error uploading certificate photos:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+//     res.status(200).json({ success: true, message: "Certificate photos uploaded successfully", certificatePhotos: filePaths });
+//   } catch (error) {
+//     console.error("Error uploading certificate photos:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // -----------------------------------api for dynamic search----------------------------------
 app.get('/api/search', verifyToken, async (req, res) => {
@@ -1503,7 +1174,6 @@ app.get('/api/search', verifyToken, async (req, res) => {
 
 
 
-
 app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (req, res) => {
   try {
     const userId = req.user.id;
@@ -1512,33 +1182,64 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
 
     const profileData = req.body;
 
-    // Handle file upload (if any)
-    if (req.file) {
-      profileData.profileImg = `/uploads/${req.file.filename}`;
-    }
-
-    // Ensure we preserve the existing projects data
+    // Find existing user
     const existingUser = await userModel.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Preserve projects in the profileData (if no projects are passed, keep the existing ones)
+    // 🔥 **Delete old profile image from Cloudinary before uploading a new one**
+    if (existingUser.profileDetails.profileImg) {
+      const oldImageUrl = existingUser.profileDetails.profileImg;
+      const publicId = oldImageUrl.split("/").pop().split(".")[0]; // Extract publicId
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Handle file upload (if any)
+    if (req.file) {
+      const uploadedImage = await cloudinary.uploader.upload(req.file.path);
+      profileData.profileImg = uploadedImage.secure_url; // Store the Cloudinary URL
+    }
+
+    // Preserve existing projects and update profile
     const updatedProfile = {
       ...existingUser.profileDetails,
       ...profileData,
-      projects: existingUser.profileDetails.projects || []  // Ensure existing projects are kept
+      projects: existingUser.profileDetails.projects || []
     };
 
-    // Update the user's profile details
+    // Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
       userId,
       { $set: { profileDetails: updatedProfile } },
       { new: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    // 🔥 **Update all posts where userId matches the updated user**
+    if (profileData.profileImg) {
+      await Post.updateMany(
+        { userId },
+        { $set: { profileImg: profileData.profileImg } }
+      );
+
+      // 🔥 **Update all comments where userId matches**
+      await Post.updateMany(
+        { "comments.userId": userId },
+        { $set: { "comments.$[elem].profileImg": profileData.profileImg } },
+        { arrayFilters: [{ "elem.userId": userId }] }
+      );
+
+      // 🔥 **Update profile image in messages where user is the sender**
+      await Message.updateMany(
+        { "sender.senderId": userId },
+        { $set: { "sender.profileImg": profileData.profileImg } }
+      );
+
+      // 🔥 **Update profile image in messages where user is the receiver**
+      await Message.updateMany(
+        { "receiver.receiverId": userId },
+        { $set: { "receiver.profileImg": profileData.profileImg } }
+      );
     }
 
     res.status(200).json({ success: true, message: "Profile updated successfully", updatedUser });
@@ -1548,10 +1249,10 @@ app.put("/api/updateProfile", verifyToken, upload.single("profileImg"), async (r
   }
 });
 
+
+
 //----------------------------------------------------DECEMBER 13
 // Step 1: Add a reset token field to the user schemas
-
-
 
 // Step 2: Endpoint to request password reset
 app.post("/api/forgot-password", async (req, res) => {
@@ -1568,16 +1269,16 @@ app.post("/api/forgot-password", async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // Token valid for 1 hour
     await user.save();
 
-    // Send email
+    // Send email with environment variables
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "woojohnhenry2@gmail.com",
-        pass: "efqk hxyw jpeq sndo",
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
       },
     });
 
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetLink = `${CLIENT_URL}/reset-password/${resetToken}`;
     const mailOptions = {
       to: user.email,
       from: "no-reply@yourdomain.com",
@@ -1654,17 +1355,7 @@ app.post('/api/admin/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
-
-
-
-
-
-
-
-
-
 // NEW API- HIWALAY KO LANG KASI BABAKLASIN KO TO
-
 
 app.post("/api/saveAssessment", verifyToken, upload.single("ratingSlip"), async (req, res) => {
   try {
@@ -1719,29 +1410,24 @@ app.get("/api/getSubjectByTag", async (req, res) => {
   }
 });
 
-
-app.get('/api/grades', verifyToken, async (req, res) => {
+// studentcount in clientdashboard
+app.get("/api/student-counts", async (req, res) => {
   try {
-    const userId = req.user.id;
-    
-    // Find all projects for the user
-    const projects = await Project.find({ 
-      // Assuming projects are linked to users in your schema
-      // You may need to adjust this query based on your actual schema
-    }).select('subject grade');
-    
-    // Transform projects into grades format
-    const grades = projects.map(project => ({
-      code: project.subject,
-      description: 'Project submission', // Or get from subject mapping
-      grade: project.grade,
-      corFile: null // Or include if you have this data
-    }));
-    
-    res.status(200).json({ success: true, grades });
+    const bsitCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information Technology" });
+    const bscsCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Computer Science" });
+    const bsisCount = await Tupath_usersModel.countDocuments({ "profileDetails.department": "Information System" });
+
+    res.json({
+      success: true,
+      counts: {
+        BSIT: bsitCount,
+        BSCS: bscsCount,
+        BSIS: bsisCount,
+      },
+    });
   } catch (error) {
-    console.error('Error fetching grades:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Error fetching student counts:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 });
 
@@ -1786,7 +1472,6 @@ app.get("/api/checkExistingGrade", verifyToken, async (req, res) => {
 });
 
 // Server setup
-const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

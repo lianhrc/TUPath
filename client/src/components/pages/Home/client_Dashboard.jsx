@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import axiosInstance from "../../../services/axiosInstance";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import HeaderHomepage from "../../../components/common/headerhomepage";
@@ -20,6 +21,24 @@ const Client_Dashboard = () => {
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [tag, setTag] = useState(TAGS[0]);
+  const [studentCounts, setStudentCounts] = useState({ BSIT: 0, BSCS: 0, BSIS: 0 });
+
+  // Fetch student counts when component mounts
+  useEffect(() => {
+    const fetchStudentCounts = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/student-counts");
+        if (response.data.success) {
+          setStudentCounts(response.data.counts);
+        }
+      } catch (error) {
+        console.error("Error fetching student counts:", error);
+      }
+    };
+
+    fetchStudentCounts();
+  }, []);
+
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -68,7 +87,7 @@ const Client_Dashboard = () => {
         {TAGS.map((t) => (
           <button key={t} onClick={() => setTag(t)} className={tag === t ? "active" : ""}>{t}</button>
         ))}
-        <h3>Subjects</h3>
+        <h3 className="sidebarsubjects">Subjects</h3>
         {subjects.length > 0 ? (
           <div className="cd_subjects-container">
             {subjects.map((subject, index) => (
@@ -96,10 +115,11 @@ const Client_Dashboard = () => {
             <h3>Courses</h3>
           </div>
 
+          {/* Display fetched student counts dynamically */}
           <div className="section3boxes">
-            <div className="div1box"><div className="boxheadercd">BSIT</div>5</div>
-            <div className="div2box"><div className="boxheadercd">BSCS</div>7</div>
-            <div className="div3box"><div className="boxheadercd">BSIS</div>10</div>
+            <div className="div1box"><div className="boxheadercd">BSIT</div>{studentCounts.BSIT}</div>
+            <div className="div2box"><div className="boxheadercd">BSCS</div>{studentCounts.BSCS}</div>
+            <div className="div3box"><div className="boxheadercd">BSIS</div>{studentCounts.BSIS}</div>
           </div>
 
           <div className="cd_grades-container">
