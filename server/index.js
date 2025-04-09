@@ -912,9 +912,8 @@ app.post("/api/uploadProfileImage", verifyToken, uploadImageProfile.single("prof
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
 // Modify API Endpoint to Use Cloudinary
-app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
+app.post("/api/uploadProject", verifyToken, upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "selectedFiles", maxCount: 10 },
   { name: "ratingSlip", maxCount: 1 }
@@ -922,17 +921,21 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
   try {
     console.log("Received project upload request with data:", req.body);
 
+
     // Retrieve saved subject & grade from session
     const { subject, grade, ratingSlip } = req.session.assessmentData || {};
 
     if (!subject || !grade) {
+      console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
     // Get Cloudinary URL instead of local file path
-    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].path : null;
-    const selectedFiles = req.files["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-    const ratingSlipPath = req.files["ratingSlip"] ? req.files["ratingSlip"][0].path : ratingSlip;
+    const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
+    const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
+    const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
+      ? `/uploads/${req.files["ratingSlip"][0].filename}`
+      : ratingSlip;
 
     const newProject = new Project({
       user: req.user.id, // Add this line
@@ -954,8 +957,11 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
 
     await newProject.save();
 
-    const userId = req.user?.id || req.body.userId;
-    if (!userId) return res.status(400).json({ success: false, message: "User ID is required." });
+    const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
+    if (!userId) {
+      console.error("User ID is missing.");
+      return res.status(400).json({ success: false, message: "User ID is required." });
+    }
 
     const user = await Tupath_usersModel.findOneAndUpdate(
       { _id: userId },
@@ -963,9 +969,14 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
       { new: true }
     );
 
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    if (!user) {
+      console.error("User not found.");
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
 
     await user.calculateBestTag();
+
+    //clear session after a successful save
     delete req.session.assessmentData;
 
     console.log("Project successfully saved and linked to user:", newProject);
@@ -976,6 +987,7 @@ app.post("/api/uploadProject", verifyToken, UploadImageProjects.fields([
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 /* //BACKUP LATEST API
