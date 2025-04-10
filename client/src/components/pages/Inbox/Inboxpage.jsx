@@ -353,24 +353,6 @@ function Inboxpage() {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Format last seen time
-  const formatLastSeen = (dateString) => {
-    if (!dateString) return "Never seen";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return "Active now";
-    if (diffMins < 60) return `Last seen ${diffMins} minutes ago`;
-
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `Last seen ${diffHours} hours ago`;
-
-    return `Last seen ${date.toLocaleDateString()}`;
-  };
-
   return (
     <div className="messaging-app">
       <HeaderHomepage />
@@ -549,13 +531,6 @@ function Inboxpage() {
                         getOtherParticipant(activeConversation)?.username ||
                         "Unknown"}
                     </h2>
-                    <p className="last-seen">
-                      {getOtherParticipant(activeConversation)?.lastSeen
-                        ? formatLastSeen(
-                            getOtherParticipant(activeConversation).lastSeen
-                          )
-                        : "Never seen"}
-                    </p>
                   </div>
                 </div>
               </div>
