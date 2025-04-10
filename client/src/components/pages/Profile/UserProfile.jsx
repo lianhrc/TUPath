@@ -22,6 +22,8 @@ function UserProfile() {
   const [showProjectPreviewModal, setShowProjectPreviewModal] = useState(false);
   const [showCertPreviewModal, setShowCertPreviewModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [grades, setGrades] = useState([]);
+
 
   // Fetch profile, projects, and certificates
   useEffect(() => {
@@ -52,7 +54,7 @@ function UserProfile() {
   }
 
   const profileImageUrl = profile.profileDetails?.profileImg?.startsWith('/')
-    ? `http://localhost:3001${profile.profileDetails.profileImg}`
+    ? `{profile.profileDetails.profileImg}`
     : profile.profileDetails?.profileImg || avatar;
 
   const formattedDate = (date) => {
@@ -202,7 +204,8 @@ function UserProfile() {
           <div className="userproject-section">
           <div className="grademaincontainer">
             <h3> Grades</h3>
-            <GradesTable />
+            <GradesTable grades = {grades} />
+
 
           
           </div>
@@ -219,7 +222,7 @@ function UserProfile() {
                     }}
                   >
                     <img
-                      src={project.thumbnail?.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail || avatar}
+                      src={project.thumbnail?.startsWith('/') ? `{project.thumbnail}` : project.thumbnail || avatar}
                       alt={project.projectName}
                     />
                     <p>{project.projectName}</p>
@@ -244,7 +247,7 @@ function UserProfile() {
                   >
                     {certificate.Certificate?.CertThumbnail && (
                       <img
-                        src={`http://localhost:3001${certificate.Certificate.CertThumbnail}`}
+                        src={certificate.Certificate.CertThumbnail}
                         alt="Certificate Thumbnail"
                         className="certificate-thumbnail"
                       />

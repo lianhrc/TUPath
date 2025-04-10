@@ -59,16 +59,7 @@ const ProjectUploadModal = ({ show, onClose, updateGradesTable}) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!projectName.trim() || !description.trim() || !tag) {
-      toast.error("All fields are required.", {
-        style: {
-          position: "top-center",
-          fontSize: "12px", // Slightly larger text
-          textAlign: "center", // Centers text
-          padding: "12px 20px", // Adds spacing
-          borderRadius: "8px", // Slightly rounded corners
-        },
-      });
-      
+      alert("All fields are required.");
       return;
     }
     setShowAssessmentModal(true);

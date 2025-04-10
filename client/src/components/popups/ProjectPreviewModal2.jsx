@@ -92,7 +92,7 @@ function ProjectPreviewModal({ show, onClose, project, onDelete }) {
         <div className="projprevheader">
           {project.thumbnail ? (
             <img 
-              src={project.thumbnail.startsWith('/') ? `http://localhost:3001${project.thumbnail}` : project.thumbnail} 
+              src={project.thumbnail.startsWith('/') ? `{project.thumbnail}` : project.thumbnail} 
               alt="Thumbnail" 
               className="project-thumbnail"
             />

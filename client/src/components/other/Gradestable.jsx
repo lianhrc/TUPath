@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Gradestable.css";
 
+
 const GradesTable = ({ grades = [] }) => {
   return (
     <div className="gradesubcontainer">
@@ -11,7 +12,9 @@ const GradesTable = ({ grades = [] }) => {
             <th>Subject Code</th>
             <th>Description</th>
             <th>Final Grade</th>
-            <th>Rating Split</th>
+            <th>Year</th>
+            <th>Term</th>
+            <th>COR</th>
           </tr>
         </thead>
         <tbody>
@@ -22,6 +25,8 @@ const GradesTable = ({ grades = [] }) => {
                 <td>{row.code}</td>
                 <td>{row.description}</td>
                 <td>{row.grade}</td>
+                <td>{row.year || 'N/A'}</td>
+                <td>{row.term || 'N/A'}</td>
                 <td>
                   {row.corFile ? (
                     <a href={`/uploads/${row.corFile}`} target="_blank" rel="noopener noreferrer">
@@ -35,7 +40,7 @@ const GradesTable = ({ grades = [] }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="5">No grades available</td>
+              <td colSpan="7">No grades available</td>
             </tr>
           )}
         </tbody>

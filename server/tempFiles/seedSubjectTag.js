@@ -3,7 +3,7 @@ const { Tupath_usersModel, Employer_usersModel, Project, Admin, SubjectTagMappin
 
 mongoose
   .connect(
-    "mongodb+srv://ali123:ali123@cluster0.wfrb9.mongodb.net/tupath_users?retryWrites=true&w=majority"
+    "mongodb+srv://tupath:tupath123@tupath.q84om.mongodb.net"
   )
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
