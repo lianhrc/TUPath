@@ -7,41 +7,35 @@ import { io } from "socket.io-client";
 const socket = io("http://localhost:3001");
 
 function Inboxpage() {
-  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [activeConversation, setActiveConversation] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [showNewConversation, setShowNewConversation] = useState(false);
-  const [newConversationName, setNewConversationName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const [typingTimeout, setTypingTimeout] = useState(null);
+  const typingTimeoutRef = useRef(null);
   const dropdownRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const [currentUserId, setCurrentUserId] = useState(
-    localStorage.getItem("userId") || ""
-  );
+  const currentUserId = localStorage.getItem("userId") || "";
 
   // Fetch all conversations on component mount
   useEffect(() => {
-    // Make sure we have the current user ID
-    setCurrentUserId(localStorage.getItem("userId") || "");
-
     const fetchConversations = async () => {
       try {
         setIsLoading(true);
-        const response = await axiosInstance.get(
-          "/api/messaging/conversations"
-        );
+        const response = await axiosInstance.get("/api/messaging/conversations");
         if (response.data.success) {
-          setConversations(response.data.conversations);
-
-          // Set first conversation active if there are any
-          if (response.data.conversations.length > 0 && !activeConversationId) {
-            setActiveConversationId(response.data.conversations[0]._id);
+          const fetchedConversations = response.data.conversations;
+          setConversations(fetchedConversations);
+          
+          // Set first conversation active if there are any and no active conversation
+          if (fetchedConversations.length > 0 && !activeConversation) {
+            setActiveConversation(fetchedConversations[0]);
           }
         }
       } catch (error) {
@@ -53,51 +47,48 @@ function Inboxpage() {
 
     fetchConversations();
 
-    // Set up socket listeners
-    socket.on("new_message", ({ conversationId, message }) => {
-      // Update messages if this is for the active conversation
-      if (conversationId === activeConversationId) {
-        setMessages(prevMessages => [...prevMessages, message]);
-      }
-      
-      // Update the conversation's last message
-      setConversations(prevConversations => 
-        prevConversations.map(convo => 
-          convo._id === conversationId 
-            ? { ...convo, lastMessage: message } 
-            : convo
-        )
-      );
-    });
+    // Socket listeners
+    socket.on("new_message", handleNewMessage);
+    socket.on("user_typing", handleTypingIndicator);
 
-    socket.on("user_typing", ({ conversationId, isTyping: userIsTyping, userId }) => {
-      // Only show typing indicator if it's not the current user and it's the active conversation
-      if (userId !== currentUserId && conversationId === activeConversationId) {
-        setIsTyping(userIsTyping);
-      }
-    });
-
-    // Clean up listeners on unmount
     return () => {
-      socket.off("new_message");
-      socket.off("user_typing");
+      socket.off("new_message", handleNewMessage);
+      socket.off("user_typing", handleTypingIndicator);
     };
-  }, [activeConversationId]);
+  }, []);
+
+  // Handle incoming messages
+  const handleNewMessage = ({ conversationId, message }) => {
+    if (activeConversation?._id === conversationId) {
+      setMessages(prev => [...prev, message]);
+    }
+    
+    setConversations(prev => prev.map(conv => 
+      conv._id === conversationId 
+        ? { ...conv, lastMessage: message } 
+        : conv
+    ));
+  };
+
+  // Handle typing indicators
+  const handleTypingIndicator = ({ conversationId, isTyping: typing, userId }) => {
+    if (userId !== currentUserId && activeConversation?._id === conversationId) {
+      setIsTyping(typing);
+    }
+  };
 
   // Fetch messages when active conversation changes
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!activeConversationId) return;
+      if (!activeConversation) return;
 
       try {
         const response = await axiosInstance.get(
-          `/api/messaging/conversations/${activeConversationId}/messages`
+          `/api/messaging/conversations/${activeConversation._id}/messages`
         );
         if (response.data.success) {
           setMessages(response.data.messages);
-          
-          // Join the socket room for this conversation
-          socket.emit("join_conversation", activeConversationId);
+          socket.emit("join_conversation", activeConversation._id);
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -105,7 +96,7 @@ function Inboxpage() {
     };
 
     fetchMessages();
-  }, [activeConversationId]);
+  }, [activeConversation]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -128,32 +119,41 @@ function Inboxpage() {
     };
   }, []);
 
-  // Handle search input change with debounce
-  const handleSearchChange = async (e) => {
-    const query = e.target.value;
-    setNewConversationName(query);
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length > 0) {
+        handleSearch(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
 
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Search for users
+  const handleSearch = async (query) => {
     if (query.length > 0) {
-      setShowDropdown(true);
       setIsSearching(true);
-
+      setShowDropdown(true);
+      
       try {
-        // Use the API to search for users and employers
         const response = await axiosInstance.get(
           `/api/messaging/search?query=${query}`
         );
         if (response.data.success) {
           setSearchResults(response.data.results);
+        } else {
+          setSearchResults([]);
         }
       } catch (error) {
-        console.error("Error searching for users:", error);
+        console.error("Search error:", error);
         setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
-    } else {
-      setSearchResults([]);
-      setShowDropdown(false);
     }
   };
 
@@ -170,44 +170,38 @@ function Inboxpage() {
       displayName = `${firstName} ${lastName}`;
     }
 
-    setNewConversationName({
-      name: displayName,
-      id: user._id,
-    });
-    setShowDropdown(false);
+    // Create new conversation with selected user
+    handleCreateConversation(user._id, displayName);
   };
 
+  // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !activeConversationId) return;
+    if (!newMessage.trim() || !activeConversation) return;
 
     try {
       const response = await axiosInstance.post("/api/messaging/messages", {
-        conversationId: activeConversationId,
+        conversationId: activeConversation._id,
         content: newMessage,
       });
 
       if (response.data.success) {
-        // Emit the message through socket
-        socket.emit("send_message", {
-          conversationId: activeConversationId,
-          message: response.data.message
-        });
-
+        const sentMessage = response.data.message;
+        
         // Add new message to the UI
-        setMessages([...messages, response.data.message]);
-
+        setMessages(prev => [...prev, sentMessage]);
+        
         // Update conversation's last message
-        setConversations(
-          conversations.map((convo) => {
-            if (convo._id === activeConversationId) {
-              return {
-                ...convo,
-                lastMessage: response.data.message,
-              };
-            }
-            return convo;
-          })
-        );
+        setConversations(prev => prev.map(conv => 
+          conv._id === activeConversation._id 
+            ? { ...conv, lastMessage: sentMessage } 
+            : conv
+        ));
+
+        // Emit socket event
+        socket.emit("send_message", {
+          conversationId: activeConversation._id,
+          message: sentMessage
+        });
 
         setNewMessage("");
       }
@@ -220,34 +214,35 @@ function Inboxpage() {
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
     
-    // Clear any existing timeout
-    if (typingTimeout) clearTimeout(typingTimeout);
+    // Clear existing timeout
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     
     // Emit typing event
     socket.emit("typing", {
-      conversationId: activeConversationId,
-      isTyping: true
+      conversationId: activeConversation?._id,
+      isTyping: true,
+      userId: currentUserId
     });
     
-    // Set timeout to stop typing indicator after 2 seconds of inactivity
-    const timeout = setTimeout(() => {
+    // Set timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
       socket.emit("typing", {
-        conversationId: activeConversationId,
-        isTyping: false
+        conversationId: activeConversation?._id,
+        isTyping: false,
+        userId: currentUserId
       });
     }, 2000);
-    
-    setTypingTimeout(timeout);
   };
 
-  const handleCreateConversation = async () => {
-    if (!newConversationName || !newConversationName.id) return;
+  // Create new conversation
+  const handleCreateConversation = async (participantId, displayName) => {
+    if (!participantId) return;
 
     try {
       const response = await axiosInstance.post(
         "/api/messaging/conversations",
         {
-          participantId: newConversationName.id,
+          participantId,
         }
       );
 
@@ -259,110 +254,106 @@ function Inboxpage() {
           !response.data.message ||
           response.data.message !== "Conversation already exists"
         ) {
-          // Ensure the conversation has the proper name
-          const updatedNewConvo = {
+          // Ensure the conversation has proper display information
+          const enhancedConvo = {
             ...newConvo,
-            participants: newConvo.participants.map((p) => {
-              if (
-                p.userId._id === newConversationName.id ||
-                p.userId === newConversationName.id
-              ) {
-                // This is the participant we just selected, make sure they have the right name
-                return {
-                  ...p,
-                  userId: {
-                    ...p.userId,
-                    username:
-                      typeof newConversationName === "object"
-                        ? newConversationName.name
-                        : newConversationName,
-                  },
-                };
-              }
-              return p;
-            }),
+            displayName: displayName
           };
 
-          setConversations([updatedNewConvo, ...conversations]);
+          setConversations(prev => [enhancedConvo, ...prev]);
+          setActiveConversation(enhancedConvo);
         } else {
-          // Find the existing conversation and make it active
-          const existingConvo = conversations.find((c) =>
-            c.participants.some(
-              (p) =>
-                p.userId._id === newConversationName.id ||
-                p.userId === newConversationName.id
-            )
+          // Find the existing conversation - FIX: Add proper null checking
+          const existingConvo = conversations.find(c => 
+            c.participants && c.participants.some(p => {
+              if (!p || !p.userId) return false;
+              const pId = p.userId._id || p.userId;
+              return pId && participantId && pId.toString() === participantId.toString();
+            })
           );
+          
           if (existingConvo) {
-            setActiveConversationId(existingConvo._id);
+            setActiveConversation(existingConvo);
           } else {
-            // If we can't find it in our current list, add the returned conversation
-            setConversations([newConvo, ...conversations]);
-            setActiveConversationId(newConvo._id);
+            // If not found in current list, add the returned conversation
+            setConversations(prev => [newConvo, ...prev]);
+            setActiveConversation(newConvo);
           }
         }
 
-        // Set this as active conversation
-        setActiveConversationId(newConvo._id);
+        // Reset search and form state
         setShowNewConversation(false);
-        setNewConversationName("");
-
-        // Join the socket room for this conversation
+        setSearchQuery("");
+        setSearchResults([]);
+        
+        // Join the socket room
         socket.emit("join_conversation", newConvo._id);
-
-        // Fetch messages for this conversation
-        const messagesResponse = await axiosInstance.get(
-          `/api/messaging/conversations/${newConvo._id}/messages`
-        );
-        if (messagesResponse.data.success) {
-          setMessages(messagesResponse.data.messages);
-        }
       }
     } catch (error) {
       console.error("Error creating conversation:", error);
     }
   };
 
-  // Get the other participant in conversation (not the current user)
+  // Get the other participant in conversation
   const getOtherParticipant = (conversation) => {
     if (
       !conversation ||
       !conversation.participants ||
       !conversation.participants.length
     ) {
-      console.log("Invalid conversation data:", conversation);
       return { username: "Unknown" };
     }
 
-    // Find the participant that is NOT the current user
-    const otherParticipant = conversation.participants.find((p) => {
-      if (!p.userId) {
+    // Improved participant finding with better logging
+    const otherParticipant = conversation.participants.find(p => {
+      if (!p || !p.userId) {
+        console.log("Invalid participant:", p);
         return false;
       }
-
-      const participantId = p.userId._id || p.userId;
-      return (
-        participantId !== currentUserId &&
-        participantId.toString() !== currentUserId.toString()
-      );
+      
+      // Check if userId is an object or just an ID string
+      const participantId = typeof p.userId === 'object' ? p.userId._id : p.userId;
+      
+      if (!participantId || !currentUserId) {
+        return false;
+      }
+      
+      return participantId.toString() !== currentUserId.toString();
     });
 
-    // If we couldn't find another participant, return the first one (fallback)
     if (!otherParticipant || !otherParticipant.userId) {
-      console.log("Could not find other participant, using first participant");
-      return conversation.participants[0]?.userId || { username: "Unknown" };
+      console.log("Could not find other participant in:", conversation.participants);
+      return { username: "Unknown" };
     }
 
-    return otherParticipant.userId;
+    // If userId is an object with user details
+    if (typeof otherParticipant.userId === 'object') {
+      const user = otherParticipant.userId;
+      
+      // Try to build a proper name from available fields
+      if (user.profileDetails && (user.profileDetails.firstName || user.profileDetails.lastName)) {
+        const firstName = user.profileDetails.firstName || '';
+        const lastName = user.profileDetails.lastName || '';
+        return {
+          ...user,
+          username: `${firstName} ${lastName}`.trim() || user.username || "Unknown"
+        };
+      }
+      
+      return user;
+    }
+    
+    // If userId is just an ID string, return a placeholder
+    return { username: "Contact" };
   };
 
-  // Get formatted date for messages
+  // Format message time
   const formatMessageDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Format the last active time
+  // Format last seen time
   const formatLastSeen = (dateString) => {
     if (!dateString) return "Never seen";
 
@@ -378,27 +369,6 @@ function Inboxpage() {
     if (diffHours < 24) return `Last seen ${diffHours} hours ago`;
 
     return `Last seen ${date.toLocaleDateString()}`;
-  };
-
-  // Get the active conversation object
-  const activeConversation = conversations.find(
-    (convo) => convo._id === activeConversationId
-  );
-
-  // Update this function to correctly display the message sender name
-  const getMessageSenderName = (message) => {
-    // Check if sender is object or ID
-    const senderId = message.sender._id || message.sender;
-    const isCurrentUser =
-      senderId === currentUserId ||
-      senderId.toString() === currentUserId.toString();
-
-    if (isCurrentUser) {
-      return "You";
-    } else {
-      // If the sender isn't the current user, return their username
-      return message.sender.username || "Unknown";
-    }
   };
 
   return (
@@ -419,12 +389,8 @@ function Inboxpage() {
                 <div className="search-container" ref={dropdownRef}>
                   <input
                     type="text"
-                    value={
-                      typeof newConversationName === "object"
-                        ? newConversationName.name
-                        : newConversationName
-                    }
-                    onChange={handleSearchChange}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Enter person or company name"
                   />
 
@@ -474,7 +440,6 @@ function Inboxpage() {
                     </div>
                   )}
                 </div>
-                <button onClick={handleCreateConversation}>Create</button>
               </div>
             )}
           </div>
@@ -486,45 +451,63 @@ function Inboxpage() {
               <div className="no-conversations">No conversations yet</div>
             ) : (
               conversations.map((convo) => {
-                // Get the other participant (not current user)
-                const otherParticipant = getOtherParticipant(convo);
+                // First check if the conversation has a displayName property (direct property)
+                let conversationName = convo.displayName || "Unknown";
+                
+                // Only try to get name from participants if we don't have a displayName
+                if (conversationName === "Unknown") {
+                  // Get the other participant name with better error handling
+                  const otherParticipant = getOtherParticipant(convo);
+                  
+                  // Try to get display name from various sources
+                  if (otherParticipant) {
+                    if (otherParticipant.username) {
+                      conversationName = otherParticipant.username;
+                    } else if (otherParticipant.profileDetails) {
+                      const pd = otherParticipant.profileDetails;
+                      if (pd.firstName || pd.lastName) {
+                        conversationName = `${pd.firstName || ''} ${pd.lastName || ''}`.trim();
+                      } else if (pd.companyName) {
+                        conversationName = pd.companyName;
+                      }
+                    }
+                  }
+                }
+                
+                // Log for debugging only if all attempts to find a name failed
+                if (conversationName === "Unknown") {
+                  console.log("Could not determine name for conversation:", convo);
+                }
 
-                // Find the current user's participant object to get the unread count
-                const currentUserParticipant = convo.participants.find((p) => {
+                // Find the current user's participant object to get unread count
+                const currentUserParticipant = convo.participants && convo.participants.find((p) => {
+                  if (!p || !p.userId) return false;
                   const participantId = p.userId._id || p.userId;
-                  return (
-                    participantId === currentUserId ||
-                    participantId.toString() === currentUserId.toString()
-                  );
+                  return participantId && currentUserId && 
+                    participantId.toString() === currentUserId.toString();
                 });
 
                 const unreadCount = currentUserParticipant?.unreadCount || 0;
-
-                // Get conversation display name (the other person's name)
-                const conversationName =
-                  otherParticipant?.username || "Unknown";
 
                 return (
                   <div
                     key={convo._id}
                     className={`conversation-item ${
-                      activeConversationId === convo._id ? "active" : ""
+                      activeConversation?._id === convo._id ? "active" : ""
                     }`}
-                    onClick={() => setActiveConversationId(convo._id)}
+                    onClick={() => setActiveConversation(convo)}
                   >
                     <div className="sender-info">
                       <h3>{conversationName}</h3>
                       <p className="message-preview">
                         {convo.lastMessage
-                          ? // Check who sent the last message and display accordingly
-                            (() => {
+                          ? (() => {
+
                               const lastMessageSender =
                                 convo.lastMessage.sender._id ||
                                 convo.lastMessage.sender;
                               const wasCurrentUser =
-                                lastMessageSender === currentUserId ||
-                                lastMessageSender.toString() ===
-                                  currentUserId.toString();
+                                lastMessageSender.toString() === currentUserId.toString();
                               return `${
                                 wasCurrentUser
                                   ? "You: "
@@ -551,18 +534,19 @@ function Inboxpage() {
           </div>
         </div>
         <div className="message-view">
-          {activeConversationId && activeConversation ? (
+          {activeConversation ? (
             <>
               <div className="message-header">
                 <div className="conversation-profile">
                   <div className="profile-avatar">
-                    {getOtherParticipant(activeConversation)?.username?.charAt(
-                      0
-                    ) || "?"}
+                    {activeConversation.displayName ? 
+                      activeConversation.displayName.charAt(0) : 
+                      (getOtherParticipant(activeConversation)?.username?.charAt(0) || "?")}
                   </div>
                   <div className="profile-info">
                     <h2>
-                      {getOtherParticipant(activeConversation)?.username ||
+                      {activeConversation.displayName || 
+                        getOtherParticipant(activeConversation)?.username ||
                         "Unknown"}
                     </h2>
                     <p className="last-seen">
@@ -581,7 +565,9 @@ function Inboxpage() {
                     <p>No messages yet</p>
                     <p className="start-conversation">
                       Start the conversation with{" "}
-                      {getOtherParticipant(activeConversation)?.username}
+                      {activeConversation.displayName || 
+                        getOtherParticipant(activeConversation)?.username || 
+                        "this contact"}
                     </p>
                   </div>
                 ) : (
@@ -590,20 +576,19 @@ function Inboxpage() {
                       <span>Today</span>
                     </div>
                     {messages.map((msg) => {
-                      // Fix: Check if msg or msg.sender exists before accessing properties
+                      // Validate message format
                       if (!msg || !msg.sender) {
                         console.error("Invalid message format:", msg);
-                        return null; // Skip rendering this message
+                        return null;
                       }
                       
-                      // Continue with normal processing for valid messages
+                      // Determine if message is from current user
                       const senderId = msg.sender._id || msg.sender;
-                      const isCurrentUser =
-                        senderId === currentUserId ||
-                        senderId.toString() === currentUserId.toString();
+                      const isCurrentUser = senderId.toString() === currentUserId.toString();
                       const senderName = isCurrentUser
                         ? "You"
                         : msg.sender.username || "Unknown";
+                        
                       return (
                         <div
                           key={msg._id}
@@ -638,7 +623,11 @@ function Inboxpage() {
                     })}
                     {isTyping && (
                       <div className="typing-indicator">
-                        <span>{getOtherParticipant(activeConversation)?.username} is typing...</span>
+                        <span>
+                          {activeConversation.displayName || 
+                            getOtherParticipant(activeConversation)?.username || 
+                            "Someone"} is typing...
+                        </span>
                       </div>
                     )}
                   </>
@@ -650,7 +639,7 @@ function Inboxpage() {
                   type="text"
                   value={newMessage}
                   onChange={handleTyping}
-                  placeholder={`Send a message`}
+                  placeholder="Type a message..."
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 />
                 <button

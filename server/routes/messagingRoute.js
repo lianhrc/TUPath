@@ -4,7 +4,7 @@ const verifyToken = require('../middleware/verifyToken');
 const { Tupath_usersModel, Employer_usersModel } = require('../models/Tupath_users');
 const { User, Conversation, Message } = require('../models/messagingSchema');
 
-// Get all conversations for a user
+// Get all conversations for a user with proper display names
 router.get("/conversations", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -18,11 +18,37 @@ router.get("/conversations", verifyToken, async (req, res) => {
       path: 'participants.userId',
       select: 'username lastSeen'
     })
-    .sort({ updatedAt: -1 });
+    .sort({ updatedAt: -1 })
+    .lean(); // Convert to plain JS objects
+
+    // Format conversations to include displayName and lastSeen
+    const formattedConversations = conversations.map(conv => {
+      // Find the other participant
+      const otherParticipant = conv.participants.find(
+        p => p.userId._id.toString() !== userId.toString()
+      );
+      
+      // Find current user's participant data
+      const currentParticipant = conv.participants.find(
+        p => p.userId._id.toString() === userId.toString()
+      );
+
+      return {
+        _id: conv._id,
+        displayName: otherParticipant.userId.username,
+        lastMessage: conv.lastMessage,
+        unreadCount: currentParticipant.unreadCount,
+        updatedAt: conv.updatedAt,
+        otherParticipantId: otherParticipant.userId._id,
+        otherParticipant: {
+          lastSeen: otherParticipant.userId.lastSeen
+        }
+      };
+    });
 
     res.status(200).json({ 
       success: true, 
-      conversations
+      conversations: formattedConversations
     });
   } catch (err) {
     console.error("Error fetching conversations:", err);
@@ -136,7 +162,11 @@ router.post("/messages", verifyToken, async (req, res) => {
     
     // Emit with socket.io if available
     if (req.io) {
-      req.io.to(conversationId).emit('new_message', message);
+      const messageObj = await message.populate('sender', 'username');
+      req.io.to(conversationId).emit('new_message', {
+        conversationId,
+        message: messageObj
+      });
     }
     
     res.status(201).json({
@@ -149,7 +179,7 @@ router.post("/messages", verifyToken, async (req, res) => {
   }
 });
 
-// Create a new conversation
+// Create a new conversation with proper participant setup
 router.post("/conversations", verifyToken, async (req, res) => {
   try {
     const { participantId } = req.body;
@@ -162,7 +192,7 @@ router.post("/conversations", verifyToken, async (req, res) => {
       });
     }
     
-    // Check if user exists (participant could be student or employer)
+    // Check if participant exists (student or employer)
     const participant = 
       await Tupath_usersModel.findById(participantId) || 
       await Employer_usersModel.findById(participantId);
@@ -174,15 +204,32 @@ router.post("/conversations", verifyToken, async (req, res) => {
       });
     }
     
-    // Check if conversation already exists between these users
+    // Check for existing conversation (sorted to prevent duplicates)
+    const sortedIds = [userId, participantId].sort();
     const existingConversation = await Conversation.findOne({
-      'participants.userId': { $all: [userId, participantId] }
+      'participants.userId': { $all: sortedIds }
     });
     
     if (existingConversation) {
+      // Format the existing conversation for consistent response
+      await existingConversation.populate({
+        path: 'participants.userId',
+        select: 'username lastSeen'
+      });
+      
+      const otherParticipant = existingConversation.participants.find(
+        p => p.userId._id.toString() !== userId.toString()
+      );
+      
       return res.status(200).json({ 
         success: true, 
-        conversation: existingConversation,
+        conversation: {
+          _id: existingConversation._id,
+          displayName: otherParticipant.userId.username,
+          lastMessage: existingConversation.lastMessage,
+          unreadCount: 0,
+          otherParticipantId: otherParticipant.userId._id
+        },
         message: "Conversation already exists"
       });
     }
@@ -202,7 +249,19 @@ router.post("/conversations", verifyToken, async (req, res) => {
     
     let participantUser = await User.findOne({ _id: participantId });
     if (!participantUser) {
-      const fullName = `${participant.profileDetails.firstName} ${participant.profileDetails.lastName}`;
+      // Handle cases where profileDetails might be incomplete
+      let fullName = "User";
+      
+      if (participant.profileDetails) {
+        const firstName = participant.profileDetails.firstName || '';
+        const lastName = participant.profileDetails.lastName || '';
+        
+        if (firstName || lastName) {
+          fullName = `${firstName} ${lastName}`.trim();
+        } else if (participant.profileDetails.companyName) {
+          fullName = participant.profileDetails.companyName;
+        }
+      }
       
       participantUser = new User({
         _id: participantId,
@@ -211,31 +270,42 @@ router.post("/conversations", verifyToken, async (req, res) => {
       await participantUser.save();
     }
     
-    // Create new conversation
+    // Create new conversation with sorted participant IDs
     const conversation = new Conversation({
       participants: [
-        { userId: userId, unreadCount: 0 },
-        { userId: participantId, unreadCount: 0 }
+        { userId: sortedIds[0], unreadCount: 0 },
+        { userId: sortedIds[1], unreadCount: 0 }
       ]
     });
     
     await conversation.save();
     
-    // Populate participant info before sending response
+    // Populate participant info
     await conversation.populate({
       path: 'participants.userId',
       select: 'username lastSeen'
     });
     
+    // Format the response with displayName
+    const otherParticipant = conversation.participants.find(
+      p => p.userId._id.toString() !== userId.toString()
+    );
+    
     res.status(201).json({
       success: true,
-      conversation
+      conversation: {
+        _id: conversation._id,
+        displayName: otherParticipant.userId.username,
+        lastMessage: null,
+        unreadCount: 0,
+        otherParticipantId: otherParticipant.userId._id
+      }
     });
   } catch (err) {
     console.error("Error creating conversation:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
-});
+}); 
 
 // Search for users and employers
 router.get("/search", verifyToken, async (req, res) => {
@@ -297,6 +367,90 @@ router.get("/search", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error("Error during search:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Add new route for typing indicators
+router.post("/typing", verifyToken, async (req, res) => {
+  try {
+    const { conversationId, isTyping } = req.body;
+    const userId = req.user.id;
+    
+    if (!conversationId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Conversation ID is required" 
+      });
+    }
+    
+    // Check if conversation exists and user is a participant
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      'participants.userId': userId
+    });
+    
+    if (!conversation) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "You do not have access to this conversation" 
+      });
+    }
+    
+    // Emit typing indicator with socket.io if available
+    if (req.io) {
+      req.io.to(conversationId).emit('user_typing', {
+        conversationId,
+        isTyping,
+        userId
+      });
+    }
+    
+    res.status(200).json({
+      success: true
+    });
+  } catch (err) {
+    console.error("Error with typing indicator:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Join a conversation (for socket.io)
+router.post("/join", verifyToken, async (req, res) => {
+  try {
+    const { conversationId } = req.body;
+    const userId = req.user.id;
+    
+    if (!conversationId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Conversation ID is required" 
+      });
+    }
+    
+    // Check if conversation exists and user is a participant
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      'participants.userId': userId
+    });
+    
+    if (!conversation) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "You do not have access to this conversation" 
+      });
+    }
+    
+    // If socket is available, join the room
+    if (req.socket) {
+      req.socket.join(conversationId);
+    }
+    
+    res.status(200).json({
+      success: true
+    });
+  } catch (err) {
+    console.error("Error joining conversation:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
