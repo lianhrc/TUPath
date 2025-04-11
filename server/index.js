@@ -262,21 +262,21 @@ const uploadCertFiles = multer({
 
 // Add this endpoint to fetch users
 
-app.get("/api/userss", verifyToken, async (req, res) => {
-  try {
-    const students = await Tupath_usersModel.find().select(
-      "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
-    );
-    const employers = await Employer_usersModel.find().select(
-      "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
-    );
-    const users = [...students, ...employers];
-    res.status(200).json({ success: true, users });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
+// app.get("/api/userss", verifyToken, async (req, res) => {
+//   try {
+//     const students = await Tupath_usersModel.find().select(
+//       "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
+//     );
+//     const employers = await Employer_usersModel.find().select(
+//       "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
+//     );
+//     const users = [...students, ...employers];
+//     res.status(200).json({ success: true, users });
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     res.status(500).json({ success: false, message: "Internal server error" });
+//   }
+// });
 
 // REST endpoint to fetch chat messages
 // app.get("/api/messages", verifyToken, async (req, res) => {
