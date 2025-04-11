@@ -1,118 +1,175 @@
 /* Modal Overlay */
 .AddPostModalmodal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    overflow: auto;
-
-  }
-  
-  /* Modal Content */
-.AddPostModalmodal-content {
-  position: relative;
-  padding: 20px;
-  background-color: white;
-  width: 100%;
-  max-width: 600px; /* Max width for the modal */
-  height:  500px;
-  overflow: hidden;
-}
-
-.addpostmodalsubcontent{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
   overflow: auto;
-  height: 100%;
-  width: auto;
-  padding-bottom: 30px;
+  padding: 15px;
 }
-  
-  .AddPostModalmodal-content h6 {
-    font-size: 12px;
-    font-weight: light;
-    color: #9D0E0F;
-    border-bottom: 0.1px solid #d2c7c7;
-    padding-bottom: 10px;
-  }
- /* Textarea */
+
+/* Modal Content */
+.AddPostModalmodal-content {
+position: relative;
+padding: 20px;
+background-color: white;
+width: 90%;
+max-width: 600px;
+max-height: 90vh;
+border-radius: 8px;
+display: flex;
+flex-direction: column;
+height: auto;
+}
+
+.addpostmodalsubcontent {
+overflow: auto;
+flex: 1;
+width: 100%;
+padding-bottom: 70px; /* Space for the button container */
+}
+
+.AddPostModalmodal-content h6 {
+font-size: 14px;
+font-weight: light;
+color: #9D0E0F;
+border-bottom: 0.1px solid #d2c7c7;
+padding-bottom: 10px;
+margin-top: 0;
+}
+
+/* Textarea */
 .AddPostModalmodal-content textarea {
-  width: 100%;
-  height: 300px;
-  padding: 10px; /* Increased padding for better spacing */
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  resize: vertical; /* Allows users to resize the textarea vertically */
-  scrollbar-width: none; /* For Firefox */
-  -ms-overflow-style: none; /* For IE and Edge */
+width: 100%;
+min-height: 150px;
+padding: 10px;
+border-radius: 5px;
+border: 1px solid #ccc;
+resize: vertical;
+box-sizing: border-box;
+font-family: inherit;
+font-size: 14px;
 }
 
 /* Placeholder styling */
 .AddPostModalmodal-content textarea::placeholder {
-  color: #aaa; /* Light color for the placeholder */
+color: #aaa;
 }
 
-  /* Image Preview */
+/* Image Preview */
 .AddPostModalmodal-content .image-preview {
-  margin-top: 10px;
-  width: 100%; /* Make the image preview container take full width of the parent */
-  height: 300px; /* You can adjust the height according to your preference */
-  display: flex;
-  justify-content: center; /* Center image horizontally */
-  align-items: center; /* Center image vertically */
-  overflow: hidden; /* Hide any part of the image that overflows */
-  border-radius: 8px; /* Optional, to round corners */
+margin-top: 10px;
+width: 100%;
+max-height: 250px;
+display: flex;
+justify-content: center;
+align-items: center;
+overflow: hidden;
+border-radius: 8px;
 }
 
 /* Image inside preview */
 .AddPostModalmodal-content .image-preview img {
-  max-width: 100%; /* Make sure the image doesn't overflow */
-  height: 100%; /* Make the image fill the height of the container */
-  object-fit: contain; /* Ensures image is contained within the box */
-  border-radius: 8px; /* Optional, to round image corners */
+max-width: 100%;
+max-height: 100%;
+object-fit: contain;
+border-radius: 8px;
 }
-  
-  /* Post Buttons */
-  .AddPostModalmodal-content .postbuttons {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    position: fixed;
-    z-index: 1000000000;
-    background-color: white;
-    width: 100%;
-    max-width: 600px;
-    bottom: 45px;
-    left:382px;
-    padding: 10px;
-  }
 
-  .AddPostModalmodal-content .postbuttons .postbuttonadd{
-    display: flex;
-    gap: 10px;
-  }
-  
-  .AddPostModalmodal-content .postbuttons button {
-    background: none;
-    border: none;
-  }
-  
-  .AddPostModalmodal-content .postbuttons .postbtn {
-    background-color: #9D0E0F;
-    padding: 5px;
-    border-radius: 5px;
-    color: white;
-    width: 50px;
-    font-weight: light;
-  }
-  
-  .AddPostModalmodal-content label img{
-    width: 25px;
-    margin-left: 5px;
-    cursor: pointer;
-  }
+/* Post Buttons */
+.AddPostModalmodal-content .postbuttons {
+display: flex;
+justify-content: space-between;
+align-items: center;
+width: 100%;
+padding: 10px 20px;
+background-color: white;
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+box-sizing: border-box;
+border-top: 1px solid #eee;
+border-radius: 0 0 8px 8px;
+}
 
+.AddPostModalmodal-content .postbuttons .postbuttonadd {
+display: flex;
+gap: 10px;
+}
+
+.AddPostModalmodal-content .postbuttons button {
+background: none;
+border: none;
+padding: 5px 10px;
+cursor: pointer;
+font-size: 14px;
+}
+
+.AddPostModalmodal-content .postbuttons .postbtn {
+background-color: #9D0E0F;
+padding: 5px 10px;
+border-radius: 5px;
+color: white;
+min-width: 50px;
+font-weight: light;
+}
+
+.AddPostModalmodal-content label img {
+width: 25px;
+cursor: pointer;
+}
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 768px) {
+.AddPostModalmodal-content {
+  width: 95%;
+  max-height: 80vh;
+}
+
+.AddPostModalmodal-content textarea {
+  min-height: 120px;
+}
+
+.AddPostModalmodal-content .image-preview {
+  max-height: 200px;
+}
+}
+
+@media screen and (max-width: 480px) {
+.AddPostModalmodal-overlay {
+  padding: 10px;
+}
+
+.AddPostModalmodal-content {
+  padding: 15px;
+  width: 100%;
+}
+
+.AddPostModalmodal-content h6 {
+  font-size: 12px;
+}
+
+.AddPostModalmodal-content .postbuttons {
+  padding: 8px 15px;
+}
+
+.AddPostModalmodal-content .postbuttons button {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.AddPostModalmodal-content .postbuttons .postbtn {
+  min-width: 40px;
+}
+
+.AddPostModalmodal-content label img {
+  width: 20px;
+}
+}

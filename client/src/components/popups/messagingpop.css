@@ -276,7 +276,6 @@
     text-overflow: ellipsis; /* Add ellipsis */
     display: -webkit-box; /* Use flexbox for line clamping */
     -webkit-box-orient: vertical; /* Set orientation to vertical */
-    -webkit-line-clamp: 1; /* Limit to two lines */
     margin: 5px 0; /* Space between sender and message text */
     font-size: 12px; /* Smaller font size for message text */
 }
