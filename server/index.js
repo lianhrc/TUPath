@@ -64,12 +64,12 @@ app.use("/certificates", express.static(path.join(__dirname, "certificates")));
 app.use('/cor', express.static('cor'));
 
 // Add this middleware first in your Express app
-app.use((req, res, next) => {
-  console.log(`Incoming ${req.method} request to ${req.path}`);
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`Incoming ${req.method} request to ${req.path}`);
+//   console.log("Headers:", req.headers);
+//   console.log("Body:", req.body);
+//   next();
+// });
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));

@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import './messagingpop.css';
-import writemessage from '../../assets/writemessage.png'; // Replace with actual icon path
-import profileicon from '../../assets/profileicon.png'; // Replace with actual icon path
-import NewMessageModal from './NewMessageModal'; // Import the new modal component
-import axiosInstance from '../../services/axiosInstance'; // Import axios instance for API calls
+import writemessage from '../../assets/writemessage.png';
+import profileicon from '../../assets/profileicon.png';
+import NewMessageModal from './NewMessageModal';
+import axiosInstance from '../../services/axiosInstance';
 
+// Create a socket connection
 const socket = io('http://localhost:3001');
 
 const MessagingPop = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false); // State for new message modal
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [profileData, setProfileData] = useState({
-    profileImg: profileicon, // Default profile icon
+    profileImg: profileicon,
   });
-  const [unreadMessages, setUnreadMessages] = useState([]); // State for unread messages
-  const [messages, setMessages] = useState([]); // State for all messages
+  const [conversations, setConversations] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(
+    localStorage.getItem("userId") || ""
+  );
 
   // Fetch profile data
   useEffect(() => {
@@ -33,103 +38,119 @@ const MessagingPop = () => {
     fetchProfileData();
   }, []);
 
-  // Fetch unread messages
+  // Fetch conversations using the new API endpoint
   useEffect(() => {
-    const fetchUnreadMessages = async () => {
+    const fetchConversations = async () => {
       try {
-        const response = await axiosInstance.get('/api/unread-messages');
-        if (response.data) {
-          setUnreadMessages(response.data);
+        const response = await axiosInstance.get('/api/messaging/conversations');
+        if (response.data.success) {
+          setConversations(response.data.conversations);
         }
       } catch (error) {
-        console.error('Error fetching unread messages:', error);
+        console.error('Error fetching conversations:', error);
       }
     };
 
-    fetchUnreadMessages();
-  }, []);
+    fetchConversations();
 
-  // Fetch all messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await axiosInstance.get('/api/messages');
-        if (response.data) {
-          setMessages(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
-    };
+    // Socket.io event listeners
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+    });
 
-    fetchMessages();
-  }, []);
-
-  useEffect(() => {
-    socket.on('receive_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-      setUnreadMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    // Listen for new messages
+    socket.on('new_message', ({ conversationId, message }) => {
+      // Update conversations with new message
+      setConversations(prevConversations => 
+        prevConversations.map(convo => {
+          if (convo._id === conversationId) {
+            // Increment unread count only if message is from other user
+            const isFromOther = message.sender !== currentUserId && 
+                               (message.sender._id ? message.sender._id !== currentUserId : true);
+            
+            return {
+              ...convo,
+              lastMessage: message,
+              unreadCount: isFromOther ? (convo.unreadCount || 0) + 1 : convo.unreadCount || 0
+            };
+          }
+          return convo;
+        })
       );
     });
 
-    socket.on('new_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-      setUnreadMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('message_read', ({ messageId }) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
-      );
-      setUnreadMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg._id !== messageId)
-      );
-    });
-
+    // Clean up event listeners on unmount
     return () => {
-      socket.off('receive_message');
+      socket.off('connect');
       socket.off('new_message');
-      socket.off('message_read');
     };
-  }, []);
+  }, [currentUserId]);
 
   const togglePopup = () => {
     setIsOpen(!isOpen);
   };
 
-  const toggleNewMessageModal = () => {
+  const toggleNewMessageModal = (e) => {
+    if (e) e.stopPropagation(); // Prevent triggering parent onClick
     setIsNewMessageOpen(!isNewMessageOpen);
   };
+
+  const handleConversationClick = (conversationId) => {
+    // Navigate to the conversation in the inbox
+    navigate(`/Inboxpage?conversationId=${conversationId}`);
+    setIsOpen(false); // Close the popup
+  };
+
+  // Format date for messages
+  const formatMessageDate = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  // Get conversation preview text
+  const getMessagePreview = (conversation) => {
+    if (!conversation.lastMessage) return 'No messages yet';
+    
+    // Check if the current user is the sender
+    const sender = conversation.lastMessage.sender;
+    const isSender = (typeof sender === 'string') 
+      ? sender === currentUserId 
+      : (sender && sender._id === currentUserId);
+    
+    let prefix = isSender ? 'You: ' : '';
+    let content = conversation.lastMessage.content || '';
+    
+    // Truncate long messages
+    if (content.length > 30) {
+      content = content.substring(0, 27) + '...';
+    }
+    
+    return prefix + content;
+  };
+
+  // Get total unread count for badge
+  const totalUnreadCount = conversations.reduce(
+    (sum, convo) => sum + (convo.unreadCount || 0), 
+    0
+  );
 
   const profileImageUrl = profileData.profileImg?.startsWith('/')
     ? `http://localhost:3001${profileData.profileImg}`
     : profileData.profileImg || profileicon;
-
-  const handleNotificationClick = async (message) => {
-    // Mark the message as read
-    try {
-      await axiosInstance.put(`/api/messages/${message._id}/read`, {}, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      setUnreadMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg._id !== message._id)
-      );
-    } catch (error) {
-      console.error('Error marking message as read:', error);
-    }
-
-    // Navigate to the inbox and select the message
-    window.location.href = `/Inboxpage?messageId=${message._id}`;
-  };
 
   return (
     <div className={`message-popup ${isOpen ? 'popup-open' : 'popup-close'}`}>
@@ -137,6 +158,7 @@ const MessagingPop = () => {
         <div>
           <img src={profileImageUrl} alt="Profile" />
           Messaging
+          {totalUnreadCount > 0 && <span className="unread-badge">{totalUnreadCount}</span>}
         </div>
         <img
           className="writeicon"
@@ -148,67 +170,52 @@ const MessagingPop = () => {
 
       {isOpen && (
         <div className="popup-content">
-          {unreadMessages.length > 0 ? (
-            unreadMessages
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
-              .map((message, index) => (
+          <div className="messages-header">
+            <h4>Messages</h4>
+          </div>
+          
+          {conversations.length > 0 ? (
+            conversations
+              .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0))
+              .map(conversation => (
                 <div
-                  key={index}
-                  className="messagenotifitem"
-                  onClick={() => handleNotificationClick(message)}
+                  key={conversation._id}
+                  className={`messagenotifitem ${conversation.unreadCount > 0 ? 'unread' : ''}`}
+                  onClick={() => handleConversationClick(conversation._id)}
                 >
                   <div className="notifitemleft">
-                    <img
-                      src={message.sender.profileImg || profileicon}
-                      alt={`${message.sender.name}'s profile`}
-                    />
+                    <div className="avatar-circle">
+                      {conversation.displayName ? conversation.displayName.charAt(0).toUpperCase() : '?'}
+                    </div>
                   </div>
                   <div className="messnotifitemright">
-                    <p>
-                      <strong>{message.sender.name}</strong>
-                    </p>
-                    <p>{message.messageContent.text}</p>
+                    <div className="message-header">
+                      <p className="sender-name">
+                        <strong>{conversation.displayName || 'Unknown'}</strong>
+                      </p>
+                      <p className="message-time">{formatMessageDate(conversation.updatedAt)}</p>
+                    </div>
+                    <p className="message-preview">{getMessagePreview(conversation)}</p>
+                    {conversation.unreadCount > 0 && (
+                      <span className="message-badge">{conversation.unreadCount}</span>
+                    )}
                   </div>
                 </div>
               ))
           ) : (
-            <p>No new Email.</p>
+            <p className="no-messages">No messages available.</p>
           )}
-
-            <div className="allmessage">
-              <h4>All Messages</h4>
-              {messages.length > 0 ? (
-                messages
-                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sort by timestamp descending
-                  .map((message, index) => (
-                    <div
-                      key={index}
-                      className="messagenotifitem"
-                      onClick={() => handleNotificationClick(message)}
-                    >
-                      <div className="notifitemleft">
-                        <img
-                          src={message.sender.profileImg || profileicon}
-                          alt={`${message.sender.name}'s profile`}
-                        />
-                      </div>
-                      <div className="messnotifitemright">
-                        <p>
-                          <strong>{message.sender.name}</strong>
-                        </p>
-                        <p>{message.messageContent.text}</p>
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p>No Email available.</p>
-              )}
-            </div>
+          
+          <div className="view-all">
+            <button onClick={() => navigate('/Inboxpage')}>View All Messages</button>
+          </div>
         </div>
       )}
 
       {/* New Message Modal */}
-      <NewMessageModal isOpen={isNewMessageOpen} onClose={toggleNewMessageModal} />
+      {isNewMessageOpen && (
+        <NewMessageModal isOpen={isNewMessageOpen} onClose={toggleNewMessageModal} />
+      )}
     </div>
   );
 };
