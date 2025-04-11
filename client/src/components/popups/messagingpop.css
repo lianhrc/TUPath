@@ -72,9 +72,28 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation-duration: 0.3s;
     animation-fill-mode: both;
-    overflow: auto;
+    overflow-y: auto;
     padding: 10px 0;
     width: 100%;
+    max-height: 350px; /* Fixed height to limit large content */
+    scrollbar-width: thin; /* For Firefox */
+}
+
+.popup-content::-webkit-scrollbar {
+    width: 6px; /* Width of scrollbar */
+}
+
+.popup-content::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Track color */
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+    background: #888; /* Handle color */
+    border-radius: 4px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Handle color on hover */
 }
 
 .messagenotifitem {

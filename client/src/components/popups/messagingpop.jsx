@@ -169,11 +169,7 @@ const MessagingPop = () => {
       </button>
 
       {isOpen && (
-        <div className="popup-content">
-          <div className="messages-header">
-            <h4>Messages</h4>
-          </div>
-          
+        <div className={`popup-content ${conversations.length > 3 ? 'scrollable' : ''}`}>
           {conversations.length > 0 ? (
             conversations
               .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0))
