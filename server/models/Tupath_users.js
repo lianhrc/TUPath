@@ -131,7 +131,8 @@ const projectSchema = new mongoose.Schema({
   term: { type: String, required: true }, // 🆕 New field for semester and term
   createdAt: { type: Date, default: Date.now },
   ratingSlip: String, // <-- Changed from corFile to ratingSlip
-});
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}, { timestamps: true });
 
 
 

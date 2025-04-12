@@ -923,9 +923,9 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
 
 
     // Retrieve saved subject & grade from session
-    const { subject, grade, ratingSlip } = req.session.assessmentData || {};
+    const { subject, grade, ratingSlip, year, term } = req.session.assessmentData || {};
 
-    if (!subject || !grade) {
+    if (!subject || !grade || !year || !term) {
       console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
@@ -983,7 +983,14 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
     res.status(201).json({ success: true, project: newProject });
 
   } catch (error) {
-    console.error("Error uploading project:", error);
+    //console.error("Error uploading project:", error);
+    console.error("Detailed upload error:", {
+      message: error.message,
+      stack: error.stack,
+      sessionData: req.session.assessmentData,
+      files: req.files,
+      body: req.body
+    });
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
