@@ -1307,6 +1307,9 @@ app.put(
           { arrayFilters: [{ "elem.userId": userId }] }
         );
 
+        // Commented out Message updates since the Message model isn't defined
+        // If you need this functionality, import the Message model at the top of the file
+        /*
         // 🔥 **Update profile image in messages where user is the sender**
         await Message.updateMany(
           { "sender.senderId": userId },
@@ -1318,6 +1321,7 @@ app.put(
           { "receiver.receiverId": userId },
           { $set: { "receiver.profileImg": profileData.profileImg } }
         );
+        */
       }
 
       res.status(200).json({
