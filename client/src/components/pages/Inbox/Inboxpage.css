@@ -1,380 +1,497 @@
-.Inboxpage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* Change to flex-start to align items at the top */
-    background-color: #F4F2EE;
-    padding-top: 100px;
-    min-height: 100vh; /* Ensure the container takes full height */
+.messaging-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
 }
 
-.inbox-container {
-    width: 1000px;
-    background-color: #FFFFFF;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    height: 500px;
-    position: relative; /* Keep as relative for sticky positioning */
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding-top: 79px;
 }
 
-.inboxhead {
-    position: sticky; /* Keep sticky positioning */
-    top: 0; /* Sticks to the top of the inbox-container */
-    display: flex;
-    width: 100%;
-    padding: 5px 20px;
-    border-bottom: 0.1px solid rgb(190, 190, 190);
-    background-color: #FFFFFF; /* Ensure it has a background */
-    z-index: 10; /* Keep above other content */
-    border-top-right-radius: 10px;
-    border-top-left-radius: 10px;
+.conversation-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
 }
 
-.headtitle {
-    flex: 1;
-    color: black; /* Ensure good contrast */
-    font-size: 12px; /* Use consistent font size */
-    text-align: left;
+.create-conversation {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.headtitle p {
-    padding: 0;
-    margin: 0;
+.create-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #9D0E0F;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
 }
 
-.headicons {
-    flex: 0;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
+.create-button:hover {
+  background-color: #7c0b0c;
 }
 
-.headicons button {
-    background: none;
-    border: none;
+.new-conversation-form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.headicons button img {
-    width: 18px;
+.new-conversation-form input {
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
 }
 
-.inboxmain {
-    display: flex; /* Use flex to align left and right sections */
-    height: calc(100% - 40px); /* Adjust height for header (40px is an estimate based on header height) */
+.new-conversation-form button {
+  padding: 8px;
+  background-color: #9D0E0F;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.inboxmain-left {
-    width: 350px;
-    border-right: 0.1px solid rgb(190, 190, 190);
-    text-align: center;
-    overflow-y: auto; /* Allow vertical scrolling */
+.new-conversation-form button:hover {
+  background-color: #7c0b0c;
 }
 
-.inboxlists {
-    width: 100%;
+.conversation-list {
+  flex: 1;
+  overflow-y: auto;
 }
 
-.inboxlist-container {
-    display: flex;
-    flex-direction: row;
-    height: 80px;
-    padding: 10px;
-    width: 100%;
-    transition: background-color 0.3s; /* Smooth transition for background color */
-    position: relative;
-    transition: background-color 0.2s ease;
+.conversation-item {
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  transition: background-color 0.2s;
 }
 
-.inboxlist-container:hover {
-    background-color: #f5f5f5;
+.conversation-item:hover {
+  background-color: #f8f8f8;
 }
 
-.inboxlist-container.unread {
-    background-color: #f0f7ff;
-    font-weight: bold;
+.conversation-item.active {
+  background-color: #f0f7ff;
+  border-left: 3px solid #9D0E0F;
 }
 
-.inboxlist-container.read {
-    opacity: 0.8;
+.sender-info {
+  flex: 1;
 }
 
-.inboxlist-container.new-message {
-    animation: newMessage 0.3s ease-out;
+.sender-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.unread-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #9D0E0F;
+.message-preview {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+.message-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 45px;
+}
+
+.time {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 5px;
 }
 
 .unread-count {
-    background-color: #9D0E0F;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 12px;
-    margin-left: 5px;
+  background-color: #9D0E0F;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  padding: 2px 6px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.loading-indicator {
-    text-align: center;
-    padding: 20px;
-    color: #666;
+.message-view {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
 }
 
-.no-messages {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-    font-style: italic;
+.message-header {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.inboxprofilecontainerleft {
-    width: 30%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+.conversation-profile {
+  display: flex;
+  align-items: center;
 }
 
-.inboxprofilecontainerleft img {
-    width: 60px;
-    height: 60px;
-    background: none;
-    object-fit: cover;
-    border-radius: 50%;
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #9D0E0F;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 12px;
 }
 
-.inboxdetailscontainerright {
-    width: 70%;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-   white-space: pre-wrap;
-    overflow-wrap: break-word; 
-    white-space: pre-wrap; /* Preserve spaces and line breaks */
+.profile-info {
+  display: flex;
+  flex-direction: column;
 }
 
-
-
-
-.topdetailscontainer {
-    width: 100%;
-    height: 30px;
-    vertical-align: middle;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.profile-info h2 {
+  margin: 0 0 3px 0;
+  font-size: 18px;
+  color: #333;
 }
 
-.topdetailscontainer h5 {
-    font-weight: bold;
-    font-size: 10px;
-    margin: 0;
-    color: #333;
+.last-seen {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
 }
 
-.topdetailscontainer p {
-    font-size: 8px;
+.messages-container {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
 }
 
-.bottomdetailscontainer {
-    width: 100%;
-    max-height: 30px; /* Limit height */
-    overflow: hidden; /* Hide overflow text */
-    display: -webkit-box; /* Use flexbox for line clamping */
-    -webkit-box-orient: vertical; /* Set orientation to vertical */
-    -webkit-line-clamp: 2; /* Limit to two lines */
-    margin: 0; /* Remove margin */
+.message-date-header {
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
 }
 
-.bottomdetailscontainer p {
-    width: 100%;
-    text-align: left;
-    font-size: 8px;
-    margin: 0; /* Remove margin */
-    overflow: hidden; /* Hide overflow text */
-    text-overflow: ellipsis; /* Add ellipsis */
-    display: -webkit-box; /* Use flexbox for line clamping */
-    -webkit-box-orient: vertical; /* Set orientation to vertical */
-    -webkit-line-clamp: 2; /* Limit to two lines */
+.message-date-header span {
+  background-color: #e0e0e0;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #666;
 }
 
-.inboxmain-right {
-    flex: 1;
-    overflow-y: auto; /* Allow vertical scrolling */
-    background-color: #fff;
-    padding: 40px;
-    display: flex;
-    flex-direction: column; /* Stack contents vertically */
-    max-height: calc(100vh - 40px); /* Limit height to fit within the viewport */
+.message-wrapper {
+  margin-bottom: 10px;
+  max-width: 80%;
+  display: flex;
 }
 
-.message-details {
-    display: flex;
-    flex-direction: column;
-    width: 100%; /* Ensure it takes the full width */
+.received-wrapper {
+  align-self: flex-start;
 }
 
-.message-profile {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start; /* Align to start (top) */
-    margin-bottom: 10px; /* Space below */
+.sent-wrapper {
+  align-self: flex-end;
+  justify-content: flex-end;
 }
 
-.profile-image {
-    width: 80px; /* Size of profile image */
-    height: 80px; /* Set height */
-    border-radius: 50%; /* Make it circular */
-    border: 2px solid #ccc; /* Optional border */
-    object-fit: cover;
-
+.message {
+  border-radius: 18px;
+  padding: 0;
+  position: relative;
 }
 
-.namedatecontainer {
-    width: 100%;
-    display: flex;
-    justify-content: space-between; /* Space between name and date */
-    flex-direction: row;
-    margin: 20px 0 10px 0;
+.message-sent {
+  background-color: #9D0E0F;
+  color: white;
+  border-bottom-right-radius: 4px;
 }
 
-.namedatecontainer h4 {
-    font-weight: bold;
-}
-
-.message-date {
-    font-size: 12px;
-    color: #888;
+.message-received {
+  background-color: #f1f1f1;
+  color: #333;
+  border-bottom-left-radius: 4px;
 }
 
 .message-content {
-    white-space: pre-wrap; /* Preserve formatting */
-    font-size: 12px; /* Adjust the font size */
-    line-height: 1.5; /* Set line height for better readability */
-    color: #333; /* Change text color */
-    max-height: auto; /* Set a maximum height */
-    overflow-wrap: break-word; /* Ensure long words break to the next line */
-    text-align: justify; /* Justify text alignment */
-    padding: 10px; /* Add some padding for better spacing */
+  padding: 10px 15px;
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-
-.new-message-section {
-    margin-top: 20px; /* Space above the new message section */
-    padding: 10px;
+.message-time {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+  text-align: right;
+  margin-right: 4px;
+  margin-bottom: 2px;
 }
 
-.new-message-section h6 {
-    font-size: 12px;
-    font-weight: 400;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ccc; /* Optional border */
+.message-sent .message-time {
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.new-message-section input {
-    width: 100%; /* Full width */
-    margin-top: 10px; /* Space above input fields */
-    padding: 10px;
-    border-radius: 5px; /* Rounded corners */
-    border: 1px solid #ccc; /* Border */
-    margin-bottom: 20px;
+.read-status {
+  margin-left: 5px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.new-message-section textarea {
-    height: 100%;
-    width: 100%; /* Full width */
-    margin-top: 10px; /* Space above input fields */
-    padding: 10px;
-    border-radius: 5px; /* Rounded corners */
-    border: 1px solid #ccc; /* Border */
+.message-input {
+  display: flex;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fff;
 }
 
-.new-message-section button {
-    margin-top: 10px; /* Space above button */
-    padding: 10px 15px; /* Padding */
-    background-color: #9D0E0F; /* Button color */
-    color: white; /* Button text color */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer on hover */
+.message-input input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 24px;
+  outline: none;
+  font-size: 14px;
 }
 
-.new-message-section button:hover {
-    background-color: #a13939; /* Darker color on hover */
+.message-input input:focus {
+  border-color: #9D0E0F;
 }
 
-.newmessageinboxbtn {
-    display: flex;
-    justify-content: flex-end;
+.send-button {
+  background-color: #9D0E0F;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 20px;
+  margin-left: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
 }
 
+.send-button:hover {
+  background-color: #7c0b0c;
+}
 
+.send-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 
-.new-message-section .dropdown {
-    position: absolute;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    width: 53%;
-    margin-top: -2%;
+.no-conversation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #999;
+  background-color: #f9f9f9;
+}
+
+.no-conversation-content {
+  text-align: center;
+  max-width: 350px;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.no-conversation h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.no-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+}
+
+.start-conversation {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Searching and dropdown styles */
+.search-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.search-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-dropdown li {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown li:hover {
+  background-color: #f5f5f5;
+}
+
+.searching, .no-results {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+}
+
+.search-profile-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.search-user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-user-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.user-tag {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+.company-name {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Loading state */
+.loading, .no-conversations {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 767px) {
+  .app-content {
+    flex-direction: column;
   }
   
-  .new-message-section .dropdown li {
-    padding: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+  .conversation-sidebar {
+    width: 100%;
+    height: 40%;
+    min-height: 300px;
   }
   
-  .new-message-section .dropdown li img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
+  .message-view {
+    height: 60%;
   }
   
-  .new-message-section .dropdown li:hover {
-    background-color: #f0f0f0;
+  .message-wrapper {
+    max-width: 90%;
   }
-
-
-  .new-message-section .dropdown li {
-    padding: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  
-  .new-message-section .dropdown li img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  
-  .new-message-section .dropdown li:hover {
-    background-color: #f0f0f0;
-  }
-
-.text-content {
-    color: #666;
-    font-size: 12px;
-    margin: 0;
-    line-height: 1.4;
 }
 
-/* Add animation for new messages */
-@keyframes newMessage {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+/* Add styling for the message sender name */
+.message-sender {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  padding: 0 15px;
+  padding-top: 8px;
+  color: #555;
+}
+
+.message-received .message-sender {
+  padding-left: 15px;
+}
+
+.message-content {
+  padding: 10px 15px;
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Adjust padding for received messages that show sender name */
+.message-received .message-content {
+  padding-top: 5px;
 }

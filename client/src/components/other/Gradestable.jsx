@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Gradestable.css";
 
 
-const GradesTable = ({ grades }) => {
+const GradesTable = ({ grades = [] }) => {
   return (
     <div className="gradesubcontainer">
       <table>
@@ -18,7 +18,7 @@ const GradesTable = ({ grades }) => {
           </tr>
         </thead>
         <tbody>
-          {grades.length > 0 ? (
+          {grades && grades.length > 0 ? (
             grades.map((row, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>

@@ -1,408 +1,642 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import HeaderHomepage from '../../common/headerhomepage';
-import addnewwrite from '../../../assets/writemessage.png';
-import dotsicon from '../../../assets/dots.png';
-import profileicon from '../../../assets/profile2.png';
-import './Inboxpage.css';
+import React, { useState, useEffect, useRef } from "react";
+import "./Inboxpage.css";
+import HeaderHomepage from "../../common/headerhomepage";
+import axiosInstance from "../../../services/axiosInstance";
+import { io } from "socket.io-client";
 
 const socket = io("http://localhost:3001");
 
-const formatTimeAgo = (timestamp) => {
-  const now = new Date();
-  const postDate = new Date(timestamp);
-  const diffInMs = now - postDate;
-  const diffInMinutes = Math.floor(diffInMs / 60000);
-
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays <= 2) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-
-  return postDate.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
 function Inboxpage() {
-  const { Inboxpage } = useParams();
-  const location = useLocation();
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  const [newMessageRecipient, setNewMessageRecipient] = useState('');
-  const [newMessageContent, setNewMessageContent] = useState('');
-  const [showNewMessageSection, setShowNewMessageSection] = useState(false);
+  const [activeConversation, setActiveConversation] = useState(null);
+  const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isFetching, setIsFetching] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [showNewConversation, setShowNewConversation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const currentUserId = localStorage.getItem("userId") || "";
 
+  // Fetch all conversations on component mount
   useEffect(() => {
-    const countUnread = messages.filter(msg => !msg.status.read).length;
-    setUnreadCount(countUnread);
+    const fetchConversations = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get("/api/messaging/conversations");
+        if (response.data.success) {
+          const fetchedConversations = response.data.conversations;
+          setConversations(fetchedConversations);
+          
+          // Set first conversation active if there are any and no active conversation
+          if (fetchedConversations.length > 0 && !activeConversation) {
+            setActiveConversation(fetchedConversations[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching conversations:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConversations();
+
+    // Socket listeners
+    socket.on("new_message", handleNewMessage);
+    socket.on("user_typing", handleTypingIndicator);
+
+    return () => {
+      socket.off("new_message", handleNewMessage);
+      socket.off("user_typing", handleTypingIndicator);
+    };
+  }, []);
+
+  // Handle incoming messages
+  const handleNewMessage = ({ conversationId, message }) => {
+    if (activeConversation?._id === conversationId) {
+      setMessages(prev => [...prev, message]);
+    }
+    
+    setConversations(prev => prev.map(conv => 
+      conv._id === conversationId 
+        ? { ...conv, lastMessage: message } 
+        : conv
+    ));
+  };
+
+  // Handle typing indicators
+  const handleTypingIndicator = ({ conversationId, isTyping: typing, userId }) => {
+    if (userId !== currentUserId && activeConversation?._id === conversationId) {
+      setIsTyping(typing);
+    }
+  };
+
+  // Fetch messages when active conversation changes
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeConversation) return;
+
+      try {
+        const response = await axiosInstance.get(
+          `/api/messaging/conversations/${activeConversation._id}/messages`
+        );
+        if (response.data.success) {
+          setMessages(response.data.messages);
+          socket.emit("join_conversation", activeConversation._id);
+        }
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+
+    fetchMessages();
+  }, [activeConversation]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
-  const fetchMessages = async () => {
-    setIsFetching(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/messages', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length > 0) {
+        handleSearch(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Search for users
+  const handleSearch = async (query) => {
+    if (query.length > 0) {
+      setIsSearching(true);
+      setShowDropdown(true);
+      
+      try {
+        const response = await axiosInstance.get(
+          `/api/messaging/search?query=${query}`
+        );
+        if (response.data.success) {
+          setSearchResults(response.data.results);
+        } else {
+          setSearchResults([]);
         }
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
+  // Handle user selection from dropdown
+  const handleSelectUser = (user) => {
+    const firstName = user.profileDetails.firstName || "";
+    const lastName = user.profileDetails.lastName || "";
+    const companyName = user.profileDetails.companyName || "";
+
+    let displayName;
+    if (user.role === "employer" && companyName) {
+      displayName = `${firstName} ${lastName} (${companyName})`;
+    } else {
+      displayName = `${firstName} ${lastName}`;
+    }
+
+    // Create new conversation with selected user
+    handleCreateConversation(user._id, displayName);
+  };
+
+  // Send message
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeConversation) return;
+
+    try {
+      const response = await axiosInstance.post("/api/messaging/messages", {
+        conversationId: activeConversation._id,
+        content: newMessage,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
+      if (response.data.success) {
+        const sentMessage = response.data.message;
+        
+        // Add new message to the UI
+        setMessages(prev => [...prev, sentMessage]);
+        
+        // Update conversation's last message
+        setConversations(prev => prev.map(conv => 
+          conv._id === activeConversation._id 
+            ? { ...conv, lastMessage: sentMessage } 
+            : conv
+        ));
 
-      const messages = await response.json();
-      const sortedMessages = messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setMessages(sortedMessages);
+        // Emit socket event
+        socket.emit("send_message", {
+          conversationId: activeConversation._id,
+          message: sentMessage
+        });
 
-      const queryParams = new URLSearchParams(location.search);
-      const messageId = queryParams.get('messageId');
-      if (messageId) {
-        const message = messages.find(msg => msg._id === messageId);
-        if (message) {
-          setSelectedMessage(message);
-          if (!message.status.read) {
-            handleMarkAsRead(message);
-          }
-        }
+        setNewMessage("");
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setIsFetching(false);
+      console.error("Error sending message:", error);
     }
   };
 
-  useEffect(() => {
-    fetchMessages();
+  // Handle typing indicator
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    
+    // Emit typing event
+    socket.emit("typing", {
+      conversationId: activeConversation?._id,
+      isTyping: true,
+      userId: currentUserId
+    });
+    
+    // Set timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("typing", {
+        conversationId: activeConversation?._id,
+        isTyping: false,
+        userId: currentUserId
+      });
+    }, 2000);
+  };
 
-    socket.on('receive_message', handleNewMessage);
-    socket.on('message_read', handleMessageRead);
-    socket.on('message_deleted', handleMessageDeleted);
+  // Create new conversation
+  const handleCreateConversation = async (participantId, displayName) => {
+    if (!participantId) return;
 
-    const refreshInterval = setInterval(fetchMessages, 10000);
-
-    return () => {
-      socket.off('receive_message');
-      socket.off('message_read');
-      socket.off('message_deleted');
-      clearInterval(refreshInterval);
-    };
-  }, [location.search]);
-
-  useEffect(() => {
-    fetch('http://localhost:3001/api/userss', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          setUsers(data.users);
+    try {
+      const response = await axiosInstance.post(
+        "/api/messaging/conversations",
+        {
+          participantId,
         }
-      })
-      .catch(error => console.error("Error fetching users:", error));
-  }, []);
-
-  const handleNewMessage = (message) => {
-    setMessages((prevMessages) => {
-      const updatedMessages = [message, ...prevMessages];
-      return updatedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    });
-  };
-
-  const handleMessageRead = ({ messageId }) => {
-    setMessages((prevMessages) =>
-      prevMessages.map((msg) => 
-        msg._id === messageId 
-          ? { ...msg, status: { ...msg.status, read: true } }
-          : msg
-      )
-    );
-  };
-
-  const handleMessageDeleted = ({ messageId }) => {
-    setMessages((prevMessages) => 
-      prevMessages.filter((msg) => msg._id !== messageId)
-    );
-    if (selectedMessage?._id === messageId) {
-      setSelectedMessage(null);
-    }
-  };
-
-  useEffect(() => {
-    socket.on('receive_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('new_message', (message) => {
-      setMessages((prevMessages) => 
-        [message, ...prevMessages].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      );
-    });
-
-    socket.on('message_read', ({ messageId }) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) => (msg._id === messageId ? { ...msg, status: { ...msg.status, read: true } } : msg))
-      );
-    });
-
-    return () => {
-      socket.off('receive_message');
-      socket.off('new_message');
-      socket.off('message_read');
-    };
-  }, []);
-
-  const handleSelectMessage = async (message) => {
-    setSelectedMessage(message);
-    setShowNewMessageSection(false);
-  
-    if (!message.status.read) {
-      try {
-        await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        message.status.read = true;
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => (msg._id === message._id ? { ...msg, status: { ...msg.status, read: true } } : msg))
-        );
-      } catch (error) {
-        console.error("Error marking message as read:", error);
-      }
-    }
-  };
-
-  const handleSendNewMessage = () => {
-    if (newMessageRecipient && newMessageContent) {
-      const recipientUser = users.find(user => 
-        `${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase() === newMessageRecipient.toLowerCase()
       );
 
-      if (!recipientUser) {
-        console.error("Recipient not found");
-        return;
-      }
+      if (response.data.success) {
+        const newConvo = response.data.conversation;
 
-      const userId = localStorage.getItem('userId');
-      const username = localStorage.getItem('username');
-      const token = localStorage.getItem('token');
+        // Check if this is truly a new conversation
+        if (
+          !response.data.message ||
+          response.data.message !== "Conversation already exists"
+        ) {
+          // Ensure the conversation has proper display information
+          const enhancedConvo = {
+            ...newConvo,
+            displayName: displayName
+          };
 
-      console.log("Sender ID:", userId);
-      console.log("Sender Username:", username);
-
-      const newMessage = {
-        sender: {
-          senderId: userId,
-          name: username,
-          profileImg: localStorage.getItem('profileImg')
-        },
-        receiverId: recipientUser._id,
-        receiverName: newMessageRecipient,
-        receiverProfileImg: recipientUser.profileDetails.profileImg,
-        messageContent: {
-          text: newMessageContent,
-          attachments: []
-        },
-        status: {
-          read: false,
-          delivered: true
-        },
-        timestamp: new Date().toISOString(),
-        token: token
-      };
-
-      socket.emit('send_message', newMessage);
-
-      setNewMessageRecipient('');
-      setNewMessageContent('');
-      setShowNewMessageSection(false);
-    }
-  };
-
-  const toggleNewMessageSection = () => {
-    setShowNewMessageSection(true);
-    setSelectedMessage(null);
-  };
-
-  const handleRecipientChange = (e) => {
-    const value = e.target.value.toLowerCase();
-    setNewMessageRecipient(value);
-    if (value) {
-      const filtered = users.filter(user =>
-        user.profileDetails &&
-        user.profileDetails.firstName &&
-        user.profileDetails.lastName &&
-        (`${user.profileDetails.firstName} ${user.profileDetails.lastName}`.toLowerCase().includes(value) ||
-         user.profileDetails.firstName.toLowerCase().includes(value) ||
-         user.profileDetails.lastName.toLowerCase().includes(value))
-      );
-      setFilteredUsers(filtered);
-    } else {
-      setFilteredUsers([]);
-    }
-  };
-
-  const handleUserSelect = (user) => {
-    setNewMessageRecipient(`${user.profileDetails.firstName} ${user.profileDetails.lastName}`);
-    setFilteredUsers([]);
-  };
-
-  const handleMarkAsRead = async (message) => {
-    if (!message.status.read) {
-      try {
-        const response = await fetch(`http://localhost:3001/api/messages/${message._id}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          } 
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to mark message as read');
-        }
-
-        socket.emit('mark_as_read', { messageId: message._id });
-        
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => 
-            msg._id === message._id 
-              ? { ...msg, status: { ...msg.status, read: true } }
-              : msg
-          )
-        );
-      } catch (error) {
-        console.error("Error marking message as read:", error);
-      }
-    }
-  };
-
-  const renderMessageList = () => (
-    <div className="inboxlists">
-      {isFetching ? (
-        <div className="loading-indicator">Loading messages...</div>
-      ) : messages.length === 0 ? (
-        <div className="no-messages">No messages found</div>
-      ) : (
-        messages.map((message, index) => {
-          const isSentMessage = message.direction === 'sent';
-          const displayName = isSentMessage ? message.receiver.name : message.sender.name;
-          const profileImg = isSentMessage ? message.receiver.profileImg : message.sender.profileImg;
-          const text = message.messageContent?.text || '';
-          const isUnread = !message.status.read && !isSentMessage;
-
-          return (
-            <div
-              key={message._id || index}
-              className={`inboxlist-container ${message.direction} ${isUnread ? 'unread' : 'read'}`}
-              onClick={() => handleSelectMessage(message)}
-            >
-              <div className="inboxprofilecontainerleft">
-                <img src={profileImg || profileicon} alt={`${displayName}'s profile`} />
-                {isUnread && <span className="unread-indicator" />}
-              </div>
-              <div className="inboxdetailscontainerright">
-                <div className="topdetailscontainer">
-                  <h5>{message.direction === 'sent' ? 'To:' : 'From:'} {displayName}</h5>
-                  <p>{formatTimeAgo(message.timestamp)}</p>
-                </div>
-                <div className="bottomdetailscontainer">
-                  <p className="text-content">{text}</p>
-                </div>
-              </div>
-            </div>
+          setConversations(prev => [enhancedConvo, ...prev]);
+          setActiveConversation(enhancedConvo);
+        } else {
+          // Find the existing conversation - FIX: Add proper null checking
+          const existingConvo = conversations.find(c => 
+            c.participants && c.participants.some(p => {
+              if (!p || !p.userId) return false;
+              const pId = p.userId._id || p.userId;
+              return pId && participantId && pId.toString() === participantId.toString();
+            })
           );
-        })
-      )}
-    </div>
-  );
+          
+          if (existingConvo) {
+            setActiveConversation(existingConvo);
+          } else {
+            // If not found in current list, add the returned conversation
+            setConversations(prev => [newConvo, ...prev]);
+            setActiveConversation(newConvo);
+          }
+        }
+
+        // Reset search and form state
+        setShowNewConversation(false);
+        setSearchQuery("");
+        setSearchResults([]);
+        
+        // Join the socket room
+        socket.emit("join_conversation", newConvo._id);
+      }
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+    }
+  };
+
+  // Get the other participant in conversation
+  const getOtherParticipant = (conversation) => {
+    if (
+      !conversation ||
+      !conversation.participants ||
+      !conversation.participants.length
+    ) {
+      return { username: "Unknown" };
+    }
+
+    // Improved participant finding with better logging
+    const otherParticipant = conversation.participants.find(p => {
+      if (!p || !p.userId) {
+        console.log("Invalid participant:", p);
+        return false;
+      }
+      
+      // Check if userId is an object or just an ID string
+      const participantId = typeof p.userId === 'object' ? p.userId._id : p.userId;
+      
+      if (!participantId || !currentUserId) {
+        return false;
+      }
+      
+      return participantId.toString() !== currentUserId.toString();
+    });
+
+    if (!otherParticipant || !otherParticipant.userId) {
+      console.log("Could not find other participant in:", conversation.participants);
+      return { username: "Unknown" };
+    }
+
+    // If userId is an object with user details
+    if (typeof otherParticipant.userId === 'object') {
+      const user = otherParticipant.userId;
+      
+      // Try to build a proper name from available fields
+      if (user.profileDetails && (user.profileDetails.firstName || user.profileDetails.lastName)) {
+        const firstName = user.profileDetails.firstName || '';
+        const lastName = user.profileDetails.lastName || '';
+        return {
+          ...user,
+          username: `${firstName} ${lastName}`.trim() || user.username || "Unknown"
+        };
+      }
+      
+      return user;
+    }
+    
+    // If userId is just an ID string, return a placeholder
+    return { username: "Contact" };
+  };
+
+  // Format message time
+  const formatMessageDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
-    <div className='Inboxpage'>
+    <div className="messaging-app">
       <HeaderHomepage />
-      <div className="inbox-container">
-        <div className="inboxhead">
-          <div className="headtitle">
-            <p>Email {unreadCount > 0 && <span className="unread-count">({unreadCount})</span>}</p>
-          </div>
-          <div className="headicons">
-            <button>
-              <img src={dotsicon} alt="More options" />
+      <div className="app-content">
+        <div className="conversation-sidebar">
+          <div className="create-conversation">
+            <button
+              className="create-button"
+              onClick={() => setShowNewConversation(!showNewConversation)}
+            >
+              + Create Conversation
             </button>
-            <button onClick={toggleNewMessageSection}>
-              <img src={addnewwrite} alt="Add new message" />
-            </button>
-          </div>
-        </div>
-        <div className="inboxmain">
-          <div className="inboxmain-left">
-            {renderMessageList()}
-          </div>
-          <div className="inboxmain-right">
-            {showNewMessageSection ? (
-              <div className="new-message-section">
-                <h6>New Email</h6>
-                <label>To:</label>
-                <input
-                  className='recieptinput'
-                  type="text"
-                  value={newMessageRecipient}
-                  onChange={handleRecipientChange}
-                  placeholder="Recipient's name"
-                />
-                {filteredUsers.length > 0 && (
-                  <ul className="dropdown">
-                    {filteredUsers.map((user, index) => (
-                      <li key={index} onClick={() => handleUserSelect(user)}>
-                        <img src={user.profileDetails.profileImg || profileicon} alt={`${user.profileDetails.firstName} ${user.profileDetails.lastName}`} />
-                        {user.profileDetails.firstName} {user.profileDetails.lastName}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <label>Message:</label>
-                <textarea
-                  className='Messageinputbox'
-                  value={newMessageContent}
-                  onChange={(e) => setNewMessageContent(e.target.value)}
-                  placeholder="Type your message here"
-                />
-                <div className="newmessageinboxbtn">
-                  <button onClick={handleSendNewMessage}>Send</button>
+
+            {showNewConversation && (
+              <div className="new-conversation-form">
+                <div className="search-container" ref={dropdownRef}>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Enter person or company name"
+                  />
+
+                  {showDropdown && (
+                    <div className="search-dropdown">
+                      {isSearching ? (
+                        <div className="searching">Searching...</div>
+                      ) : searchResults.length > 0 ? (
+                        <ul>
+                          {searchResults.map((user) => (
+                            <li
+                              key={user._id}
+                              onClick={() => handleSelectUser(user)}
+                            >
+                              <div className="search-result-item">
+                                {user.profileDetails.profileImg && (
+                                  <img
+                                    src={user.profileDetails.profileImg}
+                                    alt="Profile"
+                                    className="search-profile-img"
+                                  />
+                                )}
+                                <div className="search-user-details">
+                                  <span className="search-user-name">
+                                    {user.profileDetails.firstName}{" "}
+                                    {user.profileDetails.lastName}
+                                  </span>
+                                  {user.role === "student" && user.bestTag && (
+                                    <span className="user-tag">
+                                      {user.bestTag}
+                                    </span>
+                                  )}
+                                  {user.role === "employer" &&
+                                    user.profileDetails.companyName && (
+                                      <span className="company-name">
+                                        {user.profileDetails.companyName}
+                                      </span>
+                                    )}
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="no-results">No users found</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            ) : selectedMessage ? (
-              <div className="message-details">
-                <div className="message-profile">
-                  <img src={selectedMessage.receiver.profileImg || profileicon} alt={`${selectedMessage.receiver.name}'s profile`} className="profile-image" />
-                </div>
-                <div className="namedatecontainer">
-                  <h4>{selectedMessage.receiver.name}</h4>
-                  <p className="message-date">{formatTimeAgo(selectedMessage.timestamp)}</p>
-                </div>
-                <p className="message-content">{selectedMessage.messageContent?.text || ''}</p>
-              </div>
-            ) : (
-              <p>Select a Email to view its content</p>
             )}
           </div>
+
+          <div className="conversation-list">
+            {isLoading ? (
+              <div className="loading">Loading conversations...</div>
+            ) : conversations.length === 0 ? (
+              <div className="no-conversations">No conversations yet</div>
+            ) : (
+              conversations.map((convo) => {
+                // First check if the conversation has a displayName property (direct property)
+                let conversationName = convo.displayName || "Unknown";
+                
+                // Only try to get name from participants if we don't have a displayName
+                if (conversationName === "Unknown") {
+                  // Get the other participant name with better error handling
+                  const otherParticipant = getOtherParticipant(convo);
+                  
+                  // Try to get display name from various sources
+                  if (otherParticipant) {
+                    if (otherParticipant.username) {
+                      conversationName = otherParticipant.username;
+                    } else if (otherParticipant.profileDetails) {
+                      const pd = otherParticipant.profileDetails;
+                      if (pd.firstName || pd.lastName) {
+                        conversationName = `${pd.firstName || ''} ${pd.lastName || ''}`.trim();
+                      } else if (pd.companyName) {
+                        conversationName = pd.companyName;
+                      }
+                    }
+                  }
+                }
+                
+                // Log for debugging only if all attempts to find a name failed
+                if (conversationName === "Unknown") {
+                  console.log("Could not determine name for conversation:", convo);
+                }
+
+                // Find the current user's participant object to get unread count
+                const currentUserParticipant = convo.participants && convo.participants.find((p) => {
+                  if (!p || !p.userId) return false;
+                  const participantId = p.userId._id || p.userId;
+                  return participantId && currentUserId && 
+                    participantId.toString() === currentUserId.toString();
+                });
+
+                const unreadCount = currentUserParticipant?.unreadCount || 0;
+
+                return (
+                  <div
+                    key={convo._id}
+                    className={`conversation-item ${
+                      activeConversation?._id === convo._id ? "active" : ""
+                    }`}
+                    onClick={() => setActiveConversation(convo)}
+                  >
+                    <div className="sender-info">
+                      <h3>{conversationName}</h3>
+                      <p className="message-preview">
+                        {convo.lastMessage
+                          ? (() => {
+
+                              const lastMessageSender =
+                                convo.lastMessage.sender._id ||
+                                convo.lastMessage.sender;
+                              const wasCurrentUser =
+                                lastMessageSender.toString() === currentUserId.toString();
+                              return `${
+                                wasCurrentUser
+                                  ? "You: "
+                                  : `${conversationName}: `
+                              }${convo.lastMessage.content}`;
+                            })()
+                          : "No messages"}
+                      </p>
+                    </div>
+                    <div className="message-meta">
+                      <span className="time">
+                        {convo.lastMessage
+                          ? formatMessageDate(convo.lastMessage.createdAt)
+                          : ""}
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="unread-count">{unreadCount}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+        <div className="message-view">
+          {activeConversation ? (
+            <>
+              <div className="message-header">
+                <div className="conversation-profile">
+                  <div className="profile-avatar">
+                    {activeConversation.displayName ? 
+                      activeConversation.displayName.charAt(0) : 
+                      (getOtherParticipant(activeConversation)?.username?.charAt(0) || "?")}
+                  </div>
+                  <div className="profile-info">
+                    <h2>
+                      {activeConversation.displayName || 
+                        getOtherParticipant(activeConversation)?.username ||
+                        "Unknown"}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+              <div className="messages-container">
+                {messages.length === 0 ? (
+                  <div className="no-messages">
+                    <p>No messages yet</p>
+                    <p className="start-conversation">
+                      Start the conversation with{" "}
+                      {activeConversation.displayName || 
+                        getOtherParticipant(activeConversation)?.username || 
+                        "this contact"}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="message-date-header">
+                      <span>Today</span>
+                    </div>
+                    {messages.map((msg) => {
+                      // Validate message format
+                      if (!msg || !msg.sender) {
+                        console.error("Invalid message format:", msg);
+                        return null;
+                      }
+                      
+                      // Determine if message is from current user
+                      const senderId = msg.sender._id || msg.sender;
+                      const isCurrentUser = senderId.toString() === currentUserId.toString();
+                      const senderName = isCurrentUser
+                        ? "You"
+                        : msg.sender.username || "Unknown";
+                        
+                      return (
+                        <div
+                          key={msg._id}
+                          className={`message-wrapper ${
+                            isCurrentUser ? "sent-wrapper" : "received-wrapper"
+                          }`}
+                        >
+                          <div
+                            className={`message ${
+                              isCurrentUser
+                                ? "message-sent"
+                                : "message-received"
+                            }`}
+                          >
+                            {!isCurrentUser && (
+                              <span className="message-sender">
+                                {senderName}
+                              </span>
+                            )}
+                            <p className="message-content">{msg.content}</p>
+                            <span className="message-time">
+                              {formatMessageDate(msg.createdAt)}
+                              {isCurrentUser &&
+                                msg.readBy &&
+                                msg.readBy.length > 1 && (
+                                  <span className="read-status">Read</span>
+                                )}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {isTyping && (
+                      <div className="typing-indicator">
+                        <span>
+                          {activeConversation.displayName || 
+                            getOtherParticipant(activeConversation)?.username || 
+                            "Someone"} is typing...
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="message-input">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={handleTyping}
+                  placeholder="Type a message..."
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                />
+                <button
+                  className="send-button"
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="no-conversation">
+              <div className="no-conversation-content">
+                <div className="empty-state-icon">💬</div>
+                <h3>Your messages</h3>
+                <p>
+                  Select a conversation or create a new one to start messaging
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
