@@ -98,21 +98,6 @@ function HeaderHomepage() {
   }, []);
 
   useEffect(() => {
-    const fetchUnreadMessages = async () => {
-      try {
-        const response = await axiosInstance.get("/api/unread-messages");
-        if (response.data) {
-          setUnreadMessages(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching unread messages:", error);
-      }
-    };
-
-    fetchUnreadMessages();
-  }, []);
-
-  useEffect(() => {
     socket.on("receive_message", (message) => {
       setUnreadMessages((prevMessages) =>
         [message, ...prevMessages].sort(
