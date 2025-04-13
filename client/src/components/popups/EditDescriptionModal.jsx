@@ -13,6 +13,11 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
   const token = localStorage.getItem("token");
 
   const handleEditToggle = (field) => {
+    // If currently in edit mode and switching to view mode, consider this a field save
+    if (editMode[field]) {
+      // Field-specific save logic could go here if needed
+    }
+
     setEditMode((prev) => ({
       ...prev,
       [field]: !prev[field],
@@ -21,12 +26,24 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Special handling for skills which should be arrays
+    if (name === 'techSkills' || name === 'softSkills') {
+      // Convert comma-separated string to array and trim whitespace
+      const skillsArray = value.split(',').map(skill => skill.trim()).filter(skill => skill !== '');
+      
+      setFormData((prev) => ({
+        ...prev,
+        [name]: skillsArray,
+      }));
+    } else {
+      // Default handling for regular fields
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
-
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -92,53 +109,45 @@ function EditDescriptionModal({ show, onClose, profileData, onSave }) {
     }
   };
 
+  const handleSave = async () => {
+    const updatedData = { ...formData };
+    const projects = profileData.projects || [];
+    updatedData.projects = projects;
 
-  
-const handleSave = async () => {
-  const updatedData = { ...formData };
-  const projects = profileData.projects || [];
-  updatedData.projects = projects;
-
-  try {
-    const response = await axiosInstance.put("/api/updateProfile", updatedData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.data.success) {
-      toast.success("Profile updated successfully!",{
-        position: "top-center",
-        autoClose: 3000,  // Toast will disappear in 3 seconds
-        hideProgressBar: false,
-        theme: "light",
+    try {
+      const response = await axiosInstance.put("/api/updateProfile", updatedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      onSave(updatedData);
-      onClose();
-    } else {
-      toast.error("Failed to save profile data.", {
+
+      if (response.data.success) {
+        toast.success("Profile updated successfully!", {
+          position: "top-center",
+          autoClose: 3000,  // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
+        // Pass the updated data back to parent component
+        onSave(updatedData);
+        onClose();
+      } else {
+        toast.error("Failed to save profile data.", {
+          position: "top-center",
+          autoClose: 3000,  // Toast will disappear in 3 seconds
+          hideProgressBar: false,
+          theme: "light",
+        });
+      }
+    } catch (error) {
+      toast.error("Error updating profile.", {
         position: "top-center",
         autoClose: 3000,  // Toast will disappear in 3 seconds
         hideProgressBar: false,
         theme: "light",
       });
     }
-  } catch (error) {
-    toast.error("Error updating profile.", {
-      position: "top-center",
-      autoClose: 3000,  // Toast will disappear in 3 seconds
-      hideProgressBar: false,
-      theme: "light",
-    });
-  }
-};
-  
-  
-  
-  
-
-  
-  
+  };
 
   const excludedFields = ["createdAt", "projectFiles", "certificatePhotos", "corDocuments", "ratingSlips"];
 
@@ -153,7 +162,7 @@ const handleSave = async () => {
         <div className="profile-field">
           <label>Profile Image</label>
           <div className="profile-img-container">
-          <img
+            <img
               src={
                 imagePreview || 
                 (formData.profileImg?.startsWith("/")
@@ -164,7 +173,6 @@ const handleSave = async () => {
               alt="Profile"
               className="profile-img-preview"
             />
-
           </div>
 
           {editMode.profileImg ? (
@@ -218,6 +226,23 @@ const handleSave = async () => {
                       {formData[key]
                         ? format(new Date(formData[key]), "MMMM dd, yyyy")
                         : "Not Available"}
+                    </p>
+                  )
+                ) : key === "techSkills" || key === "softSkills" ? (
+                  // Special handling for skills arrays
+                  editMode[key] ? (
+                    <input
+                      type="text"
+                      name={key}
+                      value={Array.isArray(formData[key]) ? formData[key].join(', ') : ''}
+                      onChange={handleChange}
+                      placeholder="Enter skills separated by commas"
+                    />
+                  ) : (
+                    <p>
+                      {Array.isArray(formData[key]) && formData[key].length > 0
+                        ? formData[key].join(', ')
+                        : 'Not Available'}
                     </p>
                   )
                 ) : (
