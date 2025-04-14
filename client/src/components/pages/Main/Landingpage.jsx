@@ -125,28 +125,28 @@ const LandingPage = () => {
         </motion.section>
 
 
-      <motion.section class="tupath-join-section"
+      <motion.section className="tupath-join-section"
           initial={{ opacity: 0, y: 100 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 100, damping: 10 }}
           viewport={{ once: true, amount: 0.2 }}  
           >
-           <div class="tupath-content">
-              <div class="tupath-content-left">
+           <div className="tupath-content">
+              <div className="tupath-content-left">
                 <h1>Join TUPATH Today</h1>
                 <p>Whether you're a student looking to stand out or an employer seeking top talent, TUPATH is your gateway to success.</p>
-                  <div class="buttons">
+                  <div className="buttons">
                     <a href="/loginroles" className="btn-signup">Sign Up Now</a>
-                    <a href="#" class="btn-learnmore">Learn More →</a>
+                    <a href="#" className="btn-learnmore">Learn More →</a>
                   </div>
               </div>
-            <div class="tupath-content-right">
+            <div className="tupath-content-right">
             </div>
            </div>
       </motion.section>
 
 
-      <motion.section class="faq-section"
+      <motion.section className="faq-section"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 10 }}
@@ -155,34 +155,34 @@ const LandingPage = () => {
         <h2>Frequently Asked Questions</h2>
         <p>Find answers to common questions about using TUPATH for managing your academic portfolio.</p>
         
-        <div class="faq-items">
-          <div class="faq-item">
-            <div class="faq-icon">❓</div>
-            <div class="faq-content">
+        <div className="faq-items">
+          <div className="faq-item">
+            <div className="faq-icon">❓</div>
+            <div className="faq-content">
               <h3>How do I create a profile?</h3>
               <p>Simply sign up and follow the guided steps to create and personalize your academic profile.</p>
             </div>
           </div>
           
-          <div class="faq-item">
-            <div class="faq-icon">❓</div>
-            <div class="faq-content">
+          <div className="faq-item">
+            <div className="faq-icon">❓</div>
+            <div className="faq-content">
               <h3>Is my data secure?</h3>
               <p>Yes, we prioritize your privacy and ensure all data is securely stored and managed.</p>
             </div>
           </div>
 
-          <div class="faq-item">
-            <div class="faq-icon">❓</div>
-            <div class="faq-content">
+          <div className="faq-item">
+            <div className="faq-icon">❓</div>
+            <div className="faq-content">
               <h3>Can employers view my documents?</h3>
               <p>Employers can view the documents you choose to share publicly on your profile.</p>
             </div>
           </div>
           
-          <div class="faq-item">
-            <div class="faq-icon">❓</div>
-            <div class="faq-content">
+          <div className="faq-item">
+            <div className="faq-icon">❓</div>
+            <div className="faq-content">
               <h3>How do I get support?</h3>
               <p>Our support team is available 24/7 to assist you with any questions or issues.</p>
             </div>
