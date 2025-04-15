@@ -285,8 +285,9 @@ const Homepage = () => {
     setActivePostId((prevId) => (prevId === postId ? null : postId));
   };
 
-  const handleProfileClick = (userId) => {
-    navigate(`/profile/${userId}`);
+  const handleProfileClick = (userId, postCreatorName) => {
+    // Don't navigate - neither students nor employers can click profiles from posts
+    return;
   };
 
   const handleDeletePost = async (postId) => {
@@ -365,6 +366,9 @@ const Homepage = () => {
 
     // Check if the post creator's name matches the logged-in user's name
     const isPostOwner = post.name === userFullName;
+    
+    // No one can click on profiles from posts
+    const canClickProfile = false;
 
     const userId = "user_id_from_auth"; // Adjust as needed to get the actual user ID
     const hasUpvoted = post.votedUsers.includes(userId);
@@ -380,13 +384,13 @@ const Homepage = () => {
             <img
               src={post.profileImg}
               alt={post.name}
-              onClick={() => handleProfileClick(post.userId)}
-              style={{ cursor: "pointer" }}
+              // Don't allow profile click navigation
+              style={{ cursor: "default" }}
             />
             <div className="frompost">
               <h5
-                onClick={() => handleProfileClick(post.userId)}
-                style={{ cursor: "pointer" }}
+                // Don't allow profile click navigation
+                style={{ cursor: "default" }}
               >
                 {post.name}
               </h5>

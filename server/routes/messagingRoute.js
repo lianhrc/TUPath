@@ -455,4 +455,66 @@ router.post("/join", verifyToken, async (req, res) => {
   }
 });
 
+// Mark a specific message as read
+router.put("/messages/:messageId/read", verifyToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user.id;
+    
+    // Find the message
+    const message = await Message.findById(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Message not found" 
+      });
+    }
+    
+    // Check if user is part of this conversation
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      'participants.userId': userId
+    });
+    
+    if (!conversation) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "You do not have access to this message" 
+      });
+    }
+    
+    // Mark message as read if not already read
+    if (!message.readBy.includes(userId)) {
+      message.readBy.push(userId);
+      await message.save();
+      
+      // Update unread count in conversation
+      await Conversation.updateOne(
+        { 
+          _id: message.conversationId,
+          'participants.userId': userId
+        },
+        { $inc: { 'participants.$.unreadCount': -1 } }
+      );
+      
+      // Emit message read event if socket.io is available
+      if (req.io) {
+        req.io.to(message.conversationId.toString()).emit('message_read', {
+          messageId,
+          userId
+        });
+      }
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: "Message marked as read"
+    });
+  } catch (err) {
+    console.error("Error marking message as read:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 module.exports = router;
