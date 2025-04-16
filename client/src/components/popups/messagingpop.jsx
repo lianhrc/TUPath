@@ -195,11 +195,14 @@ const MessagingPop = () => {
                   <div className="messnotifitemright">
                     <div className="message-header">
                       <p className="sender-name">
+
                         <strong>{conversation.displayName || 'Unknown'}</strong>
-                      </p>
-                      <p className="message-time">{formatMessageDate(conversation.updatedAt)}</p>
+                        <p className="message-preview">{getMessagePreview(conversation)}</p> </p>
+                        
                     </div>
-                    <p className="message-preview">{getMessagePreview(conversation)}</p>
+                    <p className="message-time">{formatMessageDate(conversation.updatedAt)}</p>
+
+
                     {conversation.unreadCount > 0 && (
                       <span className="message-badge">{conversation.unreadCount}</span>
                     )}
