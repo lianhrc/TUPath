@@ -1,3 +1,4 @@
+
 /* Keyframes for sliding up and sliding down */
 @keyframes slideUp {
     from {
@@ -37,7 +38,11 @@
     background-color: rgba(244, 242, 238, 0.9); /* Semi-transparent background color */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
 }
-
+.message-header .message-preview{
+    font-size: 10px;
+    margin-bottom: 5px;
+    color: #a1a1a1;
+}
 /* Toggle button */
 .message-toggle {
     background-color: white;
@@ -98,7 +103,7 @@
 
 .messagenotifitem {
     display: flex;
-    padding: 12px;
+    padding: 5px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
     position: relative;
@@ -118,32 +123,28 @@
 .message-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
+    flex-direction: column;
+    align-self: flex-start;
+    border-radius: 5px;
+    width: 100%;
 }
 
 .sender-name {
     margin: 0;
-    font-size: 14px;
+    font-size: 10px;
     color: #333;
 }
 
-.message-time {
-    margin: 0;
-    font-size: 12px;
-    color: #888;
+
+.messagetime{
+    display: flex;
+    align-self: flex-end;
+}
+.message-header .message-time {
+    color: #ff0000;
+    font-size: 8px;
 }
 
-.message-preview {
-    margin: 0;
-    font-size: 13px;
-    padding-left: 10px;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 170px;
-}
 
 .messages-header {
     padding: 10px;
@@ -152,8 +153,6 @@
 
 .messages-header h4 {
     margin: 0;
-    font-size: 16px;
-    color: #333;
 }
 
 .view-all {
@@ -166,7 +165,7 @@
     background: none;
     border: none;
     color: #4876ff;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -178,29 +177,26 @@
     padding: 20px;
     text-align: center;
     color: #888;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .unread-badge {
-    background-color: #ff4d4f;
-    color: white;
+    color: red;
     border-radius: 50%;
     min-width: 18px;
     height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    margin-left: 8px;
     padding: 0 4px;
 }
 
 .message-badge {
-    position: fixed;
+    position: absolute;
     left: 67px;
     top: 7%;
     transform: translateY(-50%);
-    background-color: #ff4d4f;
+    background-color: #9D0E0F;
     color: white;
     border-radius: 50%;
     min-width: 18px;
@@ -246,7 +242,6 @@
 .popup-content h4 {
     margin: 10px 0;
     color: rgb(103, 103, 255);
-    font-size: 12px; /* Smaller font size for the header */
     text-align: center; /* Center align header text */
 }
 

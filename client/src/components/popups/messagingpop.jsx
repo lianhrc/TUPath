@@ -155,11 +155,16 @@ const MessagingPop = () => {
   return (
     <div className={`message-popup ${isOpen ? 'popup-open' : 'popup-close'}`}>
       <button className="message-toggle" onClick={togglePopup}>
-        <div>
-          <img src={profileImageUrl} alt="Profile" />
-          Messaging
-          {totalUnreadCount > 0 && <span className="unread-badge">{totalUnreadCount}</span>}
-        </div>
+        
+      <div className="profile-message-container">
+      <img src={profileImageUrl} alt="Profile" />
+      {totalUnreadCount > 0 ? (
+        <span className="unread-badge">{totalUnreadCount} new messages</span>
+      ) : (
+        <span className="message-label">messages</span>
+      )}
+    </div>
+
         <img
           className="writeicon"
           src={writemessage}
@@ -198,14 +203,16 @@ const MessagingPop = () => {
 
                         <strong>{conversation.displayName || 'Unknown'}</strong>
                         <p className="message-preview">{getMessagePreview(conversation)}</p> </p>
-                        
+                          <div className="messagetime">
+
+                          </div>                        
                     </div>
-                    <p className="message-time">{formatMessageDate(conversation.updatedAt)}</p>
 
 
                     {conversation.unreadCount > 0 && (
                       <span className="message-badge">{conversation.unreadCount}</span>
                     )}
+
                   </div>
                 </div>
               ))

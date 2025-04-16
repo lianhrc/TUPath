@@ -191,10 +191,20 @@
   height: 18px;
 }
 
-.notification-item .notifitemright p {
+.notification-item .notifitemright p strong {
   margin: 0;
   font-size: 12px;
   color: #333;
+  width: 100%;
+  white-space: nowrap; /* Prevents text from wrapping to the next line */
+  overflow: hidden; /* Hides overflowed text */
+  text-overflow: ellipsis; /* Displays ellipsis (...) for overflowed text */
+}
+
+.notification-item .notifitemright p {
+  margin: 0;
+  font-size: 12px;
+  color: #a2a2a2;
   width: 100%;
   white-space: nowrap; /* Prevents text from wrapping to the next line */
   overflow: hidden; /* Hides overflowed text */
