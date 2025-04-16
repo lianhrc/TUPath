@@ -113,13 +113,16 @@ function HeaderHomepage() {
           for (const conv of conversationsWithUnread) {
             // Only if there are unread messages in this conversation
             if (conv.unreadCount > 0 && conv.lastMessage) {
+              // Extract profile image from conversation data
+              const profileImg = conv.otherParticipant?.profileDetails?.profileImg || null;
+              
               // Format the notification
               unreadMsgs.push({
                 _id: conv.lastMessage._id,
                 conversationId: conv._id,
                 sender: {
                   name: conv.displayName,
-                  profileImg: null // Profile image can be added if available
+                  profileImg: profileImg // Include the profile image
                 },
                 messageContent: {
                   text: conv.lastMessage.content
@@ -133,7 +136,6 @@ function HeaderHomepage() {
         }
       } catch (error) {
         console.error('Error fetching unread messages:', error);
-        // Don't update unreadMessages state on error - keep existing state
       }
     };
 
@@ -148,7 +150,7 @@ function HeaderHomepage() {
           conversationId: data.conversationId,
           sender: {
             name: data.message.sender.username,
-            profileImg: null
+            profileImg: data.senderProfileImg || null // Include profile image if available
           },
           messageContent: {
             text: data.message.content
@@ -168,7 +170,7 @@ function HeaderHomepage() {
             conversationId: data.conversationId,
             sender: {
               name: data.message.sender.username,
-              profileImg: null
+              profileImg: data.senderProfileImg || null // Include profile image if available
             },
             messageContent: {
               text: data.message.content
@@ -432,10 +434,17 @@ function HeaderHomepage() {
                             onClick={() => handleNotificationClick(message)}
                           >
                             <div className="notifitemleft">
-                              <img
-                                src={message.sender.profileImg || profileicon}
-                                alt={`${message.sender.name}'s profile`}
-                              />
+                              {message.sender.profileImg ? (
+                                <img
+                                  src={message.sender.profileImg}
+                                  alt={`${message.sender.name}'s profile`}
+                                  className="notification-profile-img"
+                                />
+                              ) : (
+                                <div className="notification-initial">
+                                  {message.sender.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
                             </div>
                             <div className="notifitemright">
                               <p>

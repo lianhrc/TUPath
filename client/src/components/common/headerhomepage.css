@@ -20,7 +20,6 @@
   display: flex;
 }
 
-
 /* Logo */
 .homepagelogo {
   width: 150px;
@@ -34,7 +33,7 @@
   justify-content: center;
 }
 
-.search-filter{
+.search-filter {
   margin-right: 10px;
   border: lightgray 1px solid;
   border-top-right-radius: 35px;
@@ -53,7 +52,7 @@
   padding: 10px;
   z-index: 10000;
   border: 1px solid #ccc;
- border-radius: 35px;
+  border-radius: 35px;
   margin-right: -2px;
   position: absolute;
 }
@@ -92,11 +91,9 @@
   position: relative;
 }
 
-
-.clientdashicon{
+.clientdashicon {
   width: 20px;
 }
-
 
 .dropdown-menu {
   position: absolute;
@@ -113,19 +110,18 @@
   display: none;
   overflow: auto;
 
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none; /* For IE and Edge */
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For IE and Edge */
 }
 
-
-.dropdown-menu Link{
+.dropdown-menu Link {
   text-decoration: none;
   color: black;
   padding: 10px;
   display: block;
 }
 
-.dropdown-menu button{
+.dropdown-menu button {
   color: black;
   background: none;
   border: none;
@@ -160,8 +156,7 @@
   gap: 10px;
 }
 
-
-.notification-badge{
+.notification-badge {
   text-align: center;
   color: white;
   width: 20px;
@@ -169,14 +164,13 @@
   position: fixed;
   border-radius: 50%;
   top: 20px;
-  right:65px;
+  right: 65px;
   background-color: #9D0E0F;
 }
 
-.notification-item:hover{
-background-color: #eaeaea;
-cursor: pointer;
-
+.notification-item:hover {
+  background-color: #eaeaea;
+  cursor: pointer;
 }
 
 .notification-icon {
@@ -184,16 +178,15 @@ cursor: pointer;
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
-  
 }
 
-.nav-icon{
+.nav-icon {
   border-radius: 50%;
   width: 20px;
   height: 20px;
 }
 
-.nav-icon2{
+.nav-icon2 {
   width: 18px;
   height: 18px;
 }
@@ -206,16 +199,16 @@ cursor: pointer;
   white-space: nowrap; /* Prevents text from wrapping to the next line */
   overflow: hidden; /* Hides overflowed text */
   text-overflow: ellipsis; /* Displays ellipsis (...) for overflowed text */
-  
 }
 
-.notifitemleft{
-  width:20%;
+.notifitemleft {
+  width: 20%;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 50px;
 }
+
 .notifitemright {
   width: 100%;
   white-space: nowrap; /* Prevents text from wrapping to the next line */
@@ -223,15 +216,13 @@ cursor: pointer;
   text-overflow: ellipsis; /* Displays ellipsis (...) for overflowed text */
 }
 
-
-.notifitemleft img{
+.notifitemleft img {
   width: 50px;
   height: 50px;
   object-fit: cover;
   font-size: 5px;
   border-radius: 50%;
   background: none;
-
 }
 
 /* Profile dropdown */
@@ -243,11 +234,9 @@ cursor: pointer;
   text-decoration: none;
 }
 
-.profile-menu{
+.profile-menu {
   height: 110px;
 }
-
-
 
 .profile-menu :hover {
   background-color: #f0f0f0;
@@ -271,11 +260,9 @@ cursor: pointer;
   padding: 30px 10px 10px 10px;
   margin-top: 10px;
   transition: margin-top 0.3s ease; /* Adds smooth transition when moving down */
-
 }
 
-
-.search-results h3, .recent-searches h3{
+.search-results h3, .recent-searches h3 {
   font-weight: normal;
   font-size: 10px;
   color: darkgray;
@@ -311,8 +298,6 @@ cursor: pointer;
   overflow-y: auto;
   z-index: 1000;
   left: 48.3%;
-
-
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-bottom-right-radius: 20px;
@@ -331,13 +316,11 @@ cursor: pointer;
   text-align: center;
 }
 
-.recent-search-item strong, .search-results strong{
+.recent-search-item strong, .search-results strong {
   font-weight: normal;
   color: black;
   font-size: 12px;
-
 }
-
 
 .recent-search-image {
   width: 40px;
@@ -365,4 +348,25 @@ cursor: pointer;
 
 .clear-recent-btn:hover {
   text-decoration: underline;
+}
+
+/* Styles for notification profile images */
+.notification-profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notification-initial {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #4a6cf7;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
 }
