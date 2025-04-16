@@ -211,13 +211,21 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #4876ff;
+    background-color: #4a6cf7;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 16px;
+}
+
+/* Add this to your existing CSS */
+.conversation-profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 /* Animation on open */

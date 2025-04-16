@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import './AdminDashboard.css';
-import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from 'react-icons/fa'; // Importing 
+import React, { useState, useEffect, useMemo } from "react";
+import "./AdminDashboard.css";
+import { FaUsers, FaChartBar, FaSignOutAlt, FaTags } from "react-icons/fa"; // Importing
 import WordCloud from "react-d3-cloud";
-import { Pie, Bar } from 'react-chartjs-2';
-import tupicon from '../../../assets/logo.png';
-import irjpicon from '../../../assets/irjplogo.png';
-import StudentListModal from '../../popups/StudentListModal';
-import AuthContext from '../../AuthProvider';
-import axiosInstance from '../../../services/axiosInstance';
-import { useNavigate } from 'react-router-dom';
+import { Pie, Bar } from "react-chartjs-2";
+import tupicon from "../../../assets/logo.png";
+import irjpicon from "../../../assets/irjplogo.png";
+import StudentListModal from "../../popups/StudentListModal";
+import AuthContext from "../../AuthProvider";
+import axiosInstance from "../../../services/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 import {
   Chart as ChartJS,
@@ -19,30 +19,38 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from 'chart.js';
+} from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, Title, Tooltip, Legend, ArcElement, BarElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  BarElement
+);
 
 const AdminDashboard = () => {
-  const [activeSection, setActiveSection] = useState('Users'); // Track active section
+  const [activeSection, setActiveSection] = useState("Users"); // Track active section
   const [authChecked, setAuthChecked] = useState(false); // Track if authentication check is done
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axiosInstance.get('/check-auth');
+        const response = await axiosInstance.get("/check-auth");
         if (response.data.success) {
           setAuthChecked(true);
         } else {
-          navigate('/adminlogin');
+          navigate("/adminlogin");
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          console.error('User not authenticated:', error.response.data.message);
-          navigate('/adminlogin');
+          console.error("User not authenticated:", error.response.data.message);
+          navigate("/adminlogin");
         } else {
-          console.error('Unexpected error during authentication:', error);
+          console.error("Unexpected error during authentication:", error);
         }
       }
     };
@@ -50,22 +58,21 @@ const AdminDashboard = () => {
     checkAuth();
   }, [navigate]);
 
-
   const handleLogout = async () => {
     try {
       // Clear any stored admin auth data first
-      localStorage.removeItem('adminToken'); // If you're using token-based auth
+      localStorage.removeItem("adminToken"); // If you're using token-based auth
 
-      const response = await axiosInstance.post('/api/admin/logout');
+      const response = await axiosInstance.post("/api/admin/logout");
       if (response.data.success) {
         // Force navigation to login and prevent back navigation
-        window.location.replace('/adminlogin');
+        window.location.replace("/adminlogin");
       } else {
-        alert('Failed to log out.');
+        alert("Failed to log out.");
       }
     } catch (error) {
-      console.error('Error during logout:', error);
-      alert('An error occurred while logging out.');
+      console.error("Error during logout:", error);
+      alert("An error occurred while logging out.");
     }
   };
 
@@ -86,47 +93,50 @@ const AdminDashboard = () => {
               </div>
             </li>
             <li
-              onClick={() => setActiveSection('Users')}
-              className={activeSection === 'Users' ? 'active' : ''}
+              onClick={() => setActiveSection("Users")}
+              className={activeSection === "Users" ? "active" : ""}
             >
               <FaUsers className="icon" />
               <span className="text">Users</span>
             </li>
 
             <li
-              onClick={() => setActiveSection('Tags')}
-              className={activeSection === 'Tags' ? 'active' : ''}
+              onClick={() => setActiveSection("Tags")}
+              className={activeSection === "Tags" ? "active" : ""}
             >
               <FaTags className="icon" />
               <span className="text">Best</span>
             </li>
-
-           
-
             <li
-              onClick={() => setActiveSection('AdminSubjects')}
-              className={activeSection === 'AdminSubjects' ? 'active' : ''}
+              onClick={() => setActiveSection("AdminSubjects")}
+              className={activeSection === "AdminSubjects" ? "active" : ""}
             >
               <FaTags className="icon" />
               <span className="text">Curriculum</span>
+            </li>
+            <li
+              onClick={() => setActiveSection("Dashboard")}
+              className={activeSection === "Dashboard" ? "active" : ""}
+            >
+              <FaUsers className="icon" />
+              <span className="text">Dashboard</span>
             </li>
 
             <li onClick={handleLogout}>
               <FaSignOutAlt className="icon" />
               <span className="text">Log Out</span>
             </li>
-
-
+            
           </ul>
         </nav>
       </div>
 
       {/* Main Content */}
       <div className="admindashboard-content">
-        {activeSection === 'Users' && <UsersSection />}
-        {activeSection === 'Tags' && <TagChart />}
-        {activeSection === 'AdminSubjects' && <AdminSubjectsSection />}
-        {activeSection === 'ActiveTagSection' && <ActiveTags />}
+        {activeSection === "Users" && <UsersSection />}
+        {activeSection === "Tags" && <TagChart />}
+        {activeSection === "AdminSubjects" && <AdminSubjectsSection />}
+        {activeSection === "ActiveTagSection" && <ActiveTags />}
       </div>
     </div>
   );
@@ -134,10 +144,13 @@ const AdminDashboard = () => {
 
 // Users Section Component
 const UsersSection = () => {
-  const [selectedType, setSelectedType] = useState('Students');
+  const [selectedType, setSelectedType] = useState("Students");
   const [usersData, setUsersData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [userStats, setUserStats] = useState({ studentCount: 0, employerCount: 0 });
+  const [userStats, setUserStats] = useState({
+    studentCount: 0,
+    employerCount: 0,
+  });
 
   const handleDropdownChange = (event) => {
     setSelectedType(event.target.value);
@@ -147,13 +160,15 @@ const UsersSection = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/api/users?type=${selectedType}`);
+        const response = await axiosInstance.get(
+          `/api/users?type=${selectedType}`
+        );
         if (response.data.success) {
           setUsersData(response.data.users);
-          console.log('Fetched users:', response.data.users);
+          console.log("Fetched users:", response.data.users);
         }
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       } finally {
         setLoading(false);
       }
@@ -161,7 +176,7 @@ const UsersSection = () => {
 
     const fetchUserStats = async () => {
       try {
-        const response = await axiosInstance.get('/api/user-stats');
+        const response = await axiosInstance.get("/api/user-stats");
         if (response.data.success) {
           setUserStats({
             studentCount: response.data.studentCount,
@@ -169,7 +184,7 @@ const UsersSection = () => {
           });
         }
       } catch (error) {
-        console.error('Error fetching user stats:', error);
+        console.error("Error fetching user stats:", error);
       }
     };
 
@@ -178,53 +193,64 @@ const UsersSection = () => {
   }, [selectedType]);
 
   const handleDelete = async (userId) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this user?');
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (!confirmDelete) return;
 
     try {
-      const response = await axiosInstance.delete(`/api/manage-users/${userId}?type=${selectedType}`);
+      const response = await axiosInstance.delete(
+        `/api/manage-users/${userId}?type=${selectedType}`
+      );
       if (response.data.success) {
-        alert('User deleted successfully!');
-        setUsersData((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+        alert("User deleted successfully!");
+        setUsersData((prevUsers) =>
+          prevUsers.filter((user) => user._id !== userId)
+        );
       } else {
-        alert('Failed to delete the user.');
+        alert("Failed to delete the user.");
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('An error occurred while deleting the user.');
+      console.error("Error deleting user:", error);
+      alert("An error occurred while deleting the user.");
     }
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
     try {
       // Determine the user type based on the selected dropdown value
-      const userType = selectedType === 'Students' ? 'student' : 'employer';
+      const userType = selectedType === "Students" ? "student" : "employer";
 
-      const response = await axiosInstance.put(`/api/admin/toggle-status/${userType}/${userId}`);
+      const response = await axiosInstance.put(
+        `/api/admin/toggle-status/${userType}/${userId}`
+      );
 
       if (response.data.success) {
         // Update the local state to reflect the change
-        setUsersData(prevUsers =>
-          prevUsers.map(user =>
+        setUsersData((prevUsers) =>
+          prevUsers.map((user) =>
             user._id === userId ? { ...user, status: !currentStatus } : user
           )
         );
       } else {
-        alert('Failed to update user status.');
+        alert("Failed to update user status.");
       }
     } catch (error) {
-      console.error('Error toggling user status:', error);
-      alert('An error occurred while updating the user status.');
+      console.error("Error toggling user status:", error);
+      alert("An error occurred while updating the user status.");
     }
   };
 
   const chartData = {
-    labels: ['Students', 'Employers'],
+    labels: ["Students", "Employers"],
     datasets: [
       {
         data: [userStats.studentCount, userStats.employerCount],
-        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],
-        hoverBackgroundColor: ['rgba(54, 162, 235, 0.9)', 'rgba(255, 99, 132, 0.9)'],
+        backgroundColor: ["rgba(54, 162, 235, 0.6)", "rgba(255, 99, 132, 0.6)"],
+        hoverBackgroundColor: [
+          "rgba(54, 162, 235, 0.9)",
+          "rgba(255, 99, 132, 0.9)",
+        ],
       },
     ],
   };
@@ -248,20 +274,27 @@ const UsersSection = () => {
         <tbody>
           {usersData.map((user, index) => (
             <tr key={index}>
-              <td>{`${user?.profileDetails?.firstName || 'N/A'} ${user?.profileDetails?.lastName || 'N/A'}`}</td>
-              <td>{user?.email || 'N/A'}</td>
-              <td>{user?.profileDetails?.contact || 'N/A'}</td>
+              <td>{`${user?.profileDetails?.firstName || "N/A"} ${
+                user?.profileDetails?.lastName || "N/A"
+              }`}</td>
+              <td>{user?.email || "N/A"}</td>
+              <td>{user?.profileDetails?.contact || "N/A"}</td>
               <td>
-                <button className="delete-btn" onClick={() => handleDelete(user._id)}>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(user._id)}
+                >
                   Delete
                 </button>
               </td>
               <td>
                 <button
-                  className={`status-btn ${user.status ? 'active' : 'inactive'}`}
+                  className={`status-btn ${
+                    user.status ? "active" : "inactive"
+                  }`}
                   onClick={() => handleToggleStatus(user._id, user.status)}
                 >
-                  {user.status ? 'Deactivate' : 'Activate'}
+                  {user.status ? "Deactivate" : "Activate"}
                 </button>
               </td>
             </tr>
@@ -277,7 +310,11 @@ const UsersSection = () => {
         <h2>Users</h2>
         <div className="dropdownad-container">
           <label className="dropdownad-label">Select User Type:</label>
-          <select className="user-type-dropdown" value={selectedType} onChange={handleDropdownChange}>
+          <select
+            className="user-type-dropdown"
+            value={selectedType}
+            onChange={handleDropdownChange}
+          >
             <option value="Students">Students</option>
             <option value="Employers">Employers</option>
           </select>
@@ -287,31 +324,36 @@ const UsersSection = () => {
 
       <div className="rightusersadminsection">
         <div className="chart-container">
-          <Pie data={chartData} options={{ responsive: true, plugins: { legend: { display: true } } }} />
+          <Pie
+            data={chartData}
+            options={{
+              responsive: true,
+              plugins: { legend: { display: true } },
+            }}
+          />
         </div>
       </div>
     </div>
   );
 };
 
-
 // Tags Section Component
 const TagChart = () => {
   const [tagData, setTagData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null); 
   const [students, setStudents] = useState([]);
   const [studentsLoading, setStudentsLoading] = useState(false);
 
   useEffect(() => {
     const fetchTagData = async () => {
       try {
-        const response = await axiosInstance.get('/api/student-tags');
+        const response = await axiosInstance.get("/api/student-tags");
         if (response.data.success) {
           setTagData(response.data.tags);
         }
       } catch (error) {
-        console.error('Error fetching tag data:', error);
+        console.error("Error fetching tag data:", error);
       } finally {
         setLoading(false);
       }
@@ -327,12 +369,14 @@ const TagChart = () => {
 
       setStudentsLoading(true);
       try {
-        const response = await axiosInstance.get('/api/students-by-tag', { params: { tag } });
+        const response = await axiosInstance.get("/api/students-by-tag", {
+          params: { tag },
+        });
         if (response.data.success) {
           setStudents(response.data.students);
         }
       } catch (error) {
-        console.error('Error fetching students:', error);
+        console.error("Error fetching students:", error);
       } finally {
         setStudentsLoading(false);
       }
@@ -343,10 +387,10 @@ const TagChart = () => {
     labels: tagData.map((tag) => tag._id),
     datasets: [
       {
-        label: 'Number of Students Excelling',
+        label: "Number of Students Excelling",
         data: tagData.map((tag) => tag.count),
-        backgroundColor: '#e0b8b8',
-        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: "#e0b8b8",
+        borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 0,
       },
     ],
@@ -365,8 +409,8 @@ const TagChart = () => {
               responsive: true,
               plugins: { legend: { display: false } },
               scales: {
-                x: { title: { display: true, text: 'Tags' } },
-                y: { title: { display: true, text: 'Number of Students' } },
+                x: { title: { display: true, text: "Tags" } },
+                y: { title: { display: true, text: "Number of Students" } },
               },
               onClick: handleBarClick,
             }}
@@ -380,7 +424,6 @@ const TagChart = () => {
             loading={studentsLoading}
           />
         )}
-
       </div>
     </div>
   );
@@ -389,8 +432,8 @@ const TagChart = () => {
 // subjectsection component
 const AdminSubjectsSection = () => {
   const [adminsubjects, setAdminSubjects] = useState([]);
-  const [title, setTitle] = useState('');
-  const [code, setCode] = useState('');
+  const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -403,8 +446,8 @@ const AdminSubjectsSection = () => {
           setAdminSubjects(response.data.adminsubjects);
         }
       } catch (error) {
-        console.error('Error fetching adminsubjects:', error);
-        toast.error('Failed to fetch subjects');
+        console.error("Error fetching adminsubjects:", error);
+        toast.error("Failed to fetch subjects");
       } finally {
         setLoading(false);
       }
@@ -414,7 +457,7 @@ const AdminSubjectsSection = () => {
   }, []);
 
   const handleAddOrUpdate = async () => {
-    if (!title || !code) return toast.error('Please fill in both fields');
+    if (!title || !code) return toast.error("Please fill in both fields");
 
     try {
       const response = editingId
@@ -422,16 +465,16 @@ const AdminSubjectsSection = () => {
         : await createAdminSubject({ title, code });
 
       if (response.data.success) {
-        toast.success(editingId ? 'Subject updated!' : 'Subject added!');
-        setTitle('');
-        setCode('');
+        toast.success(editingId ? "Subject updated!" : "Subject added!");
+        setTitle("");
+        setCode("");
         setEditingId(null);
         const updated = await getAdminSubjects();
         setAdminSubjects(updated.data.adminsubjects);
       }
     } catch (error) {
-      console.error('Error saving subject:', error);
-      toast.error('Failed to save subject');
+      console.error("Error saving subject:", error);
+      toast.error("Failed to save subject");
     }
   };
 
@@ -442,25 +485,25 @@ const AdminSubjectsSection = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this subject?')) return;
+    if (!window.confirm("Delete this subject?")) return;
 
     try {
       const response = await deleteAdminSubject(id);
       if (response.data.success) {
-        toast.success('Subject deleted');
+        toast.success("Subject deleted");
         const updated = await getAdminSubjects();
         setAdminSubjects(updated.data.adminsubjects);
       }
     } catch (error) {
-      console.error('Error deleting subject:', error);
-      toast.error('Failed to delete subject');
+      console.error("Error deleting subject:", error);
+      toast.error("Failed to delete subject");
     }
   };
 
   return (
     <div className="adminsubjects-section">
       <div className="adminsubjects-form">
-        <h2>{editingId ? 'Edit Subject' : 'Add New Subject'}</h2>
+        <h2>{editingId ? "Edit Subject" : "Add New Subject"}</h2>
         <input
           type="text"
           placeholder="Subject Title (e.g. Web Development)"
@@ -474,7 +517,7 @@ const AdminSubjectsSection = () => {
           onChange={(e) => setCode(e.target.value)}
         />
         <button className="crud-3d-btn" onClick={handleAddOrUpdate}>
-          {editingId ? 'Update Subject' : 'Add Subject'}
+          {editingId ? "Update Subject" : "Add Subject"}
         </button>
       </div>
 
@@ -499,10 +542,16 @@ const AdminSubjectsSection = () => {
                   <td>{subject.title}</td>
                   <td>{subject.code}</td>
                   <td>
-                    <button className="crud-3d-btn edit" onClick={() => handleEdit(subject)}>
+                    <button
+                      className="crud-3d-btn edit"
+                      onClick={() => handleEdit(subject)}
+                    >
                       Edit
                     </button>
-                    <button className="crud-3d-btn delete" onClick={() => handleDelete(subject._id)}>
+                    <button
+                      className="crud-3d-btn delete"
+                      onClick={() => handleDelete(subject._id)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -515,7 +564,5 @@ const AdminSubjectsSection = () => {
     </div>
   );
 };
-
-
 
 export default AdminDashboard;

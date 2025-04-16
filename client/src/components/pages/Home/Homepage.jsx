@@ -285,8 +285,13 @@ const Homepage = () => {
     setActivePostId((prevId) => (prevId === postId ? null : postId));
   };
 
-  const handleProfileClick = (userId) => {
-    navigate(`/profile/${userId}`);
+  const handleProfileClick = (userId, postCreatorName) => {
+    // Enable profile navigation for both students and employers
+    if (userId) {
+      navigate(`/profile/${userId}`);
+    } else {
+      toast.info("Cannot navigate to this profile");
+    }
   };
 
   const handleDeletePost = async (postId) => {
@@ -365,9 +370,12 @@ const Homepage = () => {
 
     // Check if the post creator's name matches the logged-in user's name
     const isPostOwner = post.name === userFullName;
+    
+    // Enable profile click for all users
+    const canClickProfile = true;
 
-    const userId = "user_id_from_auth"; // Adjust as needed to get the actual user ID
-    const hasUpvoted = post.votedUsers.includes(userId);
+    const userId = post.userId || post.user || null; // Get userId from post
+    const hasUpvoted = post.votedUsers?.includes(userId);
 
     return (
       <div
@@ -380,13 +388,13 @@ const Homepage = () => {
             <img
               src={post.profileImg}
               alt={post.name}
-              onClick={() => handleProfileClick(post.userId)}
-              style={{ cursor: "pointer" }}
+              onClick={() => handleProfileClick(userId, post.name)}
+              style={{ cursor: userId ? "pointer" : "default" }}
             />
             <div className="frompost">
               <h5
-                onClick={() => handleProfileClick(post.userId)}
-                style={{ cursor: "pointer" }}
+                onClick={() => handleProfileClick(userId, post.name)}
+                style={{ cursor: userId ? "pointer" : "default" }}
               >
                 {post.name}
               </h5>

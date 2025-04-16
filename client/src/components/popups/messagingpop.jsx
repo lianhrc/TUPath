@@ -180,9 +180,17 @@ const MessagingPop = () => {
                   onClick={() => handleConversationClick(conversation._id)}
                 >
                   <div className="notifitemleft">
-                    <div className="avatar-circle">
-                      {conversation.displayName ? conversation.displayName.charAt(0).toUpperCase() : '?'}
-                    </div>
+                    {conversation.otherParticipant && conversation.otherParticipant.profileDetails && conversation.otherParticipant.profileDetails.profileImg ? (
+                      <img 
+                        src={conversation.otherParticipant.profileDetails.profileImg} 
+                        alt="Profile" 
+                        className="conversation-profile-img" 
+                      />
+                    ) : (
+                      <div className="avatar-circle">
+                        {conversation.displayName ? conversation.displayName.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
                   </div>
                   <div className="messnotifitemright">
                     <div className="message-header">

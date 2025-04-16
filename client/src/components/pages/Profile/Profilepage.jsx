@@ -378,7 +378,16 @@ function ProfilePage() {
           show={showEditDescriptionModal}
           onClose={() => setShowEditDescriptionModal(false)}
           profileData={profileData}
-          onSave={(updatedData) => setProfileData(updatedData)}
+          onSave={(updatedData) => {
+            console.log('Profile data updated:', updatedData); // For debugging
+            // Ensure skills arrays are properly formatted
+            const formattedUpdatedData = {
+              ...updatedData,
+              techSkills: Array.isArray(updatedData.techSkills) ? updatedData.techSkills : [],
+              softSkills: Array.isArray(updatedData.softSkills) ? updatedData.softSkills : []
+            };
+            setProfileData(formattedUpdatedData);
+          }}
         />
 
         <ProjectPreviewModal show={showPreviewModal} onClose={() => setShowPreviewModal(false)} project={selectedProject} onDelete={deleteProject} />

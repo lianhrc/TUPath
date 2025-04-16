@@ -98,20 +98,88 @@ function HeaderHomepage() {
   }, []);
 
   useEffect(() => {
-    socket.on("receive_message", (message) => {
-      setUnreadMessages((prevMessages) =>
-        [message, ...prevMessages].sort(
-          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-        )
-      );
+    const fetchUnreadMessages = async () => {
+      try {
+        // Get all conversations to check for unread messages
+        const response = await axiosInstance.get('/api/messaging/conversations');
+        if (response.data.success) {
+          // Find conversations with unread messages
+          const conversationsWithUnread = response.data.conversations.filter(
+            conv => conv.unreadCount > 0
+          );
+          
+          // Collect unread messages from each conversation
+          const unreadMsgs = [];
+          for (const conv of conversationsWithUnread) {
+            // Only if there are unread messages in this conversation
+            if (conv.unreadCount > 0 && conv.lastMessage) {
+              // Extract profile image from conversation data
+              const profileImg = conv.otherParticipant?.profileDetails?.profileImg || null;
+              
+              // Format the notification
+              unreadMsgs.push({
+                _id: conv.lastMessage._id,
+                conversationId: conv._id,
+                sender: {
+                  name: conv.displayName,
+                  profileImg: profileImg // Include the profile image
+                },
+                messageContent: {
+                  text: conv.lastMessage.content
+                },
+                timestamp: conv.lastMessage.createdAt
+              });
+            }
+          }
+          
+          setUnreadMessages(unreadMsgs);
+        }
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    fetchUnreadMessages();
+  }, []);
+
+  useEffect(() => {
+    socket.on("receive_message", (data) => {
+      setUnreadMessages(prevMessages => [
+        {
+          _id: data.message._id,
+          conversationId: data.conversationId,
+          sender: {
+            name: data.message.sender.username,
+            profileImg: data.senderProfileImg || null // Include profile image if available
+          },
+          messageContent: {
+            text: data.message.content
+          },
+          timestamp: data.message.createdAt
+        },
+        ...prevMessages
+      ]);
     });
 
-    socket.on("new_message", (message) => {
-      setUnreadMessages((prevMessages) =>
-        [message, ...prevMessages].sort(
-          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-        )
-      );
+    socket.on("new_message", (data) => {
+      // Only add to notifications if the message is from someone else
+      if (data.message.sender._id !== localStorage.getItem('userId')) {
+        setUnreadMessages(prevMessages => [
+          {
+            _id: data.message._id,
+            conversationId: data.conversationId,
+            sender: {
+              name: data.message.sender.username,
+              profileImg: data.senderProfileImg || null // Include profile image if available
+            },
+            messageContent: {
+              text: data.message.content
+            },
+            timestamp: data.message.createdAt
+          },
+          ...prevMessages
+        ]);
+      }
     });
 
     socket.on("message_read", ({ messageId }) => {
@@ -170,13 +238,7 @@ function HeaderHomepage() {
     // Mark the message as read
     try {
       await axiosInstance.put(
-        `/api/messages/${message._id}/read`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        `/api/messaging/messages/${message._id}/read`
       );
       setUnreadMessages((prevMessages) =>
         prevMessages.filter((msg) => msg._id !== message._id)
@@ -186,7 +248,7 @@ function HeaderHomepage() {
     }
 
     // Navigate to the inbox and select the message
-    window.location.href = `/Inboxpage?messageId=${message._id}`;
+    window.location.href = `/Inboxpage?conversationId=${message.conversationId}`;
   };
 
   const profileImageUrl = profileData.profileImg?.startsWith("/")
@@ -360,30 +422,43 @@ function HeaderHomepage() {
                     <div className="notifdropdownheader">
                       <h3>Notifications</h3>
                     </div>
-                    {unreadMessages
-                      .sort(
-                        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-                      )
-                      .map((message, index) => (
-                        <div
-                          key={index}
-                          className="notification-item"
-                          onClick={() => handleNotificationClick(message)}
-                        >
-                          <div className="notifitemleft">
-                            <img
-                              src={message.sender.profileImg || profileicon}
-                              alt={`${message.sender.name}'s profile`}
-                            />
+                    {unreadMessages.length > 0 ? (
+                      unreadMessages
+                        .sort(
+                          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+                        )
+                        .map((message, index) => (
+                          <div
+                            key={index}
+                            className="notification-item"
+                            onClick={() => handleNotificationClick(message)}
+                          >
+                            <div className="notifitemleft">
+                              {message.sender.profileImg ? (
+                                <img
+                                  src={message.sender.profileImg}
+                                  alt={`${message.sender.name}'s profile`}
+                                  className="notification-profile-img"
+                                />
+                              ) : (
+                                <div className="notification-initial">
+                                  {message.sender.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div className="notifitemright">
+                              <p>
+                                <strong>{message.sender.name}</strong>
+                              </p>
+                              <p>{message.messageContent.text}</p>
+                            </div>
                           </div>
-                          <div className="notifitemright">
-                            <p>
-                              <strong>{message.sender.name}</strong>
-                            </p>
-                            <p>{message.messageContent.text}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                    ) : (
+                      <div className="empty-notifications">
+                        <p>No new notifications</p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </div>
