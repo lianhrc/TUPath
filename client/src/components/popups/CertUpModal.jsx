@@ -14,7 +14,7 @@ const CertUpModal = ({ show, onClose }) => {
   const [certDescription, setCertDescription] = useState("");
   const fileInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
-  const [newCertificate, setNewCertificate] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!show) return null;
 
@@ -42,6 +42,7 @@ const CertUpModal = ({ show, onClose }) => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Start submitting
     
     try {
       console.log("Starting certificate upload process...");
@@ -145,6 +146,8 @@ const CertUpModal = ({ show, onClose }) => {
       }
       
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false); // Stop submitting whether success or error
     }
   };
 
@@ -231,9 +234,12 @@ const CertUpModal = ({ show, onClose }) => {
           </div>
 
           </form>
-            <div className="submit-btn-container">
-              <button type="submit" onClick={handleSubmit}>Submit</button>
-            </div>
+          <div className="submit-btn-container">
+          <button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </button>
+        </div>
+        
       </motion.div>
     </div>
   );
