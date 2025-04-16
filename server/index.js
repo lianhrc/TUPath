@@ -227,126 +227,6 @@ const uploadCertFiles = multer({
   limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
 });
 
-// Chat message schema
-// const messageSchema = new mongoose.Schema({
-//   sender: {
-//     senderId: { type: String, required: true },
-//     name: { type: String, required: true },
-//     profileImg: { type: String, default: "" },
-//   },
-//   receiver: {
-//     receiverId: { type: String, required: true },
-//     name: { type: String, required: true },
-//     profileImg: { type: String, default: "" },
-//   },
-//   messageContent: {
-//     text: { type: String, required: true },
-//     attachments: [{ type: String }], // URLs or file paths
-//   },
-//   status: {
-//     read: { type: Boolean, default: false },
-//     delivered: { type: Boolean, default: false },
-//   },
-//   timestamp: { type: Date, default: Date.now },
-//   direction: { type: String, enum: ["sent", "received"], required: true }, // Add direction field
-// });
-
-// Add indexes for optimization
-// messageSchema.index({ "sender.senderId": 1 });
-// messageSchema.index({ "receiver.receiverId": 1 });
-// messageSchema.index({ timestamp: -1 });
-// messageSchema.index({ "sender.senderId": 1, "receiver.receiverId": 1 });
-// messageSchema.index({ "receiver.receiverId": 1, "status.read": 1 });
-
-// const Message = mongoose.model("Message", messageSchema);
-
-// Add this endpoint to fetch users
-
-// app.get("/api/userss", verifyToken, async (req, res) => {
-//   try {
-//     const students = await Tupath_usersModel.find().select(
-//       "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
-//     );
-//     const employers = await Employer_usersModel.find().select(
-//       "profileDetails.firstName profileDetails.lastName profileDetails.profileImg"
-//     );
-//     const users = [...students, ...employers];
-//     res.status(200).json({ success: true, users });
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// });
-
-// REST endpoint to fetch chat messages
-// app.get("/api/messages", verifyToken, async (req, res) => {
-//   try {
-//     const userId = req.user.id; // Extract userId from the token
-//     const messages = await Message.find({
-//       $or: [{ "sender.senderId": userId }, { "receiver.receiverId": userId }],
-//     }).sort({ timestamp: -1 });
-
-//     // Transform messages to add correct direction for each user
-//     const transformedMessages = messages.map((msg) => {
-//       const isSender = msg.sender.senderId === userId;
-//       return {
-//         ...msg.toObject(),
-//         direction: isSender ? "sent" : "received",
-//       };
-//     });
-
-//     res.json(transformedMessages);
-//   } catch (err) {
-//     console.error("Error fetching messages:", err);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// });
-
-// REST endpoint to fetch unread messages
-// app.get("/api/unread-messages", verifyToken, async (req, res) => {
-//   try {
-//     const userId = req.user.id; // Extract userId from the token
-//     const messages = await Message.find({
-//       "receiver.receiverId": userId,
-//       "status.read": false,
-//     }).sort({ timestamp: 1 });
-//     res.json(messages);
-//   } catch (err) {
-//     console.error("Error fetching unread messages:", err);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// });
-
-// REST endpoint to mark a message as read
-// app.put("/api/messages/:id/read", verifyToken, async (req, res) => {
-//   try {
-//     const messageId = req.params.id;
-//     const userId = req.user.id; // Extract userId from the token
-
-//     const message = await Message.findById(messageId);
-//     if (!message) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Message not found" });
-//     }
-
-//     if (message.receiver.receiverId !== userId) {
-//       return res.status(403).json({ success: false, message: "Unauthorized" });
-//     }
-
-//     message.status.read = true;
-//     await message.save();
-
-//     // Emit the message read event
-//     io.emit("message_read", { messageId });
-
-//     res.status(200).json({ success: true, message: "Message marked as read" });
-//   } catch (err) {
-//     console.error("Error marking message as read:", err);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// });
-
 // Socket.IO events for real-time chat and certificates
 io.on("connection", (socket) => {
   // Join a specific conversation room
@@ -630,32 +510,47 @@ app.get("/api/profile/:id", verifyToken, async (req, res) => {
   const requestingUserRole = req.user.role;
 
   try {
-    const user = await Tupath_usersModel.findById(id).populate({
+    // First check if the profile is a student
+    let user = await Tupath_usersModel.findById(id).populate({
       path: "profileDetails.projects",
       select: "projectName description tags tools thumbnail projectUrl",
     });
 
+    // If not a student, check if it's an employer
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      user = await Employer_usersModel.findById(id);
+      
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
     }
 
-    let certificates = await StudentCertificate.find({ StudId: id });
-
-    // Hide projects and certificates if the requesting user is another student
-    if (
-      requestingUserRole === "student" &&
-      requestingUserId.toString() !== id.toString()
-    ) {
-      user.profileDetails.projects = [];
-      certificates = [];
+    let certificates = [];
+    
+    // Only fetch certificates for student profiles
+    if (user.constructor.modelName === 'Tupath_user') {
+      certificates = await StudentCertificate.find({ StudId: id });
+      
+      // Hide projects and certificates if the requesting user is another student
+      if (
+        requestingUserRole === "student" &&
+        requestingUserId.toString() !== id.toString()
+      ) {
+        user.profileDetails.projects = [];
+        certificates = [];
+      }
     }
+
+    // Add role information to the response
+    const role = user.constructor.modelName === 'Tupath_user' ? 'student' : 'employer';
 
     res.status(200).json({
       success: true,
       profile: {
         ...user.toObject(),
+        role,
         profileDetails: {
           ...user.profileDetails,
           certificates,

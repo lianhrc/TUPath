@@ -21,8 +21,8 @@ router.get("/conversations", verifyToken, async (req, res) => {
     .sort({ updatedAt: -1 })
     .lean(); // Convert to plain JS objects
 
-    // Format conversations to include displayName and lastSeen
-    const formattedConversations = conversations.map(conv => {
+    // Get additional user details for each conversation participant
+    const formattedConversations = await Promise.all(conversations.map(async (conv) => {
       // Find the other participant
       const otherParticipant = conv.participants.find(
         p => p.userId._id.toString() !== userId.toString()
@@ -33,6 +33,18 @@ router.get("/conversations", verifyToken, async (req, res) => {
         p => p.userId._id.toString() === userId.toString()
       );
 
+      // Get additional details from either student or employer collection
+      let profileDetails = null;
+      const participantId = otherParticipant.userId._id;
+      const studentUser = await Tupath_usersModel.findById(participantId).select('profileDetails.firstName profileDetails.lastName profileDetails.profileImg');
+      const employerUser = await Employer_usersModel.findById(participantId).select('profileDetails.firstName profileDetails.lastName profileDetails.companyName profileDetails.profileImg');
+      
+      if (studentUser) {
+        profileDetails = studentUser.profileDetails;
+      } else if (employerUser) {
+        profileDetails = employerUser.profileDetails;
+      }
+
       return {
         _id: conv._id,
         displayName: otherParticipant.userId.username,
@@ -41,10 +53,12 @@ router.get("/conversations", verifyToken, async (req, res) => {
         updatedAt: conv.updatedAt,
         otherParticipantId: otherParticipant.userId._id,
         otherParticipant: {
-          lastSeen: otherParticipant.userId.lastSeen
-        }
+          lastSeen: otherParticipant.userId.lastSeen,
+          profileDetails: profileDetails // Include the profile details with image
+        },
+        participants: conv.participants // Keep the original participants array
       };
-    });
+    }));
 
     res.status(200).json({ 
       success: true, 

@@ -521,9 +521,25 @@ function Inboxpage() {
               <div className="message-header">
                 <div className="conversation-profile">
                   <div className="profile-avatar">
-                    {activeConversation.displayName ? 
-                      activeConversation.displayName.charAt(0) : 
-                      (getOtherParticipant(activeConversation)?.username?.charAt(0) || "?")}
+                    {(() => {
+                      // Check for profile image in different possible locations
+                      const otherParticipant = activeConversation.otherParticipant || {};
+                      const profileDetails = otherParticipant.profileDetails || {};
+                      const profileImg = profileDetails.profileImg;
+                      
+                      if (profileImg) {
+                        return <img src={profileImg} alt="Profile" className="avatar-image" />;
+                      } else {
+                        // Generate a consistent color based on the name
+                        const name = activeConversation.displayName || "?";
+                        const initial = name.charAt(0).toUpperCase();
+                        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA5A5', '#A78BFA', '#8B5CF6'];
+                        const colorIndex = name.charCodeAt(0) % colors.length;
+                        const bgColor = colors[colorIndex];
+                        
+                        return <div className="avatar-initial" style={{ backgroundColor: bgColor }}>{initial}</div>;
+                      }
+                    })()}
                   </div>
                   <div className="profile-info">
                     <h2>
