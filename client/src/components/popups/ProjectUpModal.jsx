@@ -137,13 +137,30 @@ const fetchSubjectsForTag = async (selectedTag) => {
 
   
 
-  const handleAssessmentSubmit = async ({ subjectCode, grade, year, term }) => {
+  const handleAssessmentSubmit = async ({ subjectCode, grade, year, term, ratingSlip }) => {
     try {
-      const response = await axiosInstance.post("/api/saveAssessment", {
-        subject: subjectCode,
-        grade: grade,
-        year: year,
-        term: term,
+      // Create FormData object first
+      const formData = new FormData();
+      
+      // Append all data to formData
+      formData.append("subject", subjectCode);
+      formData.append("grade", grade);
+      formData.append("year", year);
+      formData.append("term", term);
+      
+      // Only append ratingSlip if it exists
+      if (ratingSlip) {
+        formData.append("ratingSlip", ratingSlip);
+      }
+  
+      // Debug: Log formData contents
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+  
+      const response = await axiosInstance.post("/api/saveAssessment", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
   
       if (response.data.success) {
