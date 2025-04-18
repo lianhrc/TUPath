@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Gradestable.css";
 
+import fileIcon from '../../assets/fileicon.png'
 
 const GradesTable = ({ grades = [] }) => {
   return (
@@ -28,9 +29,19 @@ const GradesTable = ({ grades = [] }) => {
                 <td>{row.year || 'N/A'}</td>
                 <td>{row.term || 'N/A'}</td>
                 <td>
-                  {row.corFile ? (
-                    <a href={`/uploads/${row.corFile}`} target="_blank" rel="noopener noreferrer">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" width="30" alt="PDF Icon" />
+                {row.ratingSlip ? (
+                    <a 
+                      href={row.ratingSlip} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="file-link"
+                    >
+                      <img 
+                        src={fileIcon} 
+                        width="24" 
+                        alt="Rating Slip" 
+                        className="file-icon"
+                      />
                     </a>
                   ) : (
                     <span>No file</span>

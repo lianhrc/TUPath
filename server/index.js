@@ -1339,7 +1339,7 @@ app.get('/api/grades', verifyToken, async (req, res) => {
     // Find all projects for the user
     const projects = await Project.find({
       user: userId
-    }).select('subject grade year term');
+    }).select('subject grade year term ratingSlip');
 
     // Get all subject mappings (more efficient than querying for each project)
     const subjectMappings = await SubjectTagMapping.find({});
@@ -1359,7 +1359,7 @@ app.get('/api/grades', verifyToken, async (req, res) => {
       grade: project.grade,
       year: project.year,
       term: project.term,
-      corFile: null
+      ratingSlip: project.ratingSlip
     }));
 
     res.status(200).json({ success: true, grades });

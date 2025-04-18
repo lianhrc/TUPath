@@ -279,7 +279,8 @@ function ProfilePage() {
           <div className="project-section">
           <div className="grademaincontainer">
             <h3> Grades</h3>
-            <GradesTable grades = {grades} />
+            <GradesTable grades = {grades} 
+            onRatingSlipClick = {(fileUrl) => window.open(fileUrl, '_blank')}/>  
 
           
           </div>
