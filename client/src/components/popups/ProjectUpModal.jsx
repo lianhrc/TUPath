@@ -137,13 +137,30 @@ const fetchSubjectsForTag = async (selectedTag) => {
 
   
 
-  const handleAssessmentSubmit = async ({ subjectCode, grade, year, term }) => {
+  const handleAssessmentSubmit = async ({ subjectCode, grade, year, term, ratingSlip }) => {
     try {
-      const response = await axiosInstance.post("/api/saveAssessment", {
-        subject: subjectCode,
-        grade: grade,
-        year: year,
-        term: term,
+      // Create FormData object first
+      const formData = new FormData();
+      
+      // Append all data to formData
+      formData.append("subject", subjectCode);
+      formData.append("grade", grade);
+      formData.append("year", year);
+      formData.append("term", term);
+      
+      // Only append ratingSlip if it exists
+      if (ratingSlip) {
+        formData.append("ratingSlip", ratingSlip);
+      }
+  
+      // Debug: Log formData contents
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+  
+      const response = await axiosInstance.post("/api/saveAssessment", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
   
       if (response.data.success) {
@@ -165,30 +182,29 @@ const fetchSubjectsForTag = async (selectedTag) => {
    
   const handleFinalSubmit = async () => {
     if (!selectedSubject || !grade) {
-        alert("Please select a subject and enter a grade before final submission.");
-        return;
+      alert("Please select a subject and enter a grade before final submission.");
+      return;
     }
-
+  
     setIsSubmitting(true);
-
     const formData = new FormData();
+    
+    // Append all text fields
     formData.append("projectName", projectName);
     formData.append("description", description);
     formData.append("tag", tag);
-    tools.forEach((tool) => formData.append("tools", tool));
-    roles.forEach((role) => formData.append("roles", role));
     formData.append("projectUrl", projectUrl);
     formData.append("subject", selectedSubject);
     formData.append("grade", grade);
-
     
-    selectedFiles.forEach((file, index) => {
-        formData.append("selectedFiles", file);
-    });
+    // Append arrays
+    tools.forEach(tool => formData.append("tools", tool));
+    roles.forEach(role => formData.append("roles", role));
+    
+    // Append files
+    selectedFiles.forEach(file => formData.append("selectedFiles", file));
+    if (thumbnail) formData.append("thumbnail", thumbnail);
 
-    if (thumbnail) {
-        formData.append("thumbnail", thumbnail);
-    }
 
     // Debugging: Log Form Data
     console.log("Submitting Project Data:");
@@ -203,30 +219,26 @@ const fetchSubjectsForTag = async (selectedTag) => {
     console.log("Thumbnail:", thumbnail ? thumbnail.name : "No thumbnail");
     console.log("Selected Files:", selectedFiles.map(file => file.name));
 
-    try {
-      const response = await axiosInstance.post("/api/uploadProject", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+ try {
+    const response = await axiosInstance.post("/api/uploadProject", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    if (response.data.success) {
+      toast.success("Project uploaded successfully!");
+      updateGradesTable({
+        code: selectedSubject,
+        description: "Subject related to project",
+        grade
       });
-
-      if (response.data.success) {
-          toast.success("Project uploaded successfully!");
-          
-          // Now update GradesTable
-          updateGradesTable({ 
-              code: selectedSubject, 
-              description: "Subject related to project", 
-              grade 
-          });
-
-          onClose();
-      } else {
-          console.error("Upload failed:", response.data.message);
-      }
+      onClose();
+    }
   } catch (error) {
-      console.error("Error uploading project:", error);
+    console.error("Error uploading project:", error);
+    toast.error("Failed to upload project");
+  } finally {
+    setIsSubmitting(false);
   }
-
-  setIsSubmitting(false);
 };
   if (!show) return null;
 

@@ -145,15 +145,24 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const Projectstorage = new CloudinaryStorage({
+const ProjectStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'TUPath_Proj', // Change this to your preferred folder name
-    allowed_formats: ['jpg', 'png', 'jpeg'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }],
-  },
+    folder: 'TUPath_Projects',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'docx', 'zip'],
+    resource_type: 'auto',
+    transformation: [{ width: 800, height: 600, crop: 'limit' }]
+  }
 });
 
+const RatingSlipStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'TUPath_RatingSlips',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
+    resource_type: 'auto'
+  }
+});
 const CertThumbStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: (req, file) => {
@@ -197,10 +206,18 @@ const Profilestorage = new CloudinaryStorage({
   },
 });
 
-// ✅ Correct Multer Setup
+          //MULTER
+const uploadProjectFiles = multer({ 
+  storage: ProjectStorage,
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
+});
+
+const uploadRatingSlip = multer({ 
+  storage: RatingSlipStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 const uploadImageProfile = multer({ storage: Profilestorage });
 const upload = multer({ storage: storage });
-const UploadImageProjects = multer({ storage: Projectstorage });
 
 // ✅ Multer Setup for Certificates
 const uploadThumbnail = multer({ 
@@ -850,32 +867,30 @@ app.post(
   }
 });
 // Modify API Endpoint to Use Cloudinary
-app.post("/api/uploadProject", verifyToken, upload.fields([
+app.post("/api/uploadProject", verifyToken, uploadProjectFiles.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "selectedFiles", maxCount: 10 },
   { name: "ratingSlip", maxCount: 1 }
 ]), async (req, res) => {
   try {
     console.log("Received project upload request with data:", req.body);
-
-
+    
     // Retrieve saved subject & grade from session
     const { subject, grade, ratingSlip, year, term } = req.session.assessmentData || {};
 
-    if (!subject || !grade || !year || !term) {
+    if (!subject || !grade) {
       console.error("Missing subject or grade in session.");
       return res.status(400).json({ success: false, message: "Missing required fields." });
     }
 
-    // Get Cloudinary URL instead of local file path
-    const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-    const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-    const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
+    // Get file URLs from Cloudinary
+    const thumbnail = req.files?.thumbnail?.[0]?.path || null;
+    const selectedFiles = req.files?.selectedFiles?.map(file => file.path) || [];
+    const ratingSlipPath = req.files?.ratingSlip?.[0]?.path || ratingSlip;
 
+    // Create and save the new project
     const newProject = new Project({
-      user: req.user.id, // Add this line
+      user: req.user.id,
       projectName: req.body.projectName,
       description: req.body.description,
       tag: req.body.tag,
@@ -892,105 +907,40 @@ app.post("/api/uploadProject", verifyToken, upload.fields([
       term,
     });
 
-      await newProject.save();
+    await newProject.save();
 
-    const userId = req.user?.id || req.body.userId; // Get user ID from auth or request body
+    // Update user's projects list
+    const userId = req.user?.id || req.body.userId;
     if (!userId) {
       console.error("User ID is missing.");
       return res.status(400).json({ success: false, message: "User ID is required." });
     }
 
-      const user = await Tupath_usersModel.findOneAndUpdate(
-        { _id: userId },
-        { $addToSet: { "profileDetails.projects": newProject._id } },
-        { new: true }
-      );
+    const user = await Tupath_usersModel.findOneAndUpdate(
+      { _id: userId },
+      { $addToSet: { "profileDetails.projects": newProject._id } },
+      { new: true }
+    );
 
     if (!user) {
       console.error("User not found.");
       return res.status(404).json({ success: false, message: "User not found." });
     }
 
+    // Update best tag dynamically
     await user.calculateBestTag();
 
-    //clear session after a successful save
+    // Clear session after successful save
     delete req.session.assessmentData;
 
     console.log("Project successfully saved and linked to user:", newProject);
     res.status(201).json({ success: true, project: newProject });
-
   } catch (error) {
-    //console.error("Error uploading project:", error);
-    console.error("Detailed upload error:", {
-      message: error.message,
-      stack: error.stack,
-      sessionData: req.session.assessmentData,
-      files: req.files,
-      body: req.body
-    });
+    console.error("Error uploading project:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-
-
-/* //BACKUP LATEST API
-
-  app.post("/api/uploadProject", verifyToken, upload.fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "selectedFiles", maxCount: 10 },
-    { name: "ratingSlip", maxCount: 1 }
-  ]), async (req, res) => {
-    try {
-      console.log("Received project upload request with data:", req.body);
-      console.log("Session before accessing assessmentData:", req.session);
-  
-      // Retrieve saved subject & grade from session
-      const { subject, grade, ratingSlip } = req.session.assessmentData || {};
-  
-      console.log("Extracted assessment data from session:", { subject, grade, ratingSlip });
-  
-      if (!subject || !grade) {
-        console.error("Missing subject or grade in session.");
-        return res.status(400).json({ success: false, message: "Missing required fields." });
-      }
-  
-      const thumbnail = req.files?.["thumbnail"]?.[0]?.filename ? `/uploads/${req.files["thumbnail"][0].filename}` : null;
-      const selectedFiles = req.files?.["selectedFiles"] ? req.files["selectedFiles"].map(file => file.path) : [];
-      const ratingSlipPath = req.files?.["ratingSlip"]?.[0]?.filename
-      ? `/uploads/${req.files["ratingSlip"][0].filename}`
-      : ratingSlip;
-  
-      const newProject = new Project({
-        projectName: req.body.projectName,
-        description: req.body.description,
-        tag: req.body.tag,
-        tools: req.body.tools,
-        projectUrl: req.body.projectUrl,
-        roles: req.body.roles,
-        subject,
-        grade,
-        ratingSlip: ratingSlipPath, // <-- Save ratingSlip instead of corFile
-        status: "pending",
-        thumbnail,
-        selectedFiles
-      });
-  
-      await newProject.save();
-  
-      // Clear session after successful save
-      delete req.session.assessmentData;
-  
-      console.log("Project successfully saved:", newProject);
-  
-      res.status(201).json({ success: true, project: newProject });
-    } catch (error) {
-      console.error("Error saving project:", error);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-  });
-  
-*/
 
 app.get("/api/projects", verifyToken, async (req, res) => {
   try {
@@ -1359,45 +1309,34 @@ app.post("/api/admin/logout", (req, res) => {
 
 // NEW API- HIWALAY KO LANG KASI BABAKLASIN KO TO
 
-app.post(
-  "/api/saveAssessment",
-  verifyToken,
-  upload.single("ratingSlip"),
-  async (req, res) => {
-    try {
-      const { subject, grade, year, term } = req.body;
-      if (!subject || !grade || !year || !term) {
-        return res.status(400).json({
-          success: false,
-          message: "Subject, grade, year level, and term are required.",
-        });
-      }
-
-      const ratingSlipPath = req.file ? `/uploads/${req.file.filename}` : null;
-
-      req.session.assessmentData = {
-        subject,
-        grade,
-        ratingSlip: ratingSlipPath,
-        year,
-        term,
-      };
-
-      // Debugging: Log the stored session data
-      console.log(
-        "Saved assessment data in session:",
-        req.session.assessmentData
-      );
-
-      res
-        .status(200)
-        .json({ success: true, message: "Assessment saved successfully." });
-    } catch (error) {
-      console.error("Error saving assessment:", error);
-      res.status(500).json({ success: false, message: "Server error" });
+app.post("/api/saveAssessment", verifyToken, uploadRatingSlip.single("ratingSlip"), async (req, res) => {
+  try {
+    const { subject, grade, year, term } = req.body;
+    if (!subject || !grade || !year || !term) {
+      return res.status(400).json({
+        success: false,
+        message: "Subject, grade, year level, and term are required."
+      });
     }
+
+    const ratingSlipPath = req.file ? req.file.path : null;
+
+    req.session.assessmentData = { 
+      subject, 
+      grade, 
+      ratingSlip: ratingSlipPath, 
+      year, 
+      term 
+    };
+
+    console.log("Saved assessment data in session:", req.session.assessmentData);
+    res.status(200).json({ success: true, message: "Assessment saved successfully." });
+  } catch (error) {
+    console.error("Error saving assessment:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
-);
+});
+
 
 app.get("/api/topStudentsByTag", async (req, res) => {
   try {
