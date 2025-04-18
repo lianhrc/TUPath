@@ -743,50 +743,7 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
-
-/*app.post("/api/uploadProfileImage", verifyToken, upload.single("profileImg"), async (req, res) => {
-   try {
-       const userId = req.user.id;
-
-       // Validate if file exists
-       if (!req.file) {
-           return res.status(400).json({ success: false, message: "No file uploaded" });
-       }
-
-       const profileImgPath = `/uploads/${req.file.filename}`;
-       console.log("Uploaded file path:", profileImgPath); // Debugging
-
-       // Update for both student and employer models
-       const updatedStudent = await Tupath_usersModel.findByIdAndUpdate(
-           userId,
-           { $set: { "profileDetails.profileImg": profileImgPath } },
-           { new: true }
-       );
-
-       const updatedEmployer = await Employer_usersModel.findByIdAndUpdate(
-           userId,
-           { $set: { "profileDetails.profileImg": profileImgPath } },
-           { new: true }
-       );
-
-       // If no user was updated, return an error
-       if (!updatedStudent && !updatedEmployer) {
-           console.log("User not found for ID:", userId); // Debugging
-           return res.status(404).json({ success: false, message: "User not found" });
-       }
-
-       res.status(200).json({
-           success: true,
-           message: "Profile image uploaded successfully",
-           profileImg: profileImgPath,
-       });
-   } catch (error) {
-       console.error("Error uploading profile image:", error);
-       res.status(500).json({ success: false, message: "Internal server error" });
-   }
- });
- */
-// api upload image endpoint
+ 
 app.post(
   "/api/uploadProfileImage",
   verifyToken,
@@ -1378,28 +1335,39 @@ app.get("/api/student-counts", async (req, res) => {
 app.get('/api/grades', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Find all projects for the user
-    const projects = await Project.find({ 
-      // Assuming projects are linked to users in your schema
-      // You may need to adjust this query based on your actual schema
-    }).select('subject grade');
+    const projects = await Project.find({
+      user: userId
+    }).select('subject grade year term');
+
+    // Get all subject mappings (more efficient than querying for each project)
+    const subjectMappings = await SubjectTagMapping.find({});
+    const subjectMap = {};
     
+    // Create a lookup map for subject codes to names
+    subjectMappings.forEach(mapping => {
+      mapping.subjects.forEach(subject => {
+        subjectMap[subject.subjectCode] = subject.subjectName;
+      });
+    });
+
     // Transform projects into grades format
     const grades = projects.map(project => ({
       code: project.subject,
-      description: 'Project submission', // Or get from subject mapping
+      description: subjectMap[project.subject] || 'Project submission', // Use subject name if available
       grade: project.grade,
-      corFile: null // Or include if you have this data
+      year: project.year,
+      term: project.term,
+      corFile: null
     }));
-    
+
     res.status(200).json({ success: true, grades });
   } catch (error) {
     console.error('Error fetching grades:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
 // Update this route in your index.js file
 app.get("/api/checkExistingGrade", verifyToken, async (req, res) => {
   try {
