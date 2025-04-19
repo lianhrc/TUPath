@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Gradestable.css";
 
-import fileIcon from '../../assets/fileicon.png'
+import fileIcon from '../../assets/pdf.png'
 
 const GradesTable = ({ grades = [] }) => {
   return (
